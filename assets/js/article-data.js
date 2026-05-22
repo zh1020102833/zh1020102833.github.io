@@ -28,6 +28,34 @@ var siteData = {
           date: '2026-05-22',
           summary: '介绍硬件设计的基本流程和常用工具，适合电子工程师入门参考。',
           file: 'articles/hardware-intro.html'
+        },
+        {
+          id: 'eeg-signal-chain',
+          title: 'EEG 硬件信号链设计笔记',
+          date: '2026-05-22',
+          summary: '脑电图（EEG）硬件信号链的完整设计笔记，涵盖前端采集、滤波、ADC 选型及噪声优化。',
+          file: 'articles/eeg-signal-chain.html'
+        },
+        {
+          id: 'signal-conditioning',
+          title: '信号调理核心原理',
+          date: '2026-05-22',
+          summary: '深入讲解信号调理的核心原理，包括放大、滤波、隔离与线性化等关键技术。',
+          file: 'articles/signal-conditioning.html'
+        },
+        {
+          id: 'high-speed-analog-debug',
+          title: '高速模拟电路调试案例',
+          date: '2026-05-22',
+          summary: '高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。',
+          file: 'articles/high-speed-analog-debug.html'
+        },
+        {
+          id: 'high-speed-mixed-signal',
+          title: '高速模数混合电路应用笔记',
+          date: '2026-05-22',
+          summary: '高速模数混合电路设计的应用笔记，涉及 PCB 布局、接地策略和信号完整性。',
+          file: 'articles/high-speed-mixed-signal.html'
         }
       ]
     },
