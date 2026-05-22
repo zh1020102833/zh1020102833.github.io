@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的文章 - 首页</title>
+  <meta name="description" content="硬件 · EDA · 软件开发 · 随笔 — 个人技术文章导航站">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* 文章列表默认使用 grid 布局，在 style.css 中已有定义 */
+    .article-card[data-hidden] { display: none; }
+    .search-highlight { background: #fff3cd; padding: 0 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ===== 导航栏（静态 HTML，不依赖 JS 注入） ===== -->
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">我的文章</a>
+    <button class="nav-toggle" aria-label="切换菜单">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">首页</a></li>
+      <li><a href="pages/archive.html">归档</a></li>
+      <li><a href="pages/about.html">关于</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <div class="page-header">
+    <h1>文章列表</h1>
+    <p>硬件 · EDA · 软件开发 · 随笔</p>
+  </div>
+
+  <!-- 搜索框 -->
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="搜索文章标题或摘要..." autocomplete="off">
+  </div>
+
+  <!-- 大类导航标签 -->
+  <div class="category-tabs" id="category-tabs">
+    <button class="active" data-cat="all">全部</button>
+    <button data-cat="硬件">硬件</button>
+    <button data-cat="EDA">EDA</button>
+    <button data-cat="软件开发">软件开发</button>
+    <button data-cat="随笔">随笔</button>
+  </div>
+
+  <!-- ===== 文章列表（静态 HTML，不依赖 JS 渲染） ===== -->
+  <div id="article-container">
+
+    <!-- === 硬件 === -->
+    <div class="cat-section-header">硬件</div>
+    <article class="article-card" data-category="硬件" data-search="硬件设计入门基础 介绍硬件设计的基本流程和常用工具，适合电子工程师入门参考。">
+      <h2><a href="articles/hardware-intro.html">硬件设计入门基础</a></h2>
+      <div class="meta">硬件 · 2026-05-22</div>
+      <p class="summary">介绍硬件设计的基本流程和常用工具，适合电子工程师入门参考。</p>
+    </article>
+
+    <!-- === EDA === -->
+    <div class="cat-section-header">EDA</div>
+    <article class="article-card" data-category="EDA" data-search="常用 EDA 工具介绍 整理主流 EDA 工具的功能特点与选型建议，涵盖 Altium、KiCad 等。">
+      <h2><a href="articles/eda-tools.html">常用 EDA 工具介绍</a></h2>
+      <div class="meta">EDA · 2026-05-22</div>
+      <p class="summary">整理主流 EDA 工具的功能特点与选型建议，涵盖 Altium、KiCad 等。</p>
+    </article>
+
+    <!-- === 软件开发 === -->
+    <div class="cat-section-header">软件开发</div>
+    <article class="article-card" data-category="软件开发" data-search="前端开发基础：HTML 核心标签 整理前端开发中最常用的 HTML 标签及其语义化用法，适合初学者参考。">
+      <h2><a href="articles/web-dev-basics.html">前端开发基础：HTML 核心标签</a></h2>
+      <div class="meta">软件开发 · 2026-05-22</div>
+      <p class="summary">整理前端开发中最常用的 HTML 标签及其语义化用法，适合初学者参考。</p>
+    </article>
+
+    <!-- === 随笔 === -->
+    <div class="cat-section-header">随笔</div>
+    <article class="article-card" data-category="随笔" data-search="Hello World - 我的第一篇博客 这是网站的第一篇文章，介绍了搭建本静态博客的初衷和使用方式。">
+      <h2><a href="articles/hello-world.html">Hello World - 我的第一篇博客</a></h2>
+      <div class="meta">随笔 · 2026-05-22</div>
+      <p class="summary">这是网站的第一篇文章，介绍了搭建本静态博客的初衷和使用方式。</p>
+    </article>
+
+    <article class="article-card" data-category="随笔" data-search="如何写出清晰的技术文章 分享技术写作的经验与技巧，包括结构组织、语言表达和读者视角等方面的建议。">
+      <h2><a href="articles/writing-tips.html">如何写出清晰的技术文章</a></h2>
+      <div class="meta">随笔 · 2026-05-22</div>
+      <p class="summary">分享技术写作的经验与技巧，包括结构组织、语言表达和读者视角等方面的建议。</p>
+    </article>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>&copy; 2026 我的文章</p>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script>
+/**
+ * 分类筛选 + 搜索功能（轻量级增强）:
+ *   如果此脚本加载失败，文章内容仍可见，只是不能分类筛选。
+ */
+(function () {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  function init() {
+    var tabs = document.getElementById('category-tabs');
+    var container = document.getElementById('article-container');
+    var searchInput = document.getElementById('search-input');
+    if (!tabs || !container) return;
+
+    var cards = container.querySelectorAll('.article-card');
+    var headers = container.querySelectorAll('.cat-section-header');
+
+    // ---- 分类筛选 ----
+    tabs.addEventListener('click', function (e) {
+      if (e.target.tagName !== 'BUTTON') return;
+      var cat = e.target.dataset.cat;
+
+      tabs.querySelector('.active') && (tabs.querySelector('.active').className = '');
+      e.target.className = 'active';
+
+      var showAll = cat === 'all';
+      cards.forEach(function (card) {
+        if (showAll || card.dataset.category === cat) {
+          card.removeAttribute('data-hidden');
+        } else {
+          card.setAttribute('data-hidden', '');
+        }
+      });
+      headers.forEach(function (h) {
+        // 显示分类标题：当该分类下至少有一个可见的文章
+        var sectionCat = h.textContent.trim();
+        var hasVisible = false;
+        cards.forEach(function (c) {
+          if (c.dataset.category === sectionCat && !c.hasAttribute('data-hidden')) {
+            hasVisible = true;
+          }
+        });
+        h.removeAttribute('data-hidden');
+        // 在非"全部"模式下，只显示当前分类的标题
+        if (!showAll && sectionCat !== cat) {
+          h.setAttribute('data-hidden', '');
+        }
+      });
+    });
+
+    // ---- 搜索 ----
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        var keyword = this.value.trim().toLowerCase();
+
+        // 切换到"全部"标签
+        tabs.querySelector('.active') && (tabs.querySelector('.active').className = '');
+        tabs.querySelector('[data-cat="all"]') && (tabs.querySelector('[data-cat="all"]').className = 'active');
+
+        cards.forEach(function (card) {
+          if (!keyword) {
+            card.removeAttribute('data-hidden');
+          } else {
+            var searchText = (card.dataset.search || '').toLowerCase();
+            if (searchText.indexOf(keyword) !== -1) {
+              card.removeAttribute('data-hidden');
+            } else {
+              card.setAttribute('data-hidden', '');
+            }
+          }
+        });
+
+        // 控制分类标题
+        headers.forEach(function (h) {
+          var sectionCat = h.textContent.trim();
+          var hasVisible = false;
+          cards.forEach(function (c) {
+            if (c.dataset.category === sectionCat && !c.hasAttribute('data-hidden')) {
+              hasVisible = true;
+            }
+          });
+          if (hasVisible) {
+            h.removeAttribute('data-hidden');
+          } else {
+            h.setAttribute('data-hidden', '');
+          }
+        });
+      });
+    }
+  }
+})();
+</script>
+
+</body>
+</html>

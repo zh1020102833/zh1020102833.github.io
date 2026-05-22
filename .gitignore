@@ -1,0 +1,17 @@
+# 忽略操作系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略编辑器配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 忽略密钥和敏感信息
+**/config.json
+*.key
+*.pem
+
+# 忽略上传脚本中的本地配置修改
+upload-tools/*.local.*

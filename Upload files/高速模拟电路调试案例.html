@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高速模拟电路调试案例</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+  }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg: #f5f4f1;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --border-med: rgba(0,0,0,0.15);
+  --text: #1c1b19;
+  --text-sec: #555350;
+  --text-hint: #8c8883;
+  --accent: #16599e;
+  --accent-light: #e3eef9;
+  --teal: #0d6751;
+  --teal-light: #dff3ec;
+  --coral: #913719;
+  --coral-light: #f9e9e2;
+  --amber: #7d4908;
+  --amber-light: #f9ecd6;
+  --purple: #4e44b0;
+  --purple-light: #eceafc;
+  --green: #36650f;
+  --green-light: #e9f2db;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --sidebar-w: 260px;
+  --sidebar-bg: #111827;
+  --sidebar-text: #9ca3af;
+  --sidebar-active: #2dd4bf;
+  --sidebar-hover: #1f2937;
+  --sidebar-heading: #6b7280;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.75;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  padding: 28px 0 40px;
+  scrollbar-width: thin;
+  scrollbar-color: #374151 transparent;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sidebar-heading);
+  letter-spacing: 0.06em;
+  padding: 0 24px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 16px;
+}
+.sidebar-nav { list-style: none; padding: 0; margin: 0; }
+.sidebar-nav li { margin: 0; }
+.sidebar-nav a {
+  display: block;
+  padding: 7px 24px;
+  font-size: 13px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-left: 3px solid transparent;
+  line-height: 1.5;
+}
+.sidebar-nav a:hover { color: #e5e7eb; background: var(--sidebar-hover); }
+.sidebar-nav a.active {
+  color: var(--sidebar-active);
+  border-left-color: var(--sidebar-active);
+  background: rgba(45,212,191,0.06);
+}
+.sidebar-nav .sub a {
+  padding-left: 44px;
+  font-size: 12px;
+  color: #6b7280;
+}
+.sidebar-nav .sub a:hover { color: #d1d5db; }
+.sidebar-nav .sub a.active { color: var(--sidebar-active); }
+
+/* ===== MAIN ===== */
+.main-wrap {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+}
+.page-header {
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  padding: 40px 0 32px;
+  text-align: center;
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+.page-header p {
+  margin-top: 8px;
+  color: var(--text-sec);
+  font-size: 13px;
+}
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 28px 80px;
+}
+.chapter {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  scroll-margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.chapter-num {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+h2.chapter-title {
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid var(--border);
+}
+h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 24px 0 12px;
+  scroll-margin-top: 20px;
+}
+h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sec);
+  margin: 18px 0 8px;
+  scroll-margin-top: 20px;
+}
+p { margin-bottom: 12px; color: var(--text); font-size: 14px; }
+ul, ol { padding-left: 22px; margin-bottom: 14px; }
+li { margin: 6px 0; color: var(--text); font-size: 14px; }
+strong { font-weight: 500; color: var(--text); }
+.tag {
+  display: inline-block;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  margin-right: 4px;
+}
+.tag.teal { background: var(--teal-light); color: var(--teal); }
+.tag.coral { background: var(--coral-light); color: var(--coral); }
+.tag.amber { background: var(--amber-light); color: var(--amber); }
+.tag.purple { background: var(--purple-light); color: var(--purple); }
+
+.info-box {
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13px;
+  color: var(--accent);
+}
+.info-box.teal {
+  background: var(--teal-light);
+  border-left-color: var(--teal);
+  color: var(--teal);
+}
+.info-box.coral {
+  background: var(--coral-light);
+  border-left-color: var(--coral);
+  color: var(--coral);
+}
+.info-box.warn {
+  background: #fff5eb;
+  border-left-color: #e07b30;
+  color: #8b4a0e;
+}
+.info-box.purple {
+  background: var(--purple-light);
+  border-left-color: var(--purple);
+  color: var(--purple);
+}
+
+.formula-box {
+  background: var(--amber-light);
+  border: 0.5px solid #e8c673;
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin: 14px 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--amber);
+  font-weight: 500;
+}
+.formula-box .var { color: var(--text-sec); font-weight: 400; font-size: 12px; display: block; margin-top: 4px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 13px;
+}
+th {
+  background: #f1efe9;
+  font-weight: 500;
+  padding: 10px 12px;
+  text-align: left;
+  border: 0.5px solid var(--border-med);
+  color: var(--text-sec);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+td {
+  padding: 9px 12px;
+  border: 0.5px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #fafaf8; }
+
+.canvas-wrap {
+  margin: 20px 0;
+  background: #ececec;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.canvas-label {
+  font-size: 11px;
+  color: var(--text-hint);
+  padding: 7px 16px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--surface);
+  letter-spacing: 0.03em;
+}
+canvas { display: block; max-width: 100%; height: auto; }
+
+.canvas-ctrls {
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-sec);
+}
+.canvas-ctrls input[type=range] { accent-color: var(--accent); width: 200px; }
+.canvas-ctrls .cv { color: var(--teal); font-weight: 500; min-width: 60px; }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+.metric-card {
+  background: #f5f4f1;
+  border-radius: var(--radius);
+  padding: 14px 14px;
+  text-align: center;
+  border: 0.5px solid var(--border);
+}
+.metric-card .val { font-size: 18px; font-weight: 500; color: var(--accent); }
+.metric-card .lbl { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+
+.highlight-box {
+  background: linear-gradient(135deg, #fef9eb 0%, #fdf3d6 100%);
+  border: 0.5px solid #e8c673;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.highlight-box h4 { margin: 0 0 8px; color: var(--amber); }
+
+img.inline-img {
+  max-width: 100%;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  margin: 14px 0;
+}
+
+.step-flow {
+  display: flex; flex-direction: column; margin: 14px 0;
+}
+.step-item {
+  display: flex; gap: 0;
+}
+.step-left {
+  display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0;
+}
+.step-dot {
+  width: 12px; height: 12px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0;
+}
+.step-line { width: 2px; background: var(--border); flex: 1; margin: 3px 0; min-height: 14px; }
+.step-item:last-child .step-line { display: none; }
+.step-content { padding: 0 0 18px 10px; }
+.step-content .st { color: var(--text); font-weight: 600; font-size: 0.9rem; }
+.step-content .sd { color: var(--text-sec); font-size: 0.83rem; margin-top: 4px; }
+
+/* Mobile responsive */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main-wrap { margin-left: 0; }
+  .content { padding: 20px 16px 60px; }
+  .chapter { padding: 24px 20px; }
+  .two-col { grid-template-columns: 1fr; }
+  .metric-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<aside class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#ch1">第一章 电路结构与问题现象</a></li>
+    <li class="sub"><a href="#s1-1">1.1 基本电路结构</a></li>
+    <li class="sub"><a href="#s1-2">1.2 核心运放参数（AD8099）</a></li>
+    <li class="sub"><a href="#s1-3">1.3 AD8099 外部补偿特性</a></li>
+    <li class="sub"><a href="#s1-4">1.4 级联后的振荡现象</a></li>
+    <li><a href="#ch2">第二章 问题排查与根因分析</a></li>
+    <li class="sub"><a href="#s2-1">2.1 常规检查</a></li>
+    <li class="sub"><a href="#s2-2">2.2 自激振荡条件分析</a></li>
+    <li class="sub"><a href="#s2-3">2.3 寄生参数建模</a></li>
+    <li class="sub"><a href="#s2-4">2.4 相位裕度计算</a></li>
+    <li><a href="#ch3">第三章 补偿方法与相位裕度</a></li>
+    <li class="sub"><a href="#s3-1">3.1 补偿电容的极点引入</a></li>
+    <li class="sub"><a href="#s3-2">3.2 AD8099 补偿网络设计细节</a></li>
+    <li class="sub"><a href="#s3-3">3.3 三种经典补偿技术</a></li>
+    <li class="sub"><a href="#s3-4">3.4 补偿参数交互计算器</a></li>
+    <li><a href="#ch4">第四章 工程经验与设计规范</a></li>
+    <li class="sub"><a href="#s4-1">4.1 逐级增益分配策略</a></li>
+    <li class="sub"><a href="#s4-2">4.2 高频 PCB 布局规范</a></li>
+    <li class="sub"><a href="#s4-3">4.3 调试方法体系</a></li>
+    <li class="sub"><a href="#s4-4">4.4 匹配网络设计</a></li>
+    <li><a href="#ch5">第五章 高速与低速设计对比</a></li>
+    <li class="sub"><a href="#s5-1">5.1 模型精度差异</a></li>
+    <li class="sub"><a href="#s5-2">5.2 运放选型与布局</a></li>
+    <li class="sub"><a href="#s5-3">5.3 稳定性判据</a></li>
+  </ul>
+</aside>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-wrap">
+
+<header class="page-header">
+  <div style="font-size:11px;letter-spacing:0.1em;color:var(--text-hint);text-transform:uppercase;margin-bottom:8px;">Debug Case Study · 高速模拟电路</div>
+  <h1>高速模拟电路调试案例</h1>
+  <p>AD8099 两级级联自激振荡的诊断、补偿与工程经验总结</p>
+</header>
+
+<div class="content">
+
+<!-- ========== CHAPTER 1 ========== -->
+<section class="chapter" id="ch1">
+  <div class="chapter-num">第一章</div>
+  <h2 class="chapter-title">电路结构与问题现象</h2>
+
+  <h3 id="s1-1">1.1 基本电路结构</h3>
+  <p>本案例涉及一个基于 <strong>AD8099</strong> 高速运放的两级级联放大电路。AD8099 是 ADI 公司推出的超低噪声、高速电压反馈运算放大器，其增益带宽积高达 3.8 GHz，压摆率达 1350 V/µs，典型应用于高速 ADC 驱动、射频/中频放大和仪器仪表前端。</p>
+
+  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779024661954-6a93c077-7b55-4957-b892-5d300a4f09a1.png" alt="电路结构图" />
+
+  <p>电路的级联架构为：输入信号 → 第一级 AD8099（G₁ = +10 V/V）→ 第二级 AD8099（G₂ = +10 V/V）→ 输出。总增益 100 倍（40 dB），目标工作频率覆盖 1 MHz ~ 20 MHz 带宽。</p>
+
+  <div class="info-box">
+    <strong>工程背景：</strong>AD8099 是一款"条件稳定"放大器——在低增益配置（+2 至 +10）下必须使用外部补偿网络。这一特性使得它在获得极低噪声（0.95 nV/√Hz）的同时，对 PCB 布局和补偿参数异常敏感。
+  </div>
+
+  <h3 id="s1-2">1.2 核心运放参数（AD8099）</h3>
+  <table>
+    <thead><tr><th>参数</th><th>规格</th><th>工程含义</th></tr></thead>
+    <tbody>
+      <tr><td>增益带宽积（GBWP）</td><td>3.8 GHz（典型值）</td><td>在 G=+10 时 −3 dB 带宽约 380 MHz</td></tr>
+      <tr><td>−3 dB 带宽 (G=+10)</td><td>≈ 550 MHz</td><td>实际可用带宽远小于 GBWP，受限于内部补偿</td></tr>
+      <tr><td>压摆率 (G=+10)</td><td>1350 V/µs</td><td>支持大信号高速脉冲，适合 ADC 驱动</td></tr>
+      <tr><td>建立时间 (0.1%)</td><td>18 ns</td><td>采样系统中 step response 的关键指标</td></tr>
+      <tr><td>输入电压噪声</td><td>0.95 nV/√Hz</td><td>极低噪声，适合微弱信号前级</td></tr>
+      <tr><td>静态电流</td><td>约 15 mA</td><td>带禁用功能（PD 引脚），可动态管理功耗</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box warn">
+    <strong>注意：</strong>0.95 nV/√Hz 的噪声密度意味着在 100 MHz 带宽内积分后的 RMS 噪声仅约 9.5 µVrms，这是该器件最核心的竞争优势。但低噪声是以"条件稳定"为代价换来的——这是一个典型的工程设计权衡。
+  </div>
+
+  <h3 id="s1-3">1.3 AD8099 外部补偿特性</h3>
+
+  <h4>补偿网络触发条件</h4>
+  <p>AD8099 根据闭环增益决定是否需要外部补偿：</p>
+  <ul>
+    <li><strong>增益 +2 至 +10：</strong>必须使用外部 RC 网络进行补偿。内部未做完全补偿，环路不稳定。</li>
+    <li><strong>增益大于 +15：</strong>无需外部补偿。此时反馈深度已足够浅，开环相移在 0 dB 穿越点处仍留有充分裕度。</li>
+  </ul>
+
+  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779027497770-4d404c39-98f8-409d-b7fa-15f970c0c1b4.png" alt="补偿网络电路结构" />
+
+  <h4>七大补偿元件详解</h4>
+  <p>根据 AD8099 数据手册 Figure 59 的电路结构，完整的补偿网络包含以下关键元件：</p>
+  <table>
+    <thead><tr><th>元件</th><th>功能</th><th>典型范围</th><th>设计权衡</th></tr></thead>
+    <tbody>
+      <tr><td>$R_F$ 和 $R_G$</td><td>反馈电阻和增益设置电阻，决定噪声增益</td><td>$R_F = 250\Omega \sim 499\Omega$</td><td>增益 = 1 + $R_F/R_G$；$R_F$ 同时影响补偿极点位置和带宽</td></tr>
+      <tr><td>$R_S$（输入串联电阻）</td><td>低增益配置时输入阻抗匹配，抑制输入端振铃</td><td>$0\Omega \sim 50\Omega$</td><td>$R_S$ 越大带宽越低，是带宽 vs 稳定性的直接杠杆</td></tr>
+      <tr><td>$C_F$（反馈电容）</td><td>在环路响应中引入零点，补偿 $R_F$ 与输入寄生电容形成的极点</td><td>$0.5\text{pF} \sim 1.5\text{pF}$</td><td>NPO 材质（温漂小），焊接时避免引入额外寄生</td></tr>
+      <tr><td>$R_C$（补偿串联电阻）</td><td>阻尼封装引线电感与 $C_C$ 形成的串联谐振</td><td>$0\Omega \sim 50\Omega$</td><td>$R_C$ 过大会限制补偿效果，使高频开环增益不能充分下降</td></tr>
+      <tr><td>$C_C$（补偿电容，Pin5）</td><td>降低高频开环增益，增大相位裕度</td><td>$0\text{pF} \sim 5\text{pF}$</td><td>增益越低需要的 $C_C$ 越大（+2 需 4~5 pF，+5 需 1 pF）</td></tr>
+      <tr><td>$C_1$（并联在 $R_C$ 上的电容）</td><td>降低 $R_C$ 的高频阻抗，减少中频增益尖峰</td><td>$0\text{pF} \sim 2\text{pF}$</td><td>与 $R_C$ 形成零点，需与 $C_C$ 协同调整</td></tr>
+    </tbody>
+  </table>
+
+  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779027756534-740664c4-965b-4a39-8e1c-96c422102d66.png" alt="手册Table 4推荐值" />
+
+  <div class="info-box teal">
+    <strong>关键认知：</strong>手册 Table 4 给出的推荐值是基于厂家评估板（Optimized PCB Layout）的实测结果。实际 PCB 的走线长度、过孔数量和焊盘尺寸都会引入额外寄生参数，因此手册值仅作为调试起点，最终值必须通过实验微调确定。
+  </div>
+
+  <h3 id="s1-4">1.4 级联后的振荡现象</h3>
+  <p>两级独立测试时均正常工作（单级 10 倍放大，10 MHz 正弦波输出干净），但<strong>两级级联后输出端叠加了约 300 MHz 的自激振荡</strong>。具体表现为：</p>
+  <ul>
+    <li>输入 1 MHz ~ 20 MHz 范围内，输出波形均叠加有不规则高频振荡包络。</li>
+    <li>接上示波器探头时振荡有时消失，断开后又重现。</li>
+    <li>振荡频率（~300 MHz）远高于信号频率，且幅度不稳定。</li>
+  </ul>
+
+  <div class="info-box coral">
+    <strong>探头现象的深层含义：</strong>示波器探头输入电容典型值为 12 pF（10× 无源探头）。探头接入时等效在输出节点并联 12 pF 到地，这改变了电路的极点分布，使振荡暂时消失。这一现象本身说明<strong>原始设计的相位裕度极其临界</strong>——稍有外部电容变化就改变稳定状态。健康的稳定设计应在任意容性负载（0 ~ 数十 pF）下保持振荡不触发。
+  </div>
+</section>
+
+<!-- ========== CHAPTER 2 ========== -->
+<section class="chapter" id="ch2">
+  <div class="chapter-num">第二章</div>
+  <h2 class="chapter-title">问题排查与根因分析</h2>
+
+  <h3 id="s2-1">2.1 常规检查</h3>
+  <ul>
+    <li><strong>电源电压：</strong>正常，±5V 供电，LDO 输出纹波 &lt; 5 mV——电源不是振荡的直接原因。</li>
+    <li><strong>电路仿真：</strong>理想仿真（TINA-SPICE / LTspice）显示电路稳定，无振荡迹象。<strong>但仿真模型未包含 PCB 寄生参数。</strong></li>
+  </ul>
+
+  <div class="info-box warn">
+    <strong>调试陷阱：</strong>仿真通过 ≠ 电路稳定。SPICE 仿真默认使用理想互连（零长度走线、零寄生电容、零互感），而真实的 FR4 板材上每毫米走线约贡献 0.5~0.8 nH/mm 的寄生电感和 0.1~0.3 pF/mm 的对地寄生电容。这些"看不见"的参数在 300 MHz 时产生的阻抗量级已不可忽略。
+  </div>
+
+  <h3 id="s2-2">2.2 自激振荡条件分析</h3>
+  <p>自激振荡的本质是 <strong>Barkhausen 判据</strong> 的满足——即环路增益 $|A\beta| \ge 1$ 且相位偏移达到 $180^\circ$（形成正反馈）：</p>
+
+  <div class="formula-box">
+    Barkhausen 振荡条件：
+    $$|A(j\omega) \cdot \beta(j\omega)| \ge 1$$
+    $$\angle A(j\omega) + \angle \beta(j\omega) = 180^\circ \text{（或 } -180^\circ\text{）}$$
+    <span class="var">$A$ 为开环增益，$\beta$ 为反馈系数。同时满足幅度和相位条件即发生振荡。</span>
+  </div>
+
+  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779059342740-7ab71b50-1517-4f92-9456-2011bd560b14.png" alt="振荡条件分析图" />
+
+  <p>在两级级联结构中，总开环增益为两级各自开环增益的乘积。即使单级在目标频段有足够的相位裕度（通常 > 45°），两级串联后总相移翻倍，很可能在某个频率点上同时满足 Barkhausen 条件。</p>
+
+  <div class="info-box coral">
+    <strong>两级级联的稳定性风险：</strong>单级相位裕度 50° 听起来足够，但两级串联总相移 = 50° + 50° = 100°，环路的相位裕度仅剩 80° 甚至更少。如果两级之间存在耦合（通过电源线、地线或 PCB 寄生），实际总相移可能更大。
+  </div>
+
+  <h3 id="s2-3">2.3 寄生参数建模——从高级硬件工程师视角</h3>
+  <p>在 300 MHz 频段，PCB 走线不能再视为简单导线。以下是对本案例中关键寄生参数的定量估算：</p>
+
+  <div class="canvas-wrap">
+    <div class="canvas-label">图 2-1　PCB 走线的分布参数模型：每毫米走线都是 RLC 网络的一部分</div>
+    <canvas id="cvs-parasitic" height="240"></canvas>
+  </div>
+
+  <h4>PCB 走线寄生电感</h4>
+  <div class="formula-box">
+    微带线单位长度电感（近似公式）：
+    $$L \approx \frac{\mu_0 h}{w} \quad \text{（H/m）}$$
+    <span class="var">对典型 FR4 双层板：线宽 $w$ = 0.3 mm，介质厚度 $h$ = 0.2 mm → $L \approx 0.8$ nH/mm</span>
+  </div>
+  <p>若反馈环路走线总长 20 mm，则 $R_F - R_G - 反相输入端$ 环路的寄生电感约为 $20 \times 0.8 \approx 16$ nH。在 300 MHz 时，该电感的感抗 $X_L = 2\pi \times 300\text{M} \times 16\text{n} \approx 30\ \Omega$——已经与 $R_F$（250 Ω）可比！</p>
+
+  <h4>过孔寄生电容与电感</h4>
+  <table>
+    <thead><tr><th>寄生元件</th><th>典型值</th><th>300 MHz 下的阻抗</th><th>影响</th></tr></thead>
+    <tbody>
+      <tr><td>单个过孔寄生电感</td><td>~1.5 nH（板厚 1.6 mm）</td><td>$X_L \approx 2.8\ \Omega$</td><td>反馈环路中两个过孔 ≈ 3 nH，引入额外相移</td></tr>
+      <tr><td>过孔对地寄生电容</td><td>~0.5 pF</td><td>$X_C \approx 1.1\text{k}\Omega$</td><td>在反相输入端形成额外极点</td></tr>
+      <tr><td>相邻走线间耦合电容</td><td>~0.1 pF/mm</td><td>$X_C \approx 5.3\text{k}\Omega$/mm</td><td>输出-输入耦合形成正反馈路径</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box warn">
+    <strong>根因确认：</strong>两级级联后，PCB 寄生参数（走线电感 + 过孔电容 + 级间耦合）在反馈环路中引入了不可忽略的额外极点，使得 0 dB 穿越点处的总相移超出 180°，满足了 Barkhausen 振荡条件。振荡频率 ~300 MHz 恰好是环路增益穿越 0 dB 的频率——这个频率由寄生参数决定，而非信号频率。
+  </div>
+
+  <h3 id="s2-4">2.4 相位裕度计算——定量分析</h3>
+  <p>相位裕度（Phase Margin, PM）定义为：在环路增益 $|A\beta| = 1$（0 dB）的频率点上，环路相移与 180° 之间的差值。</p>
+
+  <div class="formula-box">
+    相位裕度定义：
+    $$\text{PM} = 180^\circ + \angle A(j\omega_0)\beta(j\omega_0)$$
+    <span class="var">其中 $\omega_0$ 为 $|A(j\omega_0)\beta(j\omega_0)| = 1$ 的频率（单位增益穿越频率）</span>
+  </div>
+
+  <h4>相位裕度与闭环响应的关系</h4>
+  <table>
+    <thead><tr><th>相位裕度</th><th>闭环响应特征</th><th>时域表现</th><th>工程评估</th></tr></thead>
+    <tbody>
+      <tr><td>&lt; 0°</td><td>不稳定，振荡</td><td>持续自激</td><td><span style="color:#913719;font-weight:500;">不可接受</span></td></tr>
+      <tr><td>0° ~ 30°</td><td>条件稳定，严重振铃</td><td>过冲 &gt; 50%，长时间衰减</td><td><span style="color:#913719;font-weight:500;">高风险</span></td></tr>
+      <tr><td>30° ~ 45°</td><td>勉强稳定，可见过冲</td><td>过冲 20%~40%</td><td><span style="color:#7d4908;font-weight:500;">可用但余量不足</span></td></tr>
+      <tr><td>45° ~ 60°</td><td>稳定，轻微过冲</td><td>过冲 &lt; 20%，快速建立</td><td><span style="color:#36650f;font-weight:500;">推荐目标</span></td></tr>
+      <tr><td>&gt; 60°</td><td>过阻尼，无过冲</td><td>无过冲，建立时间变长</td><td><span style="color:#0d6751;font-weight:500;">保守设计</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="canvas-wrap">
+    <div class="canvas-label">图 2-2　相位裕度对闭环阶跃响应的影响 —— 拖动滑块改变相位裕度</div>
+    <canvas id="cvs-phase-margin" height="260"></canvas>
+    <div class="canvas-ctrls">
+      <label>相位裕度 PM:</label>
+      <input type="range" id="pm-slider" min="5" max="75" value="20">
+      <span class="cv" id="pm-val" style="color:#913719;">20°</span>
+      <span id="pm-label" style="margin-left:10px; font-weight:500;">临界不稳定</span>
+    </div>
+  </div>
+
+  <div class="info-box warn">
+    <strong>本案例估算：</strong>原始设计在 +10 增益下，单级相位裕度约 40°（基于手册推荐 Cc=5 pF）。两级级联后，PCB 寄生参数额外引入约 30°~40° 相移，使得总相位裕度降至 &lt; 10°，进入条件不稳定区域。将 Cc 提升至 6 pF 后，单级相位裕度增至 ~55°，级联总裕度恢复至 ~25°~30°，振荡消失。
+  </div>
+</section>
+
+<!-- ========== CHAPTER 3 ========== -->
+<section class="chapter" id="ch3">
+  <div class="chapter-num">第三章</div>
+  <h2 class="chapter-title">补偿方法与相位裕度优化</h2>
+
+  <h3 id="s3-1">3.1 补偿电容的极点引入机制</h3>
+  <p>反馈电阻 $R_F$ 两端并联补偿电容 $C_F$（或通过 Pin5 接入的 $C_C$），在反馈网络中引入一个新的极点：</p>
+
+  <div class="formula-box">
+    补偿极点频率：
+    $$f_p = \frac{1}{2\pi R_F C_F}$$
+    <span class="var">该极点使反馈网络阻抗随频率升高而下降 → 闭环增益降低 → 环路增益降低 → 相位裕度增加</span>
+  </div>
+
+  <p>从波特图角度理解：补偿电容在高频段使反馈系数 $\beta$ 增大（反馈加深），从而拉低环路增益 $|A\beta|$ 的 0 dB 穿越点，使其发生在开环相移尚未急剧恶化的较低频率，以此换取相位裕度。</p>
+
+  <div class="canvas-wrap">
+    <div class="canvas-label">图 3-1　补偿电容对环路增益波特图的影响（概念示意）</div>
+    <canvas id="cvs-bode" height="300"></canvas>
+  </div>
+
+  <h3 id="s3-2">3.2 AD8099 补偿网络设计细节</h3>
+
+  <table>
+    <thead><tr><th>特性</th><th>详情</th></tr></thead>
+    <tbody>
+      <tr><td>补偿引脚</td><td>Pin5，连接 $C_C$ 补偿电容</td></tr>
+      <tr><td>推荐范围</td><td>0 ~ 5 pF（与增益相关，增益越低需要的 $C_C$ 越大）</td></tr>
+      <tr><td>典型示例</td><td>反馈补偿电容 1.5 pF（手册 Figure 60）</td></tr>
+      <tr><td>材质要求</td><td>NPO（C0G）材质，温漂 ±30 ppm/°C（−55°C 至 +125°C），无压电效应</td></tr>
+      <tr><td>本案例最终值</td><td>$C_C$ 从 5 pF 增大至 6 pF 后振荡消失</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box teal">
+    <strong>为什么 5 pF 不够？</strong>5 pF 在手册推荐范围（0~5 pF）内，但手册值基于评估板（优化 Layout、最小寄生）。实际 PCB 的额外寄生相移使得原推荐值裕度不足。6 pF 是考虑了本 PCB 特有的寄生参数后的校正值。这验证了一个重要原则：<strong>手册值是起点，实测值是终点。</strong>
+  </div>
+
+  <h4>补偿电容材质选择的深层理由</h4>
+  <ul>
+    <li><strong>NPO/C0G：</strong>温漂 ±30 ppm/°C，无 DC 偏压降额，无压电效应。1 pF 级别电容的精度可达 ±0.1 pF，满足 pF 级补偿的严格要求。</li>
+    <li><strong>X7R 为何不行：</strong>DC 偏压下降额可达 20%~60%，且具有显著的压电效应——机械振动会产生电荷噪声。在 pF 级别补偿中，0.1 pF 的偏差就可能导致相位裕度变化 5°~10°。</li>
+    <li><strong>焊接注意事项：</strong>pF 级电容对焊盘尺寸极其敏感。焊盘每增加 1 mm²，对地寄生电容增加约 0.05~0.1 pF。建议使用 0402 或更小封装，并最小化焊盘尺寸。</li>
+  </ul>
+
+  <h3 id="s3-3">3.3 三种经典补偿技术对比</h3>
+  <p>高速运放稳定性补偿有三种基本策略，各有适用场景：</p>
+
+  <table>
+    <thead><tr><th>补偿技术</th><th>电路实现</th><th>原理</th><th>优点</th><th>缺点</th><th>适用场景</th></tr></thead>
+    <tbody>
+      <tr><td><strong>环路内补偿</strong><br>（本案例采用）</td><td>$R_F$ 两端并联 $C_F$<br>或通过补偿引脚接入 $C_C$</td><td>在反馈网络中引入极点，高频段增大反馈深度，降低环路增益</td><td>简单、有效，不增加额外有源器件</td><td>降低带宽；$C_F$ 取值需与 $R_F$ 配合</td><td>电压反馈型运放（VFB）的主要补偿手段</td></tr>
+      <tr><td><strong>超前补偿</strong><br>（Lead Compensation）</td><td>在反馈网络中插入 RC 串联网络（$R_{lead} + C_{lead}$ 与 $R_F$ 并联）</td><td>引入零点使相位提前，在穿越频率附近"拉回"相位曲线</td><td>可以在不显著降低带宽的前提下改善相位裕度</td><td>需要精确计算零极点位置，对寄生参数敏感</td><td>需要兼顾带宽和稳定性的场景</td></tr>
+      <tr><td><strong>滞后补偿</strong><br>（Lag Compensation）</td><td>在时间常数最大的回路节点并联 $C$ 到地</td><td>令主极点频率下降，使开环增益在更低频率开始衰减</td><td>实现简单，对参数不敏感</td><td>大幅牺牲带宽，建立时间显著增加</td><td>对带宽要求不高的低频精密电路</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <strong>补偿技术选择决策树：</strong>需要极致带宽 → 超前补偿；带宽可牺牲 → 环路内补偿（最简单）；低频精密且带宽无关 → 滞后补偿。AD8099 的 Pin5 补偿机制本质上属于环路内补偿，芯片内部已将补偿节点引出以简化设计。
+  </div>
+
+  <h3 id="s3-4">3.4 补偿参数交互计算器</h3>
+  <p>以下交互式计算器可帮助直观理解 $C_C$ 与增益、相位裕度和带宽之间的关系。拖动滑块观察参数变化趋势。</p>
+
+  <div class="canvas-wrap">
+    <div class="canvas-label">图 3-2　补偿电容 $C_C$ 与闭环增益对相位裕度和带宽的影响</div>
+    <canvas id="cvs-comp-calc" height="280"></canvas>
+    <div class="canvas-ctrls">
+      <label>$C_C$ (pF):</label>
+      <input type="range" id="cc-slider" min="1" max="10" value="5">
+      <span class="cv" id="cc-val">5.0 pF</span>
+      <label style="margin-left:16px;">增益 (V/V):</label>
+      <input type="range" id="gain-slider" min="2" max="15" value="10">
+      <span class="cv" id="gain2-val">+10</span>
+    </div>
+    <div style="padding:4px 16px 12px; display:flex; gap:24px; font-size:13px;">
+      <span>估算相位裕度: <strong id="est-pm" style="color:var(--accent);">~40°</strong></span>
+      <span>估算-3dB带宽: <strong id="est-bw" style="color:var(--teal);">~380 MHz</strong></span>
+      <span>状态: <strong id="est-status" style="color:var(--coral);">临界</strong></span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CHAPTER 4 ========== -->
+<section class="chapter" id="ch4">
+  <div class="chapter-num">第四章</div>
+  <h2 class="chapter-title">工程经验与设计规范</h2>
+
+  <h3 id="s4-1">4.1 逐级增益分配策略</h3>
+  <p>总增益 100 倍是需求，但如何分配每一级的增益是设计决策：</p>
+
+  <table>
+    <thead><tr><th>序号</th><th>建议</th><th>说明</th><th>反面案例</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>逐级平均分配增益</td><td>100 倍分解为两级 10 倍，每级增益越低则相位裕度相对越大</td><td>第一级 50 倍 + 第二级 2 倍：第一级增益过高，极易振荡</td></tr>
+      <tr><td>2</td><td>增益裕度逐级递减</td><td>第一级增益略低于第二级，确保最前端稳定性</td><td>前级用高增益"省去后级"：一旦前端振荡，后级无法挽回</td></tr>
+      <tr><td>3</td><td>级间预留衰减网络</td><td>两级之间预留 π 型电阻衰减网络（即使当前不需要），便于后期调试</td><td>直接耦合：级间无调试手段</td></tr>
+      <tr><td>4</td><td>仪表放大器优先</td><td>若需要差分输入，优先用全差分放大器（FDA）代替两个独立运放</td><td>用两个单端运放拼差分：CMRR 差且稳定性难保证</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s4-2">4.2 高频 PCB 布局规范</h3>
+  <p>对于 AD8099 这类 3.8 GHz GBWP 的运放，布局要求远超常规低频电路：</p>
+
+  <table>
+    <thead><tr><th>布局要点</th><th>具体要求</th><th>违规后果</th></tr></thead>
+    <tbody>
+      <tr><td>反馈环路最短</td><td>$R_F$、$R_G$ 紧贴反相输入引脚，环路走线 &lt; 5 mm</td><td>每增加 5 mm 走线 ≈ 额外 4 nH 寄生电感，在 300 MHz 产生 ~8 Ω 额外阻抗</td></tr>
+      <tr><td>50 Ω 特性阻抗</td><td>输入/输出走线保持 50 Ω 微带线结构，参考层连续</td><td>阻抗不连续导致信号反射，在高速脉冲下产生过冲和振铃</td></tr>
+      <tr><td>包地隔离</td><td>输入走线两侧用接地铜皮包覆（Guard Trace），间距 ≥ 3× 线宽</td><td>输入-输出之间通过 PCB 耦合电容（~0.1 pF/mm）形成正反馈路径</td></tr>
+      <tr><td>去耦电容布局</td><td>每个电源引脚 1 mm 内放置 100 nF NPO + 10 µF X5R（远一点）</td><td>电源引脚到电容的走线电感 → PDN 阻抗尖峰 → 供电噪声</td></tr>
+      <tr><td>斩断级间耦合</td><td>两级之间用地铜皮完全隔离，间距 ≥ 5 mm</td><td>级间串扰引入额外正反馈，两级叠加后极易振荡</td></tr>
+      <tr><td>输出隔离电阻</td><td>输出端预留 10~50 Ω 串联电阻，隔离容性负载（包括探头电容）</td><td>容性负载直接接到输出 → 在反馈环路外新增极点 → 振荡</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box warn">
+    <strong>本案例的布局反思：</strong>振荡频率 ~300 MHz，恰好是 PCB 寄生参数能产生显著影响的频段。如果反馈环路走线能控制在 5 mm 以内、两级之间用地铜皮充分隔离，5 pF 的补偿电容很可能就足够了。布局的"看不见"的差异，是手册推荐值与实际需求之间差距的主要来源。
+  </div>
+
+  <h3 id="s4-3">4.3 调试方法体系</h3>
+
+  <div class="step-flow">
+    <div class="step-item">
+      <div class="step-left"><div class="step-dot" style="background:var(--accent);"></div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="st">Step 1：仿真先行——理想模型验证原理</div>
+        <div class="sd">使用 SPICE 验证电路拓扑的理论正确性。明确：理想仿真不含 PCB 寄生参数，仿真通过仅证明"原理不错误"。对高速运放，强烈建议导入 PCB 的 S 参数模型进行联合仿真。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-left"><div class="step-dot" style="background:var(--teal);"></div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="st">Step 2：单级调通——逐级独立验证</div>
+        <div class="sd">先调通第一级，确认单级放大波形干净。再调第二级。每级独立验证时，输入/输出都通过 SMA 连接器 + 50 Ω 终端匹配接入仪器，避免探头电容干扰。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-left"><div class="step-dot" style="background:var(--amber);"></div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="st">Step 3：补偿微调——在手册推荐值附近搜索</div>
+        <div class="sd">以手册 Table 4 推荐值为起点，以 0.5 pF 步进微调 $C_C$。每次微调后观测输出波形，记录振荡频率和幅度的变化趋势。注意：$C_C$ 增大 → 相位裕度增加 → 带宽降低，这是一个零和博弈。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-left"><div class="step-dot" style="background:var(--coral);"></div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="st">Step 4：隔离定位——逐级断开确定问题级</div>
+        <div class="sd">两级级联后振荡，先断开第二级输入，确认第一级输出是否干净。若第一级已有振荡，问题在前级补偿不足；若第一级干净、级联后振荡，问题在级间耦合或第二级输入阻抗不匹配。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-left"><div class="step-dot" style="background:var(--purple);"></div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="st">Step 5：探头效应验证——确认裕度充分性</div>
+        <div class="sd">在不同探头（×1 / ×10 / 有源探头）、不同容性负载（额外并联 5 pF / 10 pF / 20 pF）下测试输出。若接不接探头输出波形明显不同 → 相位裕度不足，需继续增加补偿。</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="s4-4">4.4 匹配网络设计（π 型 / T 型）</h3>
+  <p>当高频走线长度不可压缩时（如板间互连、长距离传输），须在走线中间插入阻抗匹配网络：</p>
+
+  <table>
+    <thead><tr><th>网络类型</th><th>拓扑</th><th>适用场景</th><th>设计要点</th></tr></thead>
+    <tbody>
+      <tr><td>π 型网络</td><td>并联 C → 串联 L → 并联 C</td><td>源/负载阻抗 &gt; 50 Ω，需降压匹配</td><td>两侧电容值可不对称以实现阻抗变换，Q 值控制在 2~5</td></tr>
+      <tr><td>T 型网络</td><td>串联 L → 并联 C → 串联 L</td><td>源/负载阻抗 &lt; 50 Ω，需升压匹配</td><td>适用于低阻抗天线馈电和功放输出级</td></tr>
+      <tr><td>L 型网络</td><td>串联 L + 并联 C（或反之）</td><td>窄带点频匹配（最简）</td><td>带宽最窄，仅 Q 值最低的配置有实用带宽</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box warn">
+    <strong>阻抗匹配的残酷真相：</strong>匹配网络的设计假设 PCB 走线阻抗正好等于 50 Ω。但实际 PCB 走线的特征阻抗取决于线宽、介质厚度和介电常数——这三个参数在量产中均有容差（线宽 ±10%、介质厚度 ±10%、$\varepsilon_r$ ±5%）。"随意走线再用电容电感去调"是不可行的——阻抗必须在 Layout 阶段精确计算和控制。后期用电感电容能弥补的偏差非常有限（±10% 以内）。
+  </div>
+
+  <h4>手册推荐值 vs 实际调试</h4>
+  <p>手册补偿电容推荐值基于厂家评估板的实测结果。评估板采用优化的多层板结构（通常 4~6 层），完整的地平面，以及最小化的反馈环路。实际 PCB 的差异（双层 vs 多层、走线长度、过孔数量、焊盘尺寸）导致最终值需要实验微调。手册给出的 0~5 pF 不是"5 pF 一定够"，而是"请在这个范围内通过调试找到属于你板子的值"。</p>
+
+  <div class="highlight-box">
+    <h4>第四章要点总结</h4>
+    <ol>
+      <li><strong>设计阶段：</strong>逐级平均分配增益，预留补偿网络位置和级间隔离空间。</li>
+      <li><strong>Layout 阶段：</strong>反馈环路最短（&lt;5 mm）、级间充分隔离、输出预留串联电阻。</li>
+      <li><strong>调试阶段：</strong>单级先行、补偿步进微调、隔离法定位、探头效应验证。</li>
+      <li><strong>心态：</strong>手册值是起点，实测值是终点。高速模拟电路的调试没有"一劳永逸"的固定值。</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ========== CHAPTER 5 ========== -->
+<section class="chapter" id="ch5">
+  <div class="chapter-num">第五章</div>
+  <h2 class="chapter-title">高速与低速模拟设计的根本差异</h2>
+  <p>本案例的核心启示是：当电路工作频率进入百 MHz 以上区域，设计范式发生根本性转变。以下从三个维度系统对比。</p>
+
+  <h3 id="s5-1">5.1 模型精度——从集总到分布</h3>
+  <table>
+    <thead><tr><th>维度</th><th>低速模拟电路（&lt; 10 MHz）</th><th>高速模拟电路（&gt; 100 MHz）</th></tr></thead>
+    <tbody>
+      <tr><td>电阻模型</td><td>≈ 纯阻性，R 值即全部</td><td>有寄生串联电感（~1 nH/mm 引线）和并联电容（~0.5 pF），$Z = R + j\omega L$</td></tr>
+      <tr><td>电容模型</td><td>≈ 理想电容，C 值即全部</td><td>串联 RLC 模型：ESR + ESL + C 三者串联。超过 SRF 后呈感性</td></tr>
+      <tr><td>电感模型</td><td>≈ 理想电感</td><td>有并联寄生电容和串联电阻，SRF 以上呈容性</td></tr>
+      <tr><td>走线模型</td><td>导线（零阻抗、零延迟）</td><td>传输线——特征阻抗 $Z_0$，传播延迟 $t_{pd}$ ≈ 5.6 ps/mm（FR4）</td></tr>
+      <tr><td>地平面</td><td>等电位参考面</td><td>分布式 RLC 网络——不同位置之间在高频下存在显著电位差（地弹）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box teal">
+    <strong>模型转变的临界频率：</strong>粗略估计，当信号上升时间 $t_r$ 满足 $t_r &lt; 2 \times$ 走线传播延迟 时，必须切换到传输线模型。对 FR4 板材上 30 mm 走线：传播延迟 ≈ 30 × 5.6 = 168 ps，临界上升时间 ≈ 336 ps。而 AD8099 的大信号上升时间约 0.35 / 550 MHz ≈ 0.64 ns——已接近临界值，布局不当就会触发传输线效应。
+  </div>
+
+  <h3 id="s5-2">5.2 运放选型与布局要求</h3>
+  <table>
+    <thead><tr><th>特性</th><th>低速模拟电路</th><th>高速模拟电路</th></tr></thead>
+    <tbody>
+      <tr><td>运放选择标准</td><td>增益带宽积充裕即可</td><td>需综合评估 $f_T$（~3.8 GHz AD8099）、噪声密度、失真（HD2/HD3）、压摆率、建立时间</td></tr>
+      <tr><td>布局要求</td><td>一般性注意</td><td>严格控制走线长度、参考平面完整性、50 Ω 匹配；反馈环路 &lt; 5 mm；包地隔离</td></tr>
+      <tr><td>去耦</td><td>100 nF 每电源引脚即可</td><td>多级去耦：100 nF NPO（1 mm 内）+ 10 µF X5R + 铁氧体磁珠，形成 π 型滤波</td></tr>
+      <tr><td>匹配网络</td><td>通常不需要</td><td>可能需要 π 型 / T 型网络维持 50 Ω 阻抗；长走线必做终端匹配</td></tr>
+      <tr><td>封装选择</td><td>SOT-23 / SOIC 通常够用</td><td>优先 QFN / LFCSP（无引线封装），寄生电感远低于 SOIC；Bond Wire 越短越好</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s5-3">5.3 稳定性判据</h3>
+  <table>
+    <thead><tr><th>判据</th><th>低速电路</th><th>高速电路</th></tr></thead>
+    <tbody>
+      <tr><td>相位裕度（PM）</td><td>≥ 45° 即可</td><td>≥ 45° 是底线，建议 ≥ 55°（考虑 PCB 寄生、温度漂移、批次差异）</td></tr>
+      <tr><td>增益裕度（GM）</td><td>≥ 10 dB</td><td>≥ 12 dB，且需在相位 180° 频率处验证</td></tr>
+      <tr><td>补偿策略</td><td>简单 RC 或芯片内部补偿</td><td>需精确的外部补偿网络（$C_C$ + $R_C$ + $C_F$），多级电路需独立补偿后联合验证</td></tr>
+      <tr><td>容性负载耐受</td><td>几十 pF 通常无影响</td><td>10 pF 即可明显改变稳定性——必须预留输出隔离电阻</td></tr>
+      <tr><td>电源抑制比（PSRR）</td><td>低频段高（>80 dB）</td><td>PSRR 随频率升高急剧下降（>10 MHz 时可能 &lt; 40 dB），电源噪声直接影响输出</td></tr>
+    </tbody>
+  </table>
+
+  <div class="highlight-box">
+    <h4>全文核心启示</h4>
+    <ol>
+      <li><strong>高速运放的设计是"全栈工程"：</strong>从 SPICE 仿真、原理图设计、PCB 布局到调试测量，每个环节的误差都会积累并最终表现为振荡或不稳定。</li>
+      <li><strong>PCB 寄生参数不是"次要因素"：</strong>在 300 MHz 以上，每毫米走线、每个过孔都在反馈环路中产生可观的阻抗和相移。布局的差异是手册推荐值和实际需求之间差距的最主要来源。</li>
+      <li><strong>手册值是起点，不是终点：</strong>AD8099 的 0~5 pF 补偿电容推荐范围是正确的，但最终值（本案例 6 pF）必须结合实际 PCB 调试确定。</li>
+      <li><strong>级联系统的稳定性：</strong>两个独立的稳定运放级联后可能不稳定——因为总相移叠加、级间耦合和 PCB 寄生共同作用。必须将级联系统作为整体评估稳定性。</li>
+      <li><strong>探头不"透明"：</strong>12 pF 的探头电容足以改变临界稳定电路的行为。调试时若发现"接探头就正常"——说明电路裕度不足，需要增加补偿，而非庆幸"不接探头看不到振荡"。</li>
+    </ol>
+  </div>
+</section>
+
+</div><!-- /content -->
+</div><!-- /main-wrap -->
+
+<script>
+// ============================================================
+// Canvas 2-1: PCB Parasitic Model
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-parasitic');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const w = cvs.width = cvs.clientWidth;
+    const h = cvs.height = cvs.clientHeight;
+    ctx.clearRect(0,0,w,h);
+
+    const y = 35;
+    const pad = 20;
+    const segW = (w - pad*2) / 6;
+
+    // PCB trace with distributed RLC
+    for(let i=0; i<6; i++) {
+      const x = pad + i*segW;
+      const cx = x + segW/2;
+
+      // R
+      ctx.strokeStyle = '#913719'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y+30); ctx.lineTo(x+6, y+20); ctx.lineTo(x+12, y+40); ctx.lineTo(x+18, y+20); ctx.lineTo(x+24, y+40); ctx.lineTo(x+segW-6, y+30);
+      ctx.stroke();
+      ctx.fillStyle = '#913719'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('R', cx, y+52);
+
+      // L
+      const lx = cx - 8;
+      ctx.strokeStyle = '#7d4908'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(lx+30, y+78, 10, Math.PI, 0, false);
+      ctx.arc(lx+50, y+78, 10, Math.PI, 0, false);
+      ctx.stroke();
+      ctx.fillStyle = '#7d4908';
+      ctx.fillText('L', cx + 20, y+100);
+
+      // C to GND
+      ctx.strokeStyle = '#16599e';
+      ctx.beginPath(); ctx.moveTo(cx + 25, y+78); ctx.lineTo(cx + 25, y+110); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + 18, y+110); ctx.lineTo(cx + 32, y+110); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + 18, y+114); ctx.lineTo(cx + 32, y+114); ctx.stroke();
+      ctx.fillStyle = '#16599e';
+      ctx.fillText('C', cx + 25, y+128);
+
+      // GND symbol
+      ctx.strokeStyle = '#8c8883';
+      ctx.beginPath(); ctx.moveTo(cx + 20, y+114); ctx.lineTo(cx + 30, y+114); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + 22, y+118); ctx.lineTo(cx + 28, y+118); ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = '#8c8883'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('每段代表 ~5 mm PCB 走线的 RLC 分布参数模型', w/2, y+155);
+    ctx.fillText('L ≈ 4 nH/5mm  |  C ≈ 1 pF/5mm (对地)  |  R ≈ 10 mΩ/5mm', w/2, y+172);
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ============================================================
+// Canvas 2-2: Phase Margin vs Step Response
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-phase-margin');
+  const slider = document.getElementById('pm-slider');
+  const valEl = document.getElementById('pm-val');
+  const lblEl = document.getElementById('pm-label');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const w = cvs.width = cvs.clientWidth;
+    const h = cvs.height = cvs.clientHeight;
+    ctx.clearRect(0,0,w,h);
+
+    const pm = parseInt(slider.value);
+    valEl.textContent = pm + '°';
+
+    let label, color;
+    if(pm < 15) { label = '不稳定，持续振荡'; color = '#913719'; }
+    else if(pm < 30) { label = '临界不稳定，严重振铃'; color = '#913719'; }
+    else if(pm < 45) { label = '勉强稳定，明显过冲'; color = '#7d4908'; }
+    else if(pm < 60) { label = '稳定，轻微过冲（推荐）'; color = '#36650f'; }
+    else { label = '过阻尼，无过冲（保守）'; color = '#0d6751'; }
+    lblEl.textContent = label;
+    lblEl.style.color = color;
+    valEl.style.color = color;
+
+    const left = 50, right = w-30, top = 25, bottom = h-30;
+    const pw = right-left, ph = bottom-top;
+
+    // Grid
+    ctx.strokeStyle = '#d4d3cf'; ctx.lineWidth = 0.5;
+    for(let i=1; i<=9; i++) {
+      const y = top + ph * i/10;
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+    }
+    // Axes
+    ctx.strokeStyle = '#8c8883'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(left, top); ctx.lineTo(left, bottom); ctx.lineTo(right, bottom); ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText('2.0', left-8, top + ph*0.1);
+    ctx.fillText('1.0', left-8, top + ph*0.5);
+    ctx.fillText('0.0', left-8, bottom);
+
+    // Ideal step
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 2; ctx.setLineDash([5,5]);
+    ctx.beginPath();
+    ctx.moveTo(left+20, top + ph*0.5);
+    ctx.lineTo(left+50, top + ph*0.5);
+    ctx.lineTo(left+50, top + ph*0.1);
+    ctx.lineTo(right, top + ph*0.1);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'left';
+    ctx.fillText('理想阶跃', left+55, top + ph*0.15);
+
+    // Damping factor from PM
+    // Approximate: ζ ≈ PM/100
+    const zeta = pm / 100;
+    const omega_n = 1;
+
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+
+    const pts = 300;
+    for(let i=0; i<=pts; i++) {
+      const t = i * 12 / pts;
+      let y_val;
+
+      if(t < 1.5) {
+        y_val = top + ph*0.5;
+      } else {
+        const tau = t - 1.5;
+        if(zeta < 1) {
+          const omega_d = omega_n * Math.sqrt(1 - zeta*zeta);
+          const decay = Math.exp(-zeta * omega_n * tau);
+          y_val = top + ph*0.1 + ph*0.4 * (1 - decay * (Math.cos(omega_d * tau) + (zeta/Math.sqrt(1-zeta*zeta)) * Math.sin(omega_d * tau)));
+        } else {
+          const tau2 = tau / (1 + (pm-60)*0.1);
+          y_val = top + ph*0.1 + ph*0.4 * (1 - Math.exp(-tau2));
+        }
+      }
+
+      const x = left + 50 + (pw-50) * (i/pts);
+      y_val = Math.max(top, Math.min(bottom, y_val));
+      if(i===0) ctx.moveTo(x, y_val); else ctx.lineTo(x, y_val);
+    }
+    ctx.stroke();
+
+    // PM value box
+    ctx.fillStyle = color; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('PM = ' + pm + '°', right-100, top + 20);
+  }
+
+  slider.addEventListener('input', draw);
+  window.addEventListener('resize', draw);
+  draw();
+})();
+
+// ============================================================
+// Canvas 3-1: Bode Plot Concept
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-bode');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const w = cvs.width = cvs.clientWidth;
+    const h = cvs.height = cvs.clientHeight;
+    ctx.clearRect(0,0,w,h);
+
+    const midY = h/2;
+    const left = 55, right = w-30;
+
+    // Divider
+    ctx.strokeStyle = '#d4d3cf'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(left, midY); ctx.lineTo(right, midY); ctx.stroke();
+
+    // Top: Gain plot
+    ctx.fillStyle = '#8c8883'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('环路增益 |Aβ| (dB)', left, 15);
+
+    // Without compensation
+    ctx.strokeStyle = 'rgba(145,55,25,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    ctx.moveTo(left, 28);
+    ctx.bezierCurveTo(left+50, 28, left+100, 28, left+140, midY-20);
+    ctx.lineTo(right-20, midY-20);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#913719'; ctx.textAlign = 'left';
+    ctx.fillText('未补偿：高频0dB穿越', left+145, midY-30);
+
+    // With compensation
+    ctx.strokeStyle = '#16599e'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(left, 28);
+    ctx.bezierCurveTo(left+50, 28, left+100, 40, left+140, midY+5);
+    ctx.bezierCurveTo(left+180, midY-10, left+220, midY-20, right-20, midY-25);
+    ctx.stroke();
+    ctx.fillStyle = '#16599e';
+    ctx.fillText('已补偿：0dB穿越提前到低频', left+145, midY-4);
+
+    // 0dB line
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(left, midY+5); ctx.lineTo(right, midY+5); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText('0 dB', right-30, midY+2);
+
+    // Bottom: Phase plot
+    ctx.fillText('环路相位 ∠Aβ (°)', left, midY+15);
+
+    ctx.strokeStyle = 'rgba(145,55,25,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    ctx.moveTo(left, midY+35);
+    ctx.bezierCurveTo(left+60, midY+35, left+100, midY+40, left+140, midY+60);
+    ctx.bezierCurveTo(left+180, midY+80, left+240, midY+90, right-20, midY+95);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = '#16599e'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(left, midY+35);
+    ctx.bezierCurveTo(left+60, midY+35, left+100, midY+38, left+140, midY+45);
+    ctx.bezierCurveTo(left+180, midY+50, left+240, midY+60, right-20, midY+70);
+    ctx.stroke();
+
+    // -180° line
+    ctx.strokeStyle = 'rgba(145,55,25,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(left, midY+85); ctx.lineTo(right, midY+85); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#913719';
+    ctx.fillText('−180°（振荡线）', right-80, midY+82);
+
+    ctx.fillStyle = '#913719'; ctx.textAlign = 'left';
+    ctx.fillText('未补偿', left+250, midY+55);
+    ctx.fillStyle = '#16599e';
+    ctx.fillText('已补偿', left+250, midY+42);
+
+    // Annotation: phase margin
+    ctx.strokeStyle = '#36650f'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(left+160, midY+55);
+    ctx.lineTo(left+160, midY+85);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(left+155, midY+80);
+    ctx.lineTo(left+160, midY+85);
+    ctx.lineTo(left+165, midY+80);
+    ctx.stroke();
+    ctx.fillStyle = '#36650f'; ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('PM ≈ 30°', left+120, midY+70);
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ============================================================
+// Canvas 3-2: Compensation Calculator
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-comp-calc');
+  const ccSlider = document.getElementById('cc-slider');
+  const gainSlider = document.getElementById('gain-slider');
+  const ccVal = document.getElementById('cc-val');
+  const gain2Val = document.getElementById('gain2-val');
+  const estPm = document.getElementById('est-pm');
+  const estBw = document.getElementById('est-bw');
+  const estStatus = document.getElementById('est-status');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const w = cvs.width = cvs.clientWidth;
+    const h = cvs.height = cvs.clientHeight;
+    ctx.clearRect(0,0,w,h);
+
+    const cc = parseFloat(ccSlider.value);
+    const gain = parseInt(gainSlider.value);
+    ccVal.textContent = cc.toFixed(1) + ' pF';
+    gain2Val.textContent = '+' + gain;
+
+    // Empirical model (simplified from AD8099 behavior)
+    const ccRatio = cc / 5; // normalized
+    const gainFactor = gain / 10;
+
+    const pmEst = Math.min(75, Math.max(5, 20 + ccRatio * 35 - (gain - 5) * 3));
+    const bwEst = Math.min(550, Math.max(50, 550 / (1 + ccRatio * 1.5)));
+
+    estPm.textContent = '~' + Math.round(pmEst) + '°';
+    estBw.textContent = '~' + Math.round(bwEst) + ' MHz';
+
+    let statusText, statusColor;
+    if(pmEst < 20) { statusText = '不稳定'; statusColor = '#913719'; }
+    else if(pmEst < 40) { statusText = '临界'; statusColor = '#7d4908'; }
+    else if(pmEst < 55) { statusText = '稳定'; statusColor = '#36650f'; }
+    else { statusText = '保守'; statusColor = '#0d6751'; }
+    estStatus.textContent = statusText;
+    estStatus.style.color = statusColor;
+
+    // Bar chart: PM
+    const left = 80, right = w-50, top=30, bot=h-50;
+    const ph = bot - top;
+
+    // PM bar
+    const barW = 40, gap = 20;
+    const barX1 = left + 80;
+
+    ctx.fillStyle = '#8c8883'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText('相位裕度', barX1-10, top+20);
+    ctx.fillText('0°', barX1-10, bot);
+    ctx.fillText('90°', barX1-10, top);
+
+    // PM bar background
+    ctx.fillStyle = '#f1efe9'; ctx.strokeStyle = '#d4d3cf';
+    ctx.beginPath(); ctx.roundRect(barX1, top, barW, ph, 4); ctx.fill(); ctx.stroke();
+
+    const pmH = ph * Math.min(pmEst/90, 1);
+    ctx.fillStyle = statusColor;
+    ctx.beginPath(); ctx.roundRect(barX1, bot-pmH, barW, pmH, 4); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = statusColor; ctx.textAlign = 'center';
+    ctx.fillText(Math.round(pmEst) + '°', barX1+barW/2, bot-pmH-10);
+    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'left';
+    ctx.fillText('相位裕度', barX1+barW+8, top+ph/2-6);
+    ctx.fillText(statusText, barX1+barW+8, top+ph/2+8);
+
+    // BW bar
+    const barX2 = barX1 + barW + 120;
+    ctx.fillStyle = '#8c8883'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('−3dB 带宽', barX2-10, top+20);
+    ctx.fillText('0', barX2-10, bot);
+    ctx.fillText('550MHz', barX2-10, top);
+
+    ctx.fillStyle = '#f1efe9'; ctx.strokeStyle = '#d4d3cf';
+    ctx.beginPath(); ctx.roundRect(barX2, top, barW, ph, 4); ctx.fill(); ctx.stroke();
+
+    const bwH = ph * Math.min(bwEst/550, 1);
+    ctx.fillStyle = '#0d6751';
+    ctx.beginPath(); ctx.roundRect(barX2, bot-bwH, barW, bwH, 4); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = '#0d6751'; ctx.textAlign = 'center';
+    ctx.fillText(Math.round(bwEst) + 'M', barX2+barW/2, bot-bwH-10);
+    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'left';
+    ctx.fillText('−3dB 带宽', barX2+barW+8, top+ph/2);
+
+    // Bottom note
+    ctx.fillStyle = '#8c8883'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('注意：以上为基于典型行为的估算值，非精确计算。实际值受 PCB 布局、温度和器件批次影响。', w/2, h-8);
+  }
+
+  ccSlider.addEventListener('input', draw);
+  gainSlider.addEventListener('input', draw);
+  window.addEventListener('resize', draw);
+  draw();
+})();
+
+// ============================================================
+// Sidebar active tracking
+// ============================================================
+(function(){
+  const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+  const chapters = document.querySelectorAll('.chapter');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        sidebarLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-80px 0px -70% 0px' });
+  chapters.forEach(ch => observer.observe(ch));
+})();
+</script>
+</body>
+</html>
