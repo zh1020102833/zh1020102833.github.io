@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Type" content="text/html; charset=GB18030">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EEG 硬件信号链设计笔记</title>
 <meta name="category" content="硬件">
@@ -296,13 +295,13 @@ canvas{display:block;width:100%;}
 <tr><th>参数</th><th>数值</th><th>说明</th></tr>
 <tr><td>信号幅度</td><td><span class="v">1 ~ 100 μVpp</span></td><td>头皮电位，极其微弱</td></tr>
 <tr><td>有效带宽</td><td><span class="v">0.5 ~ 100 Hz</span></td><td>δ(0.5-4) θ(4-8) α(8-13) β(13-30) γ(30-100)</td></tr>
-<tr><td>共模干扰</td><td><span class="v">1 ~ 10 Vrms</span></td><td>50/60 Hz 工频，比信号大 10? 倍</td></tr>
+<tr><td>共模干扰</td><td><span class="v">1 ~ 10 Vrms</span></td><td>50/60 Hz 工频，比信号大 10<sup>6</sup> 倍</td></tr>
 <tr><td>电极阻抗（湿）</td><td><span class="v">1 ~ 10 kΩ</span></td><td>Ag/AgCl + 导电膏</td></tr>
 <tr><td>电极阻抗（干）</td><td><span class="v">10 ~ 500 kΩ</span></td><td>无导电膏，随接触压力变化</td></tr>
 </table>
 
 <div class="alert alert-warn">
-<strong>核心挑战：</strong>信号在 0.5~100 Hz 范围，恰好落在运放 1/f 噪声最严重的区域。共模干扰比信号高 10? 倍，要求 CMRR > 100 dB 才能有效抑制。
+<strong>核心挑战：</strong>信号在 0.5~100 Hz 范围，恰好落在运放 1/f 噪声最严重的区域。共模干扰比信号高 10<sup>6</sup> 倍，要求 CMRR > 100 dB 才能有效抑制。
 </div>
 
 <div class="cvs-wrap">
@@ -353,7 +352,7 @@ canvas{display:block;width:100%;}
 <div class="math">
 <div class="eq">输入参考 LSB（以 G=24 为例）</div>
 <div class="params">
-<span class="pn">ADC 核心 LSB</span> <span class="pd">≈ VREF / 2<sup>23</sup> = 4.5V / 8388608 ≈ <strong style="color:var(--yellow);">0.536 μV</strong></span><br>
+<span class="pn">ADC 核心 LSB</span> <span class="pd">≈ 2 × VREF / 2<sup>24</sup> = 9.0V / 16777216 ≈ <strong style="color:var(--yellow);">0.536 μV</strong>（差分 ADC 满量程 ±VREF，用齐 24-bit 码宽）</span><br>
 <span class="pn">折算到输入端</span> <span class="pd">= 0.536 μV / 24 ≈ <strong style="color:var(--yellow);">22.4 nV/LSB</strong></span><br>
 <span class="pn">意义</span> <span class="pd">：码宽已经足够细，系统瓶颈通常不是量化，而是电极噪声、前端噪声和工频残余</span>
 </div>
@@ -418,9 +417,9 @@ canvas{display:block;width:100%;}
 <div class="math">
 <div class="eq">输入保护典型方案：51 kΩ + TVS</div>
 <div class="params">
-<span class="pn">51 kΩ 串联电阻</span> <span class="pd">：限制 ESD 冲击电流（8kV / 51kΩ ≈ 157 mA，低于 TVS 泄放能力）；自身热噪声 = √(4kTRΔf) = √(4×1.38×10???×310×51000×100) ≈ <strong>0.9 μVpp</strong> @100Hz 带宽，可接受</span><br>
+<span class="pn">51 kΩ 串联电阻</span> <span class="pd">：限制 ESD 冲击电流（8kV / 51kΩ ≈ 157 mA，低于 TVS 泄放能力）；自身热噪声 = √(4kTRΔf) = √(4×1.38×10<sup>-23</sup>×310×51000×100) ≈ <strong>0.9 μVpp</strong> @100Hz 带宽，可接受</span><br>
 <span class="pn">TVS 二极管</span> <span class="pd">：钳位电压 5.6V，双向，吸收 ESD 能量（注意选低电容型 < 2pF，避免高频信号衰减）</span><br>
-<span class="pn">51kΩ 的副作用</span> <span class="pd">：与输入电容形成 RC 低通。输入电容 ≈ 10pF 时，f_-3dB = 1/(2π×51000×10×10???) ≈ <strong>312 kHz</strong>，远高于 EEG 带宽，无影响</span>
+<span class="pn">51kΩ 的副作用</span> <span class="pd">：与输入电容形成 RC 低通。输入电容 ≈ 10pF 时，f_-3dB = 1/(2π×51000×10×10<sup>-12</sup>) ≈ <strong>312 kHz</strong>，远高于 EEG 带宽，无影响</span>
 </div>
 </div>
 </div>
