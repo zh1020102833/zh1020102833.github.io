@@ -410,13 +410,13 @@ canvas { display: block; width: 100%; }
   <h2 class="chapter-title">基本概念与术语</h2>
 
 <h3 id="ch2-s1">2.1 传递函数与阶数</h3>
-<ul><li>滤波器的传递函数 \$ H(s) = V\_{out}(s)/V\_{in}(s) \$ 是一个有理分式。</li></ul>
+<ul><li>滤波器的传递函数 $ H(s) = V_{out}(s)/V_{in}(s) $ 是一个有理分式。</li></ul>
 <ul><li><strong>阶数</strong> = 分母多项式的最高次数。阶数越高，幅频特性过渡带越陡峭。</li></ul>
-<ul><li>一阶 RC 低通：\$ H(s) = \\frac{1}{1+sRC} \$，斜率 -20 dB/dec。</li></ul>
-<ul><li>二阶滤波器：分母包含 \$ s^2 \$ 项，斜率 -40 dB/dec。</li></ul>
+<ul><li>一阶 RC 低通：$ H(s) = \frac{1}{1+sRC} $，斜率 -20 dB/dec。</li></ul>
+<ul><li>二阶滤波器：分母包含 $ s^2 $ 项，斜率 -40 dB/dec。</li></ul>
 <ul><li>n 阶滤波器：理论衰减斜率 -20n dB/dec。</li></ul>
 <h3 id="ch2-s2">2.2 关键参数</h3>
-<table><thead></thead><tbody><tr><th>参数</th><th>定义</th><th>说明</th></tr><tr><td><strong>截止频率</strong> \$ f\_c \$</td><td>增益下降 3 dB 处的频率</td><td>常称为 -3dB 频率</td></tr><tr><td><strong>通带</strong></td><td>允许信号通过的频率范围</td><td>增益平坦度常用纹波（dB）表示</td></tr><tr><td><strong>阻带</strong></td><td>信号被衰减的频率范围</td><td>指定最小衰减量（如 -40 dB）</td></tr><tr><td><strong>纹波</strong> (Ripple)</td><td>通带内增益的波动幅度</td><td>切比雪夫滤波器有通带纹波</td></tr><tr><td><strong>品质因数</strong> \$ Q \$</td><td>\$ Q = f\_0 / BW \$（对于带通）</td><td>描述滤波器选择性，Q 越高，带宽越窄</td></tr><tr><td><strong>中心频率</strong> \$ f\_0 \$</td><td>带通/带阻滤波器的几何中心频率</td></tr></tbody></table>
+<table><thead></thead><tbody><tr><th>参数</th><th>定义</th><th>说明</th></tr><tr><td><strong>截止频率</strong> $ f_c $</td><td>增益下降 3 dB 处的频率</td><td>常称为 -3dB 频率</td></tr><tr><td><strong>通带</strong></td><td>允许信号通过的频率范围</td><td>增益平坦度常用纹波（dB）表示</td></tr><tr><td><strong>阻带</strong></td><td>信号被衰减的频率范围</td><td>指定最小衰减量（如 -40 dB）</td></tr><tr><td><strong>纹波</strong> (Ripple)</td><td>通带内增益的波动幅度</td><td>切比雪夫滤波器有通带纹波</td></tr><tr><td><strong>品质因数</strong> $ Q $</td><td>$ Q = f_0 / BW $（对于带通）</td><td>描述滤波器选择性，Q 越高，带宽越窄</td></tr><tr><td><strong>中心频率</strong> $ f_0 $</td><td>带通/带阻滤波器的几何中心频率</td></tr></tbody></table>
 <h3 id="ch2-s3">2.3 极点、零点与斜率关系</h3>
 <ul><li>极点：分母=0 的频率，使增益下降。</li></ul>
 <ul><li>零点：分子=0 的频率，使增益上升或陷波。</li></ul>
@@ -460,7 +460,7 @@ canvas { display: block; width: 100%; }
 <ul><li>Q = 0.707（巴特沃斯）：响应最平坦。</li></ul>
 <ul><li>Q > 0.707：出现峰值（可能引起过冲）。</li></ul>
 <ul><li>Q < 0.707：响应缓慢下降。</li></ul>
-<ul><li>对于带通滤波器：\$ Q = f\_0 / BW \$，其中 BW 为 -3dB 带宽。<strong>Q 越高，选择性越好</strong>，但实现难度增加，且对元件误差敏感。</li></ul>
+<ul><li>对于带通滤波器：$ Q = f_0 / BW $，其中 BW 为 -3dB 带宽。<strong>Q 越高，选择性越好</strong>，但实现难度增加，且对元件误差敏感。</li></ul>
 <ul><li>工程上，有源滤波器单级 Q 通常 ≤ 10，更高 Q 需要使用多级级联或更高阶数。</li></ul>
 </section>
 
@@ -484,7 +484,7 @@ canvas { display: block; width: 100%; }
 <h3 id="ch6-s3">6.3 设计注意事项</h3>
 <ul><li>指标过严会导致软件提示“阶数无法实现”，需放宽（例如增大过渡带宽度）。</li></ul>
 <ul><li>实际电阻、电容应选用 <strong>1% 精度</strong>，电容建议选用 <strong>C0G/NPO</strong> 材质。</li></ul>
-<ul><li>运放带宽至少为 \$ 100 \\times f\_c \$。</li></ul>
+<ul><li>运放带宽至少为 $ 100 \times f_c $。</li></ul>
 </section>
 
 <section class="chapter" id="ch7">
@@ -492,13 +492,13 @@ canvas { display: block; width: 100%; }
   <h2 class="chapter-title">实例分析：从方波提取正弦波</h2>
 
 <h3 id="ch7-s1">7.1 方波的频谱</h3>
-<ul><li>方波由基波和奇次谐波组成：\$ f, 3f, 5f, \\dots \$。</li></ul>
+<ul><li>方波由基波和奇次谐波组成：$ f, 3f, 5f, \dots $。</li></ul>
 <ul><li>若基波频率为 1 kHz，则包含 1 kHz、3 kHz、5 kHz 等成分。</li></ul>
 <h3 id="ch7-s2">7.2 带通滤波器提取基波（1 kHz）</h3>
-<ul><li>设计中心频率 \$ f\_0 = 1\\ \\text{kHz} \$，带宽尽量窄（如 50 Hz），高 Q 值。</li></ul>
+<ul><li>设计中心频率 $ f_0 = 1\ \text{kHz} $，带宽尽量窄（如 50 Hz），高 Q 值。</li></ul>
 <ul><li>输入方波 → 带通滤波器输出 → 得到 1 kHz 正弦波（基波）。</li></ul>
 <h3 id="ch7-s3">7.3 提取三次谐波（3 kHz）</h3>
-<ul><li>设计另一个带通滤波器，\$ f\_0 = 3\\ \\text{kHz} \$，同样窄带。</li></ul>
+<ul><li>设计另一个带通滤波器，$ f_0 = 3\ \text{kHz} $，同样窄带。</li></ul>
 <ul><li>输入方波 → 第二个带通 → 输出 3 kHz 正弦波。</li></ul>
 <h3 id="ch7-s4">7.4 多级滤波改善波形质量</h3>
 <ul><li>单级带通滤波器输出波形可能存在<strong>幅度波动</strong>（因Q不够高或过渡带不平滑）。</li></ul>
