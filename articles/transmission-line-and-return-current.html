@@ -826,7 +826,7 @@ canvas { display: block; width: 100%; }
 
 <div class="canvas-wrap">
     <div class="canvas-label">图 8-1　信号换层回流过孔示意 — 地过孔为返回电流提供低阻抗路径</div>
-    <canvas id="cvs-layer-via" height="360"></canvas>
+    <canvas id="cvs-layer-via" height="260"></canvas>
   </div>
 
 </section>
@@ -1079,7 +1079,7 @@ canvas { display: block; width: 100%; }
     ctx.clearRect(0, 0, w, h);
 
     const sigX = w * 0.36;
-    const adjX = w * 0.68;
+    const adjX = w * 0.60;  // d_adj > d_ref, visually reasonable
     const sigY = 78;
     const refY = sigY + 130;
     const adjY = sigY;
@@ -1100,7 +1100,7 @@ canvas { display: block; width: 100%; }
     ctx.textAlign = 'center';
     ctx.fillText('信号线', sigX, sigY - 12);
 
-    // Adjacent line (same layer as signal line)
+    // Adjacent line (same layer as signal line, moved further right)
     ctx.fillStyle = '#16599e';
     ctx.fillRect(adjX - 14, adjY, 28, 14);
     ctx.fillStyle = '#16599e';
@@ -1504,7 +1504,7 @@ canvas { display: block; width: 100%; }
   function draw() {
     const dpr = window.devicePixelRatio || 1;
     const cssW = cvs.clientWidth;
-    const cssH = 360;
+    const cssH = 260;
     cvs.width = cssW * dpr;
     cvs.height = cssH * dpr;
     cvs.style.height = cssH + 'px';
@@ -1512,171 +1512,110 @@ canvas { display: block; width: 100%; }
     const w = cssW, h = cssH;
     ctx.clearRect(0, 0, w, h);
 
-    const pad = 28;
-    const topY = 55, botY = h - 55;
-    const midY = (topY + botY) / 2;
-    const refH = 8;
-    const ref1Y = topY + 22;
-    const ref2Y = botY - 22 - refH;
-    const l1Y = topY;
-    const l2Y = botY - 14;
-    const sigViaX = w * 0.30;
-    const gndViaX = sigViaX + 90;
-    const sigW = 4;
-
-    // === Dielectric between reference planes ===
-    ctx.fillStyle = '#e8e6df';
-    ctx.fillRect(pad, ref1Y + refH, w - 2*pad, ref2Y - ref1Y - refH);
-
-    // === Reference plane 1 (top GND) ===
-    ctx.fillStyle = '#444441';
-    ctx.fillRect(pad, ref1Y, sigViaX - 18 - pad, refH);
-    ctx.fillRect(sigViaX + 18, ref1Y, w - pad - sigViaX - 18, refH);
-
-    // === Reference plane 2 (bottom GND) ===
-    ctx.fillStyle = '#444441';
-    ctx.fillRect(pad, ref2Y, sigViaX - 18 - pad, refH);
-    ctx.fillRect(sigViaX + 18, ref2Y, w - pad - sigViaX - 18, refH);
-
-    // === Signal via (vertical, through anti-pads) ===
-    ctx.strokeStyle = '#cd7f32';
-    ctx.lineWidth = sigW;
-    ctx.beginPath();
-    ctx.moveTo(sigViaX, l1Y);
-    ctx.lineTo(sigViaX, l2Y);
-    ctx.stroke();
-
-    // === Signal via pads ===
-    ctx.fillStyle = '#cd7f32';
-    ctx.beginPath(); ctx.arc(sigViaX, l1Y, 9, 0, Math.PI*2); ctx.fill();
+    // background
     ctx.fillStyle = '#ececec';
-    ctx.beginPath(); ctx.arc(sigViaX, l1Y, 4, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#cd7f32';
-    ctx.beginPath(); ctx.arc(sigViaX, l2Y, 9, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#ececec';
-    ctx.beginPath(); ctx.arc(sigViaX, l2Y, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(0, 0, w, h);
 
-    // === Ground via (connects ref1 to ref2) ===
-    ctx.strokeStyle = '#444441';
-    ctx.lineWidth = sigW;
-    ctx.beginPath();
-    ctx.moveTo(gndViaX, ref1Y + refH/2);
-    ctx.lineTo(gndViaX, ref2Y + refH/2);
-    ctx.stroke();
-    // Ground via pads on ref planes
+    var lx = 30, rx = w - 30;
+    var topY = 30, botY = 210;
+    var refH = 6;
+    var l1Y = topY;
+    var ref1Y = l1Y + 24;
+    var ref2Y = botY - 24 - refH;
+    var l2Y = botY;
+    var sigViaX = w * 0.4;
+    var gndViaX = sigViaX + 110;
+    var gap = 18;
+
+    // dielectric fill
+    ctx.fillStyle = '#e0ddd6';
+    ctx.fillRect(lx, ref1Y + refH, rx - lx, ref2Y - ref1Y - refH);
+
+    // reference planes
     ctx.fillStyle = '#444441';
-    ctx.beginPath(); ctx.arc(gndViaX, ref1Y + refH/2, 9, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(gndViaX, ref2Y + refH/2, 9, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(lx, ref1Y, sigViaX - gap - lx, refH);
+    ctx.fillRect(sigViaX + gap, ref1Y, rx - sigViaX - gap, refH);
+    ctx.fillRect(lx, ref2Y, sigViaX - gap - lx, refH);
+    ctx.fillRect(sigViaX + gap, ref2Y, rx - sigViaX - gap, refH);
 
-    // === Signal traces ===
+    // signal trace (top layer, from left)
     ctx.strokeStyle = '#cd7f32';
-    ctx.lineWidth = sigW;
-    // Top layer: signal in from left
-    ctx.beginPath();
-    ctx.moveTo(pad, l1Y);
-    ctx.lineTo(sigViaX - 9, l1Y);
-    ctx.stroke();
-    // Bottom layer: signal out to right
-    ctx.beginPath();
-    ctx.moveTo(sigViaX + 9, l2Y);
-    ctx.lineTo(w - pad, l2Y);
-    ctx.stroke();
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(lx, l1Y); ctx.lineTo(sigViaX - 8, l1Y); ctx.stroke();
+    // signal trace (bottom layer, to right)
+    ctx.beginPath(); ctx.moveTo(sigViaX + 8, l2Y); ctx.lineTo(rx, l2Y); ctx.stroke();
 
-    // === Return current path (blue dashed with arrows) ===
-    ctx.strokeStyle = '#16599e';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
+    // signal via (vertical)
+    ctx.strokeStyle = '#cd7f32'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(sigViaX, l1Y); ctx.lineTo(sigViaX, l2Y); ctx.stroke();
+    // via pads
+    ctx.fillStyle = '#cd7f32';
+    ctx.beginPath(); ctx.arc(sigViaX, l1Y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ececec'; ctx.beginPath(); ctx.arc(sigViaX, l1Y, 3, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#cd7f32'; ctx.beginPath(); ctx.arc(sigViaX, l2Y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ececec'; ctx.beginPath(); ctx.arc(sigViaX, l2Y, 3, 0, Math.PI*2); ctx.fill();
 
-    // Top ref: return current from left to ground via
-    ctx.beginPath();
-    ctx.moveTo(pad + 20, ref1Y + refH/2);
-    ctx.lineTo(gndViaX - 9, ref1Y + refH/2);
-    ctx.stroke();
+    // ground via
+    ctx.strokeStyle = '#444441'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(gndViaX, ref1Y + refH/2); ctx.lineTo(gndViaX, ref2Y + refH/2); ctx.stroke();
+    ctx.fillStyle = '#444441';
+    ctx.beginPath(); ctx.arc(gndViaX, ref1Y + refH/2, 8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gndViaX, ref2Y + refH/2, 8, 0, Math.PI*2); ctx.fill();
 
-    // Down through ground via
-    ctx.beginPath();
-    ctx.moveTo(gndViaX, ref1Y + refH/2 + 9);
-    ctx.lineTo(gndViaX, ref2Y + refH/2 - 9);
-    ctx.stroke();
-
-    // Bottom ref: return current from ground via to right
-    ctx.beginPath();
-    ctx.moveTo(gndViaX + 9, ref2Y + refH/2);
-    ctx.lineTo(w - pad - 20, ref2Y + refH/2);
-    ctx.stroke();
-
+    // return current path (blue dashed)
+    ctx.strokeStyle = '#16599e'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
+    ctx.beginPath(); ctx.moveTo(lx + 40, ref1Y + refH/2); ctx.lineTo(gndViaX - 10, ref1Y + refH/2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gndViaX, ref1Y + refH/2 + 12); ctx.lineTo(gndViaX, ref2Y + refH/2 - 12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gndViaX + 10, ref2Y + refH/2); ctx.lineTo(rx - 40, ref2Y + refH/2); ctx.stroke();
     ctx.setLineDash([]);
 
-    // Return current arrowheads
-    function triArrow(x, y, angle) {
-      ctx.fillStyle = '#16599e';
+    // arrows
+    function arrow(x, y, ang, c) {
+      ctx.fillStyle = c;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.lineTo(x - 10*Math.cos(angle - 0.45), y - 10*Math.sin(angle - 0.45));
-      ctx.lineTo(x - 10*Math.cos(angle + 0.45), y - 10*Math.sin(angle + 0.45));
-      ctx.closePath();
-      ctx.fill();
+      ctx.lineTo(x - 9*Math.cos(ang - 0.45), y - 9*Math.sin(ang - 0.45));
+      ctx.lineTo(x - 9*Math.cos(ang + 0.45), y - 9*Math.sin(ang + 0.45));
+      ctx.closePath(); ctx.fill();
     }
-    triArrow(gndViaX - 9, ref1Y + refH/2, 0);        // pointing right → ground via
-    triArrow(gndViaX, ref2Y + refH/2 - 9, Math.PI/2); // pointing down through ground via
-    triArrow(w - pad - 20, ref2Y + refH/2, 0);        // pointing right on bottom ref
+    arrow(gndViaX - 10, ref1Y + refH/2, 0, '#16599e');
+    arrow(gndViaX, ref2Y + refH/2 - 12, Math.PI/2, '#16599e');
+    arrow(rx - 40, ref2Y + refH/2, 0, '#16599e');
 
-    // === Labels ===
-    // Signal labels
-    ctx.fillStyle = '#cd7f32';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('信号过孔', sigViaX - 14, l1Y - 18);
-    ctx.textAlign = 'left';
-    ctx.fillText('信号线', pad + 44, l1Y - 10);
-
-    // Ground via label
-    ctx.fillStyle = '#444441';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('地过孔', gndViaX + 14, ref1Y - 4);
-
-    // Return current label
+    // labels
+    ctx.font = 'bold 12px "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.fillStyle = '#cd7f32'; ctx.textAlign = 'left';
+    ctx.fillText('信号线', lx + 40, l1Y - 8);
+    ctx.fillText('信号过孔', sigViaX - 50, l1Y - 8);
+    ctx.fillStyle = '#444441'; ctx.textAlign = 'left';
+    ctx.fillText('地过孔', gndViaX + 12, ref1Y + 20);
     ctx.fillStyle = '#16599e';
-    ctx.textAlign = 'left';
-    ctx.fillText('返回电流', gndViaX + 14, ref2Y + refH + 12);
-    ctx.fillText('路径', gndViaX + 14, ref2Y + refH + 26);
+    ctx.fillText('返回电流路径', gndViaX + 12, ref2Y - 10);
 
-    // Layer labels (right side)
-    ctx.fillStyle = '#8c8883';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('Layer 1 (顶层信号)', w - 18, l1Y + 4);
-    ctx.fillText('参考平面 (GND)', w - 18, ref1Y + 4);
-    ctx.fillText('介质 (FR4)', w - 18, midY + 4);
-    ctx.fillText('参考平面 (GND)', w - 18, ref2Y + 4);
-    ctx.fillText('Layer 2 (底层信号)', w - 18, l2Y + 4);
+    // layer labels (right side)
+    ctx.fillStyle = '#8c8883'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('Layer 1 (顶层信号)', rx, l1Y + 4);
+    ctx.fillText('参考平面 (GND)', rx, ref1Y + 4);
+    ctx.fillText('介质 (FR4)', rx, (ref1Y + refH + ref2Y) / 2 + 3);
+    ctx.fillText('参考平面 (GND)', rx, ref2Y + 4);
+    ctx.fillText('Layer 2 (底层信号)', rx, l2Y + 4);
 
-    // Direction arrows on signal traces
-    ctx.fillStyle = '#cd7f32';
-    ctx.font = 'italic 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('信号输入 →', pad + 40, l1Y - 22);
-    ctx.fillText('→ 信号输出', w - pad - 50, l2Y + 22);
+    // direction indicators
+    ctx.fillStyle = '#cd7f32'; ctx.font = 'italic 11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('信号输入 →', lx + 60, l1Y - 20);
 
-    // Highlight box around via area
-    const boxX = sigViaX - 22, boxY2 = l1Y - 22;
-    const boxW = gndViaX - sigViaX + 44, boxH2 = l2Y - l1Y + 44;
-    ctx.strokeStyle = 'rgba(145,55,25,0.22)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 4]);
-    ctx.strokeRect(boxX, boxY2, boxW, boxH2);
+    // highlight box around via area
+    var bx = sigViaX - 24, by = l1Y - 18;
+    var bw = gndViaX - sigViaX + 54, bh = l2Y - l1Y + 36;
+    ctx.strokeStyle = 'rgba(145,55,25,0.25)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.strokeRect(bx, by, bw, bh);
     ctx.setLineDash([]);
-    ctx.fillStyle = '#913719';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('换层区域', boxX + boxW/2, boxY2 - 6);
+    ctx.fillStyle = '#913719'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('换层区域', bx + bw/2, by - 6);
 
-    // Bottom note
-    ctx.fillStyle = '#8c8883';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('信号换层时，地过孔为返回电流提供低阻抗路径，避免返回电流绕行导致环路面积增大', w/2, h - 8);
+    // bottom caption
+    ctx.fillStyle = '#8c8883'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('信号换层时，地过孔为返回电流提供低阻抗路径，避免返回电流绕行导致环路面积增大', w/2, h - 6);
   }
   draw();
   window.addEventListener('resize', draw);
