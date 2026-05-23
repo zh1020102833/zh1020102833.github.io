@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的文章 - 首页</title>
-  <meta name="description" content="硬件 · EDA · 软件开发 · 随笔 — 个人技术文章导航站">
+  <title>硬件工程师技术笔记</title>
+  <meta name="description" content="高速模拟电路 · 信号完整性 · 嵌入式设计 — 个人技术积累与实战笔记">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
     /* 文章列表默认使用 grid 布局，在 style.css 中已有定义 */
@@ -17,7 +17,7 @@
 <!-- ===== 导航栏（静态 HTML，不依赖 JS 注入） ===== -->
 <nav class="site-nav">
   <div class="nav-inner">
-    <a href="index.html" class="nav-logo">我的文章</a>
+    <a href="index.html" class="nav-logo">硬件工程师技术笔记</a>
     <button class="nav-toggle" aria-label="切换菜单">&#9776;</button>
     <ul class="nav-links">
       <li><a href="index.html" class="active">首页</a></li>
@@ -29,8 +29,8 @@
 
 <div class="main-wrapper">
   <div class="page-header">
-    <h1>文章列表</h1>
-    <p>硬件 · EDA · 软件开发 · 随笔</p>
+    <h1>硬件工程师技术笔记</h1>
+    <p>高速模拟电路 · 信号完整性 · 嵌入式设计 — 个人技术积累与实战笔记</p>
   </div>
 
   <!-- 搜索框 -->
@@ -42,21 +42,21 @@
   <div class="category-tabs" id="category-tabs">
     <button class="active" data-cat="all">全部</button>
     <button data-cat="硬件">硬件</button>
+    <button data-cat="嵌入式">嵌入式</button>
+    <button data-cat="FPGA">FPGA</button>
+    <button data-cat="高速信号">高速信号</button>
+    <button data-cat="EMC">EMC</button>
+    <button data-cat="控制理论">控制理论</button>
+    <button data-cat="电机">电机</button>
     <button data-cat="EDA">EDA</button>
-    <button data-cat="软件开发">软件开发</button>
     <button data-cat="随笔">随笔</button>
   </div>
 
   <!-- ===== 文章列表（静态 HTML，不依赖 JS 渲染） ===== -->
+  <!-- STATIC_CARDS_BEGIN -->
+  
+  
   <div id="article-container">
-    <!-- === EDA === -->
-    <div class="cat-section-header">EDA</div>
-    <article class="article-card" data-category="EDA" data-search="常用 EDA 工具介绍 整理主流 EDA 工具的功能特点与选型建议。">
-      <h2><a href="articles/eda-tools.html">常用 EDA 工具介绍</a></h2>
-      <div class="meta">EDA · 2026-05-22</div>
-      <p class="summary">整理主流 EDA 工具的功能特点与选型建议。</p>
-    </article>
-
     <!-- === 硬件 === -->
     <div class="cat-section-header">硬件</div>
     <article class="article-card" data-category="硬件" data-search="EEG 硬件信号链设计笔记 脑电图EEG硬件信号链的完整设计笔记，涵盖前端采集、滤波、ADC选型及噪声优化。">
@@ -71,99 +71,46 @@
       <p class="summary">介绍硬件设计的基本流程和常用工具。</p>
     </article>
 
-    <article class="article-card" data-category="硬件" data-search="高速模拟电路调试案例 高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。">
-      <h2><a href="articles/high-speed-analog-debug.html">高速模拟电路调试案例</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。</p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="高速模数混合电路应用笔记 高速模数混合电路设计的应用笔记，涉及PCB布局、接地策略和信号完整性。">
-      <h2><a href="articles/high-speed-mixed-signal.html">高速模数混合电路应用笔记</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">高速模数混合电路设计的应用笔记，涉及PCB布局、接地策略和信号完整性。</p>
-    </article>
-
     <article class="article-card" data-category="硬件" data-search="信号调理核心原理 深入讲解信号调理的核心原理，包括放大、滤波、隔离与线性化等关键技术。">
       <h2><a href="articles/signal-conditioning.html">信号调理核心原理</a></h2>
       <div class="meta">硬件 · 2026-05-22</div>
       <p class="summary">深入讲解信号调理的核心原理，包括放大、滤波、隔离与线性化等关键技术。</p>
     </article>
 
-    <!-- === 软件开发 === -->
-    <div class="cat-section-header">软件开发</div>
-    <article class="article-card" data-category="软件开发" data-search="前端开发基础：HTML 核心标签 整理前端开发中最常用的 HTML 标签及其语义化用法。">
-      <h2><a href="articles/web-dev-basics.html">前端开发基础：HTML 核心标签</a></h2>
-      <div class="meta">软件开发 · 2026-05-22</div>
-      <p class="summary">整理前端开发中最常用的 HTML 标签及其语义化用法。</p>
+    <!-- === 高速信号 === -->
+    <div class="cat-section-header">高速信号</div>
+    <article class="article-card" data-category="高速信号" data-search="高速模拟电路调试案例 高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。">
+      <h2><a href="articles/high-speed-analog-debug.html">高速模拟电路调试案例</a></h2>
+      <div class="meta">高速信号 · 2026-05-22</div>
+      <p class="summary">高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。</p>
     </article>
 
-    <!-- === 随笔 === -->
-    <div class="cat-section-header">随笔</div>
-    <article class="article-card" data-category="随笔" data-search="Hello World - 我的第一篇博客 这是网站的第一篇文章，欢迎阅读。">
-      <h2><a href="articles/hello-world.html">Hello World - 我的第一篇博客</a></h2>
-      <div class="meta">随笔 · 2026-05-22</div>
-      <p class="summary">这是网站的第一篇文章，欢迎阅读。</p>
+    <article class="article-card" data-category="高速信号" data-search="高速模数混合电路应用笔记 高速模数混合电路设计的应用笔记，涉及PCB布局、接地策略和信号完整性。">
+      <h2><a href="articles/high-speed-mixed-signal.html">高速模数混合电路应用笔记</a></h2>
+      <div class="meta">高速信号 · 2026-05-22</div>
+      <p class="summary">高速模数混合电路设计的应用笔记，涉及PCB布局、接地策略和信号完整性。</p>
     </article>
 
-    <article class="article-card" data-category="随笔" data-search="如何写出清晰的技术文章 分享技术写作的经验与技巧。">
-      <h2><a href="articles/writing-tips.html">如何写出清晰的技术文章</a></h2>
-      <div class="meta">随笔 · 2026-05-22</div>
-      <p class="summary">分享技术写作的经验与技巧。</p>
-    </article>
-
-    </div>
+    <!-- === EDA === -->
+    <div class="cat-section-header">EDA</div>
     <article class="article-card" data-category="EDA" data-search="常用 EDA 工具介绍 整理主流 EDA 工具的功能特点与选型建议。">
       <h2><a href="articles/eda-tools.html">常用 EDA 工具介绍</a></h2>
       <div class="meta">EDA · 2026-05-22</div>
       <p class="summary">整理主流 EDA 工具的功能特点与选型建议。</p>
     </article>
 
-    <!-- === 硬件 === -->
-    <div class="cat-section-header">硬件</div>
-    <article class="article-card" data-category="硬件" data-search="EEG 硬件信号链设计笔记 ">
-      <h2><a href="articles/eeg-signal-chain.html">EEG 硬件信号链设计笔记</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary"></p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="硬件设计入门基础 介绍硬件设计的基本流程和常用工具。">
-      <h2><a href="articles/hardware-intro.html">硬件设计入门基础</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">介绍硬件设计的基本流程和常用工具。</p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="高速模拟电路调试案例 ">
-      <h2><a href="articles/high-speed-analog-debug.html">高速模拟电路调试案例</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary"></p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="高速模数混合电路应用笔记 ">
-      <h2><a href="articles/high-speed-mixed-signal.html">高速模数混合电路应用笔记</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary"></p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="信号调理核心原理 ">
-      <h2><a href="articles/signal-conditioning.html">信号调理核心原理</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary"></p>
-    </article>
-
-    <!-- === 软件开发 === -->
-    <div class="cat-section-header">软件开发</div>
-    <article class="article-card" data-category="软件开发" data-search="前端开发基础：HTML 核心标签 整理前端开发中最常用的 HTML 标签及其语义化用法。">
-      <h2><a href="articles/web-dev-basics.html">前端开发基础：HTML 核心标签</a></h2>
-      <div class="meta">软件开发 · 2026-05-22</div>
-      <p class="summary">整理前端开发中最常用的 HTML 标签及其语义化用法。</p>
-    </article>
-
     <!-- === 随笔 === -->
     <div class="cat-section-header">随笔</div>
     <article class="article-card" data-category="随笔" data-search="Hello World - 我的第一篇博客 这是网站的第一篇文章，欢迎阅读。">
       <h2><a href="articles/hello-world.html">Hello World - 我的第一篇博客</a></h2>
       <div class="meta">随笔 · 2026-05-22</div>
       <p class="summary">这是网站的第一篇文章，欢迎阅读。</p>
+    </article>
+
+    <article class="article-card" data-category="随笔" data-search="前端开发基础：HTML 核心标签 整理前端开发中最常用的 HTML 标签及其语义化用法。">
+      <h2><a href="articles/web-dev-basics.html">前端开发基础：HTML 核心标签</a></h2>
+      <div class="meta">随笔 · 2026-05-22</div>
+      <p class="summary">整理前端开发中最常用的 HTML 标签及其语义化用法。</p>
     </article>
 
     <article class="article-card" data-category="随笔" data-search="如何写出清晰的技术文章 分享技术写作的经验与技巧。">
@@ -173,71 +120,14 @@
     </article>
 
     </div>
-    <article class="article-card" data-category="硬件" data-search="硬件设计入门基础 介绍硬件设计的基本流程和常用工具，适合电子工程师入门参考。">
-      <h2><a href="articles/hardware-intro.html">硬件设计入门基础</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">介绍硬件设计的基本流程和常用工具，适合电子工程师入门参考。</p>
-    </article>
+    
+    
+    <!-- STATIC_CARDS_END -->
 
-    <article class="article-card" data-category="硬件" data-search="EEG 硬件信号链设计笔记 脑电图EEG硬件信号链的完整设计笔记，涵盖前端采集、滤波、ADC选型及噪声优化。">
-      <h2><a href="articles/eeg-signal-chain.html">EEG 硬件信号链设计笔记</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">脑电图（EEG）硬件信号链的完整设计笔记，涵盖前端采集、滤波、ADC 选型及噪声优化。</p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="信号调理核心原理 深入讲解信号调理的核心原理，包括放大、滤波、隔离与线性化等关键技术。">
-      <h2><a href="articles/signal-conditioning.html">信号调理核心原理</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">深入讲解信号调理的核心原理，包括放大、滤波、隔离与线性化等关键技术。</p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="高速模拟电路调试案例 高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。">
-      <h2><a href="articles/high-speed-analog-debug.html">高速模拟电路调试案例</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。</p>
-    </article>
-
-    <article class="article-card" data-category="硬件" data-search="高速模数混合电路应用笔记 高速模数混合电路设计的应用笔记，涉及PCB布局、接地策略和信号完整性。">
-      <h2><a href="articles/high-speed-mixed-signal.html">高速模数混合电路应用笔记</a></h2>
-      <div class="meta">硬件 · 2026-05-22</div>
-      <p class="summary">高速模数混合电路设计的应用笔记，涉及 PCB 布局、接地策略和信号完整性。</p>
-    </article>
-
-    <!-- === EDA === -->
-    <div class="cat-section-header">EDA</div>
-    <article class="article-card" data-category="EDA" data-search="常用 EDA 工具介绍 整理主流 EDA 工具的功能特点与选型建议，涵盖 Altium、KiCad 等。">
-      <h2><a href="articles/eda-tools.html">常用 EDA 工具介绍</a></h2>
-      <div class="meta">EDA · 2026-05-22</div>
-      <p class="summary">整理主流 EDA 工具的功能特点与选型建议，涵盖 Altium、KiCad 等。</p>
-    </article>
-
-    <!-- === 软件开发 === -->
-    <div class="cat-section-header">软件开发</div>
-    <article class="article-card" data-category="软件开发" data-search="前端开发基础：HTML 核心标签 整理前端开发中最常用的 HTML 标签及其语义化用法，适合初学者参考。">
-      <h2><a href="articles/web-dev-basics.html">前端开发基础：HTML 核心标签</a></h2>
-      <div class="meta">软件开发 · 2026-05-22</div>
-      <p class="summary">整理前端开发中最常用的 HTML 标签及其语义化用法，适合初学者参考。</p>
-    </article>
-
-    <!-- === 随笔 === -->
-    <div class="cat-section-header">随笔</div>
-    <article class="article-card" data-category="随笔" data-search="Hello World - 我的第一篇博客 这是网站的第一篇文章，介绍了搭建本静态博客的初衷和使用方式。">
-      <h2><a href="articles/hello-world.html">Hello World - 我的第一篇博客</a></h2>
-      <div class="meta">随笔 · 2026-05-22</div>
-      <p class="summary">这是网站的第一篇文章，介绍了搭建本静态博客的初衷和使用方式。</p>
-    </article>
-
-    <article class="article-card" data-category="随笔" data-search="如何写出清晰的技术文章 分享技术写作的经验与技巧，包括结构组织、语言表达和读者视角等方面的建议。">
-      <h2><a href="articles/writing-tips.html">如何写出清晰的技术文章</a></h2>
-      <div class="meta">随笔 · 2026-05-22</div>
-      <p class="summary">分享技术写作的经验与技巧，包括结构组织、语言表达和读者视角等方面的建议。</p>
-    </article>
-
-  </div>
 </div>
 
 <footer class="site-footer">
-  <p>&copy; 2026 我的文章</p>
+  <p>&copy; 2026 硬件工程师技术笔记</p>
 </footer>
 
 <script src="assets/js/nav.js"></script>
@@ -279,7 +169,6 @@
         }
       });
       headers.forEach(function (h) {
-        // 显示分类标题：当该分类下至少有一个可见的文章
         var sectionCat = h.textContent.trim();
         var hasVisible = false;
         cards.forEach(function (c) {
@@ -288,7 +177,6 @@
           }
         });
         h.removeAttribute('data-hidden');
-        // 在非"全部"模式下，只显示当前分类的标题
         if (!showAll && sectionCat !== cat) {
           h.setAttribute('data-hidden', '');
         }
@@ -300,7 +188,6 @@
       searchInput.addEventListener('input', function () {
         var keyword = this.value.trim().toLowerCase();
 
-        // 切换到"全部"标签
         tabs.querySelector('.active') && (tabs.querySelector('.active').className = '');
         tabs.querySelector('[data-cat="all"]') && (tabs.querySelector('[data-cat="all"]').className = 'active');
 
@@ -317,7 +204,6 @@
           }
         });
 
-        // 控制分类标题
         headers.forEach(function (h) {
           var sectionCat = h.textContent.trim();
           var hasVisible = false;

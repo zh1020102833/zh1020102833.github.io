@@ -31,6 +31,19 @@ SCRIPTS_DIR = os.path.join(PROJECT_ROOT, "scripts")
 DATA_FILE = os.path.join(PROJECT_ROOT, "assets", "js", "article-data.js")
 INDEX_FILE = os.path.join(PROJECT_ROOT, "index.html")
 
+# 分类定义：按显示顺序排列，后续新增分类追加到末尾
+CATEGORY_ORDER = [
+    "硬件",
+    "嵌入式",
+    "FPGA",
+    "高速信号",
+    "EMC",
+    "控制理论",
+    "电机",
+    "EDA",
+    "随笔",
+]
+
 
 class ArticleMetaParser(HTMLParser):
     """从 HTML 中提取 title 和 meta 信息。"""
@@ -114,8 +127,9 @@ def generate_article_data_js(articles):
         categories[cat].append(art)
 
     cat_entries = []
-    for cat_name in sorted(categories.keys()):
-        art_list = categories[cat_name]
+    # 按预定义顺序生成分类，确保每个分类都出现（即使为空）
+    for cat_name in CATEGORY_ORDER:
+        art_list = categories.get(cat_name, [])
         art_lines = []
         for i, art in enumerate(art_list):
             comma = "," if i < len(art_list) - 1 else ""
@@ -145,7 +159,7 @@ def generate_article_data_js(articles):
  * 手工添加的 tags 等信息请在此文件生成后再补充。
  *
  * 设计说明：
- *   siteData.categories 按大类分组（硬件/EDA/软件开发/随笔等）
+ *   siteData.categories 按大类分组（硬件 / 高速信号 / EDA / 嵌入式 / FPGA / EMC / 控制理论 / 电机 / 随笔）
  *   首页展示大类 → 用户选择大类后显示该分类下文章列表
  *   同时提供扁平数据 articleData，供归档页使用
  */
@@ -179,7 +193,7 @@ var articleData = [];
 
 
 def generate_static_cards_html(articles):
-    """根据文章列表生成 index.html 中的静态回退卡片 HTML。"""
+    """根据文章列表生成 index.html 中的静态回退卡片 HTML（含 container div）。"""
     # 按 category 分组
     categories = {}
     for art in articles:
@@ -189,8 +203,11 @@ def generate_static_cards_html(articles):
         categories[cat].append(art)
 
     lines = []
-    for cat_name in sorted(categories.keys()):
-        art_list = categories[cat_name]
+    lines.append('  <div id="article-container">')
+    for cat_name in CATEGORY_ORDER:
+        art_list = categories.get(cat_name, [])
+        if not art_list:
+            continue
         lines.append(f'    <!-- === {cat_name} === -->')
         lines.append(f'    <div class="cat-section-header">{cat_name}</div>')
         for art in art_list:
@@ -201,6 +218,7 @@ def generate_static_cards_html(articles):
             lines.append(f'      <p class="summary">{art["summary"]}</p>')
             lines.append(f'    </article>')
             lines.append('')
+    lines.append('    </div>')
 
     return '\n'.join(lines)
 
@@ -214,19 +232,14 @@ def update_index_html(cards_html):
     with open(INDEX_FILE, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # 匹配 <!-- ===== 文章列表（静态 HTML，不依赖 JS 渲染） ===== --> 到下一个独立的注释块或 </div> 之前
-    pattern = r'(<!-- ===== 文章列表（静态 HTML，不依赖 JS 渲染） ===== -->\s*<div id="article-container">\s*)(.*?)(\s*</div>\s*<!-- ===== 搜索框)'
-    replacement = rf'\1\n{cards_html}\n    \3'
-
-    # 如果上面的模式不匹配（注释可能稍有差异），尝试更宽松的模式
-    if not re.search(pattern, content, re.DOTALL):
-        pattern = r'(<div id="article-container">)(.*?)(\s*</div>)'
-        replacement = rf'\1\n{cards_html}\n    \3'
+    # 使用 STATIC_CARDS_BEGIN / STATIC_CARDS_END 标记定位替换区域
+    pattern = r'(<!-- STATIC_CARDS_BEGIN -->\s*)(.*?)(\s*<!-- STATIC_CARDS_END -->)'
 
     if not re.search(pattern, content, re.DOTALL):
-        print("错误: 无法在 index.html 中找到 article-container 节点")
+        print("错误: 无法在 index.html 中找到 STATIC_CARDS_BEGIN / STATIC_CARDS_END 标记")
         return False
 
+    replacement = rf'\1\n{cards_html}\n    \3'
     new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
     with open(INDEX_FILE, "w", encoding="utf-8") as f:
         f.write(new_content)
