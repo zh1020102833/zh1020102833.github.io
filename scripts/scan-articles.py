@@ -83,7 +83,7 @@ def scan_articles():
         return articles
 
     for fname in sorted(os.listdir(ARTICLES_DIR)):
-        if not fname.endswith(".html") or fname == "template.html":
+        if not fname.endswith(".html") or fname in ("template.html", "模板.html"):
             continue
 
         fpath = os.path.join(ARTICLES_DIR, fname)

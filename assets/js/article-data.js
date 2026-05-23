@@ -67,6 +67,13 @@ var siteData = {
           date: '2026-05-22',
           summary: '高速模数混合电路设计的应用笔记，涉及PCB布局、接地策略和信号完整性。',
           file: 'articles/high-speed-mixed-signal.html'
+        },
+        {
+          id: 'transmission-line-and-return-current',
+          title: '传输线与返回电流',
+          date: '2026-05-23',
+          summary: '信号完整性入门系列第一讲：传输线定义、返回电流规律、特征阻抗与分布参数基础。',
+          file: 'articles/transmission-line-and-return-current.html'
         }
       ]
     },

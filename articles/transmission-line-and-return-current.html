@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>传输线与返回电流</title>
+<meta name="category" content="高速信号">
+<meta name="date" content="2026-05-23">
+<meta name="description" content="信号完整性入门系列第一讲：传输线定义、返回电流规律、特征阻抗与分布参数基础。">
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\(', '\)']],
+    displayMath: [['$$', '$$'], ['\[', '\]']]
+  }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg: #f5f4f1;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --border-med: rgba(0,0,0,0.15);
+  --text: #1c1b19;
+  --text-sec: #555350;
+  --text-hint: #8c8883;
+  --accent: #16599e;
+  --accent-light: #e3eef9;
+  --teal: #0d6751;
+  --teal-light: #dff3ec;
+  --coral: #913719;
+  --coral-light: #f9e9e2;
+  --amber: #7d4908;
+  --amber-light: #f9ecd6;
+  --purple: #4e44b0;
+  --purple-light: #eceafc;
+  --green: #36650f;
+  --green-light: #e9f2db;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --sidebar-w: 260px;
+  --sidebar-bg: #111827;
+  --sidebar-text: #9ca3af;
+  --sidebar-active: #2dd4bf;
+  --sidebar-hover: #1f2937;
+  --sidebar-heading: #6b7280;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.75;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  padding: 28px 0 40px;
+  scrollbar-width: thin;
+  scrollbar-color: #374151 transparent;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sidebar-heading);
+  letter-spacing: 0.06em;
+  padding: 0 24px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 16px;
+}
+.sidebar-nav { list-style: none; padding: 0; margin: 0; }
+.sidebar-nav li { margin: 0; }
+.sidebar-nav a {
+  display: block;
+  padding: 7px 24px;
+  font-size: 13px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-left: 3px solid transparent;
+  line-height: 1.5;
+}
+.sidebar-nav a:hover { color: #e5e7eb; background: var(--sidebar-hover); }
+.sidebar-nav a.active {
+  color: var(--sidebar-active);
+  border-left-color: var(--sidebar-active);
+  background: rgba(45,212,191,0.06);
+}
+.sidebar-nav .sub a {
+  padding-left: 44px;
+  font-size: 12px;
+  color: #6b7280;
+}
+.sidebar-nav .sub a:hover { color: #d1d5db; }
+.sidebar-nav .sub a.active { color: var(--sidebar-active); }
+
+/* ===== MAIN ===== */
+.main-wrap {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+}
+.page-header {
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  padding: 40px 0 32px;
+  text-align: center;
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+.page-header p {
+  margin-top: 8px;
+  color: var(--text-sec);
+  font-size: 13px;
+}
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 28px 80px;
+}
+.chapter {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  scroll-margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.chapter-num {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+h2.chapter-title {
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid var(--border);
+}
+h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 24px 0 12px;
+  scroll-margin-top: 20px;
+}
+h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sec);
+  margin: 18px 0 8px;
+  scroll-margin-top: 20px;
+}
+p { margin-bottom: 12px; color: var(--text); font-size: 14px; }
+ul, ol { padding-left: 22px; margin-bottom: 14px; }
+li { margin: 6px 0; color: var(--text); font-size: 14px; }
+strong { font-weight: 500; color: var(--text); }
+blockquote {
+  border-left: 3px solid var(--border-med);
+  padding: 8px 16px;
+  margin: 14px 0;
+  color: var(--text-sec);
+  font-size: 13px;
+  background: #fafaf8;
+  border-radius: 0 6px 6px 0;
+}
+.tag {
+  display: inline-block;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  margin-right: 4px;
+}
+.tag.teal { background: var(--teal-light); color: var(--teal); }
+.tag.coral { background: var(--coral-light); color: var(--coral); }
+.tag.amber { background: var(--amber-light); color: var(--amber); }
+.tag.purple { background: var(--purple-light); color: var(--purple); }
+
+.info-box {
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13px;
+  color: var(--accent);
+}
+.info-box.teal {
+  background: var(--teal-light);
+  border-left-color: var(--teal);
+  color: var(--teal);
+}
+.info-box.coral {
+  background: var(--coral-light);
+  border-left-color: var(--coral);
+  color: var(--coral);
+}
+.info-box.warn {
+  background: #fff5eb;
+  border-left-color: #e07b30;
+  color: #8b4a0e;
+}
+.info-box.purple {
+  background: var(--purple-light);
+  border-left-color: var(--purple);
+  color: var(--purple);
+}
+
+.formula-box {
+  background: var(--amber-light);
+  border: 0.5px solid #e8c673;
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin: 14px 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--amber);
+  font-weight: 500;
+}
+.formula-box .var { color: var(--text-sec); font-weight: 400; font-size: 12px; display: block; margin-top: 4px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 13px;
+}
+th {
+  background: #f1efe9;
+  font-weight: 500;
+  padding: 10px 12px;
+  text-align: left;
+  border: 0.5px solid var(--border-med);
+  color: var(--text-sec);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+td {
+  padding: 9px 12px;
+  border: 0.5px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #fafaf8; }
+
+img.inline-img {
+  max-width: 100%;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  margin: 14px 0;
+}
+
+.highlight-box {
+  background: linear-gradient(135deg, #fef9eb 0%, #fdf3d6 100%);
+  border: 0.5px solid #e8c673;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.highlight-box h4 { margin: 0 0 8px; color: var(--amber); }
+
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main-wrap { margin-left: 0; }
+  .content { padding: 20px 16px 60px; }
+  .chapter { padding: 24px 20px; }
+}
+
+.canvas-wrap {
+  margin: 20px 0;
+  background: #ececec;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.canvas-label {
+  font-size: 11px;
+  color: var(--text-hint);
+  padding: 7px 16px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--surface);
+  letter-spacing: 0.03em;
+}
+canvas { display: block; width: 100%; }
+
+
+.canvas-wrap {
+  margin: 20px 0;
+  background: #ececec;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.canvas-label {
+  font-size: 11px;
+  color: var(--text-hint);
+  padding: 7px 16px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--surface);
+  letter-spacing: 0.03em;
+}
+canvas { display: block; width: 100%; }
+</style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<aside class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#ch1">第一章 课程整体框架</a></li>
+    <li><a href="#ch2">第二章 传输线的本质与核心定义</a></li>
+    <li class="sub"><a href="#s2-1">2.1 集总 vs 分布</a></li>
+    <li class="sub"><a href="#s2-2">2.2 传输线的定义</a></li>
+    <li class="sub"><a href="#s2-3">2.3 常见传输线形式</a></li>
+    <li class="sub"><a href="#s2-4">2.4 与普通导线的区别</a></li>
+    <li><a href="#ch3">第三章 返回电流的电磁物理机制</a></li>
+    <li class="sub"><a href="#s3-3">3.3 返回电流分配定量关系</a></li>
+    <li><a href="#ch4">第四章 ADS仿真实验完整详解</a></li>
+    <li class="sub"><a href="#s4-1">4.1 仿真工具简介</a></li>
+    <li class="sub"><a href="#s4-2">4.2 实验一：验证返回电流分布</a></li>
+    <li class="sub"><a href="#s4-3">4.3 实验二：改变返回路径距离</a></li>
+    <li class="sub"><a href="#s4-4">4.4 实验三：移除邻近线</a></li>
+    <li><a href="#ch5">第五章 共面波导与两层板阻抗控制</a></li>
+    <li class="sub"><a href="#s5-1">5.1 应用场景</a></li>
+    <li class="sub"><a href="#s5-2">5.2 共面波导设计细节</a></li>
+    <li class="sub"><a href="#s5-3">5.3 阻抗仿真对比</a></li>
+    <li class="sub"><a href="#s5-4">5.4 共面波导阻抗公式</a></li>
+    <li class="sub"><a href="#s5-5">5.5 微带线阻抗公式</a></li>
+    <li class="sub"><a href="#s5-6">5.6 设计注意事项</a></li>
+    <li><a href="#ch6">第六章 高频效应与材料选择</a></li>
+    <li class="sub"><a href="#s6-1">6.1 趋肤效应</a></li>
+    <li class="sub"><a href="#s6-2">6.2 介质损耗</a></li>
+    <li class="sub"><a href="#s6-3">6.3 返回电流的高频行为</a></li>
+    <li><a href="#ch7">第七章 反射系数公式及参数详解</a></li>
+    <li><a href="#ch8">第八章 返回路径设计的关键原则</a></li>
+    <li><a href="#ch9">第九章 常见误区与澄清</a></li>
+    <li><a href="#ch10">第十章 总结与下讲预告</a></li>
+  </ul>
+</aside>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-wrap">
+
+<header class="page-header">
+  <div style="font-size:11px;letter-spacing:0.1em;color:var(--text-hint);text-transform:uppercase;margin-bottom:8px;">Signal Integrity · 信号完整性入门系列</div>
+  <h1>传输线与返回电流</h1>
+  <p>信号完整性第一讲：传输线定义、返回电流规律、特征阻抗与分布参数基础</p>
+</header>
+
+<div class="content">
+
+<!-- ========== CHAPTER 1 ========== -->
+<section class="chapter" id="ch1">
+  <div class="chapter-num">第一章</div>
+  <h2 class="chapter-title">课程整体框架</h2>
+
+  <p>本课程为信号完整性（SI）入门系列的第一部分，共7章，约40+课。各模块逻辑递进，从基础到应用。</p>
+
+  <table>
+    <thead><tr><th>章节</th><th>主题</th><th>核心内容</th><th>学习意义</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>传输线基础</td><td>传输线定义、返回电流规律、特征阻抗、分布参数</td><td>SI设计的基石，不理解传输线就无法分析反射和串扰</td></tr>
+      <tr><td>2</td><td>反射</td><td>过冲/振铃/台阶回沟、反射系数、阻抗匹配、端接方式（串行/并行/戴维南）、拓扑结构（Fly-by/T/菊花链）、TDR测量</td><td>解决信号质量问题的核心方法，可直接应用于PCB调试</td></tr>
+      <tr><td>3</td><td>串扰</td><td>容性耦合/感性耦合、近端串扰/远端串扰、影响因素（间距/长度/层叠）、抑制技巧（加地线/增加间距/屏蔽）</td><td>高密度布线中最常见的干扰问题，掌握后可有效提升布线质量</td></tr>
+      <tr><td>4</td><td>S参数</td><td>S11/S21/S12/S22、插入损耗/回波损耗、无源性/互易性、TDR与S参数的转换</td><td>描述无源通道的万能工具，用于评估传输线性能</td></tr>
+      <tr><td>5</td><td>差分信号</td><td>差模/共模、差分阻抗、共模转换、差分S参数、差分对布线规则</td><td>高速串行协议（USB/PCIE/HDMI/10GBase）的基础</td></tr>
+      <tr><td>6</td><td>电源系统（PI）</td><td>同步开关噪声（SSN/地弹）、电源平面谐振、去耦电容、目标阻抗、SI与PI的相互影响</td><td>广义SI的重要组成部分，电源噪声直接影响信号质量</td></tr>
+      <tr><td>7</td><td>信号质量</td><td>眼图、误码率（BER）、浴盆曲线、抖动、IBIS模型、IBIS-AMI模型（统计仿真）</td><td>高速通道验证与合规性测试的最终评判标准</td></tr>
+    </tbody>
+  </table>
+
+  <blockquote>
+    <p><strong>SI分类</strong>：狭义SI = 第1~5章 + 信号质量；广义SI = 狭义SI + PI + EMC/EMI。</p>
+    <p><strong>为什么SI和PI一起讲？</strong>当多个IO同时翻转（同步开关），巨大的瞬态电流流经电源/地回路，会在电源平面上产生电压波动（SSN，也称地弹）。这个噪声直接叠加到信号上，导致信号质量恶化。反过来，电源平面上的谐振（由平面形状和过孔引起）会产生电磁辐射，耦合到邻近信号线。<strong>两者不可分割</strong>。</p>
+  </blockquote>
+</section>
+
+<!-- ========== CHAPTER 2 ========== -->
+<section class="chapter" id="ch2">
+  <div class="chapter-num">第二章</div>
+  <h2 class="chapter-title">传输线的本质与核心定义</h2>
+
+  <h3 id="s2-1">2.1 集总 vs 分布</h3>
+  <ul>
+    <li><strong>集总参数模型</strong>：当信号波长 &lambda; &gt;&gt; 走线长度 L（通常 L/&lambda; &lt; 1/6），可以认为整条走线上电压电流同时变化，用电阻、电感、电容集中元件表示。</li>
+    <li><strong>分布参数模型</strong>：当 L/&lambda; &ge; 1/6，必须考虑波沿走线传播的时间。走线每一小段 &Delta;x 都有串联电感 L&middot;&Delta;x 和并联电容 C&middot;&Delta;x。传输线方程（电报方程）描述电压和电流的位置依赖关系。</li>
+  </ul>
+
+  <p><strong>临界条件</strong>：对于数字信号，用上升时间 $t_r$ 判断：走线长度 &gt; $t_r$ / (6 &times; 传输速度) 时视为传输线。例如 FR4 中信号速度约 6 in/ns，若 $t_r$=1 ns，则长度 &gt; 1 inch 就需要按传输线处理。<strong>绝大多数高速 PCB 走线都是传输线</strong>。</p>
+
+  <h3 id="s2-2">2.2 传输线的定义</h3>
+  <p><strong>传输线 = 有信号返回路径的信号线</strong>。只有信号线没有返回路径，无法形成电流环路，信号无法传播。</p>
+
+  <p>常见传输线形式：</p>
+  <ul>
+    <li><strong>微带线</strong>：顶层信号，底层参考平面（GND/电源）</li>
+    <li><strong>带状线</strong>：内层信号，上下两层参考平面</li>
+    <li><strong>共面波导</strong>：信号线两侧有地线，底部可有或无参考平面</li>
+    <li><strong>双绞线、同轴线</strong>：线缆形式</li>
+  </ul>
+
+  <div class="info-box teal">
+    <strong>关键事实</strong>：返回电流与信号电流<strong>同时产生、大小相等、方向相反</strong>。这不是直流回路中的电流路径，而是由时变电磁场感应的位移电流和传导电流。
+  </div>
+
+  <h3 id="s2-3">2.3 常见传输线形式</h3>
+  <table>
+    <thead><tr><th>类型</th><th>结构</th><th>应用场景</th><th>特点</th></tr></thead>
+    <tbody>
+      <tr><td>微带线</td><td>顶层信号，底层参考平面</td><td>多层PCB外层布线</td><td>阻抗易控，辐射稍大</td></tr>
+      <tr><td>带状线</td><td>内层信号，上下参考平面</td><td>多层PCB内层</td><td>辐射小，抗干扰好</td></tr>
+      <tr><td>共面波导</td><td>信号线两侧有地线</td><td>两层板、无参考平面场景</td><td>可工作在无参考平面时</td></tr>
+      <tr><td>双绞线</td><td>两根导线绞合</td><td>网线、电话线</td><td>抑制共模干扰</td></tr>
+      <tr><td>同轴线</td><td>中心导体+外层屏蔽</td><td>射频信号、视频线</td><td>屏蔽效果好，损耗低</td>
+      </tr>
+    </tbody>
+  </table>
+
+<div class="canvas-wrap">
+    <div class="canvas-label">图 2-1　微带线、带状线与共面波导截面结构对比</div>
+    <canvas id="cvs-tline-section" height="320"></canvas>
+  </div>
+
+  <h3 id="s2-4">2.4 与普通导线的区别</h3>
+  <table>
+    <thead><tr><th>对比项</th><th>普通导线</th><th>传输线</th></tr></thead>
+    <tbody>
+      <tr><td>关注点</td><td>仅信号线本身</td><td>信号线+返回路径</td></tr>
+      <tr><td>电流回路</td><td>假设理想返回路径</td><td>必须明确返回路径设计</td></tr>
+      <tr><td>高频特性</td><td>忽略分布参数</td><td>必须考虑分布电感/电容</td></tr>
+      <tr><td>阻抗</td><td>不考虑特征阻抗</td><td>特征阻抗是关键参数</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== CHAPTER 3 ========== -->
+<section class="chapter" id="ch3">
+  <div class="chapter-num">第三章</div>
+  <h2 class="chapter-title">返回电流的电磁物理机制</h2>
+
+  <p>信号线上的时变电流产生时变磁场。根据法拉第电磁感应定律，时变磁场在参考平面（或邻近导体）中感生出电场。该电场驱动导体中的自由电子定向移动，形成返回电流。返回电流与信号电流大小相等、方向相反，并且总是紧贴信号线流动（环路电感最小化）。系统总是选择<strong>环路电感最小</strong>的路径作为返回电流的主要通道。</p>
+
+  <p>环路电感正比于回路所围的面积：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$L_{loop} \propto rac{\text{面积} \times \mu}{\text{宽度}}$$
+  </p>
+
+  <table>
+    <thead><tr><th>符号</th><th>含义</th><th>单位</th><th>典型值/说明</th></tr></thead>
+    <tbody>
+      <tr><td>$L_{loop}$</td><td>环路电感</td><td>H (亨利)</td><td>通常为 nH 级</td></tr>
+      <tr><td>面积</td><td>信号线与返回路径之间的横截面积</td><td>m&sup2;</td><td>面积 = 介质厚度 &times; 线长</td></tr>
+      <tr><td>$\mu$</td><td>介质的磁导率</td><td>H/m</td><td>非磁性材料 $\mu pprox \mu_0 = 4\pi \times 10^{-7}$ H/m</td></tr>
+      <tr><td>宽度</td><td>返回路径的有效宽度</td><td>m</td><td>约等于信号线宽度</td></tr>
+    </tbody>
+  </table>
+
+  <ul>
+    <li>对于微带线，返回电流紧贴信号线正下方，环路面积 &asymp; 介质厚度 &times; 线长，最小化。</li>
+    <li>如果有更近的导体（如6mil外的邻近线），环路面积更小，返回电流会优先选择它。</li>
+  </ul>
+
+  <h3 id="s3-3">3.3 返回电流分配定量关系</h3>
+  <p>近似关系：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$rac{I_{adj}}{I_{ref}} pprox rac{d_{ref}}{d_{adj}} \times rac{w_{adj}}{w_{ref}} \times k$$
+  </p>
+
+  <table>
+    <thead><tr><th>符号</th><th>含义</th><th>单位</th><th>典型值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>$I_{adj}$</td><td>邻近线上感应的返回电流有效值</td><td>A (安培)</td><td>mA 级</td><td>随信号幅度变化</td></tr>
+      <tr><td>$I_{ref}$</td><td>参考平面上感应的返回电流有效值</td><td>A</td><td>mA 级</td><td>与 $I_{adj}$ 之和等于信号电流</td></tr>
+      <tr><td>$d_{ref}$</td><td>信号线到参考平面的垂直距离</td><td>mil 或 mm</td><td>4 mil (0.1mm) 或 60 mil (1.5mm)</td><td>由叠层厚度决定</td></tr>
+      <tr><td>$d_{adj}$</td><td>信号线到邻近线的间距（边到边）</td><td>mil 或 mm</td><td>6-16 mil</td><td>间距越小，耦合越强</td></tr>
+      <tr><td>$w_{adj}$</td><td>邻近线的宽度</td><td>mil 或 mm</td><td>6-10 mil</td><td>较宽导线能承载更多返回电流</td></tr>
+      <tr><td>$w_{ref}$</td><td>参考平面的有效宽度</td><td>mil 或 mm</td><td>远大于信号线宽</td><td>平面通常视为无限宽</td></tr>
+      <tr><td>$k$</td><td>材料与几何因子</td><td>无量纲</td><td>0.5-2</td><td>取决于介电常数、趋肤效应等，实验修正</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>实验验证</strong>：</p>
+  <ul>
+    <li>$d_{ref}$=4mil, $d_{adj}$=16mil，且 $w_{adj} \approx w_{ref}$ &rarr; $I_{adj}/I_{ref} \approx 1/9$（参考平面占91%）</li>
+    <li>$d_{ref}$=60mil, $d_{adj}$=6mil &rarr; $I_{adj}/I_{ref} \approx 10/1$（邻近线占~70-80%）</li>
+  </ul>
+
+  <div class="info-box teal">
+    <strong>工程意义</strong>：通过调整间距比，可以主动控制返回电流的分布，例如让返回电流远离敏感区域。
+  </div>
+
+<div class="canvas-wrap">
+    <div class="canvas-label">图 3-1　返回电流分配关系示意 — 信号线、参考平面与邻近导体间的电流分布</div>
+    <canvas id="cvs-return-current" height="340"></canvas>
+  </div>
+
+</section>
+
+<!-- ========== CHAPTER 4 ========== -->
+<section class="chapter" id="ch4">
+  <div class="chapter-num">第四章</div>
+  <h2 class="chapter-title">ADS仿真实验完整详解</h2>
+
+  <h3 id="s4-1">4.1 仿真工具简介</h3>
+  <ul>
+    <li><strong>ADS（Advanced Design System）</strong>：Keysight公司出品，射频与高速信号仿真领域功能最强大的软件之一。</li>
+    <li><strong>优势</strong>：前仿真界面友好、时域/频域结合、内置均衡算法（CTLE/DFE），适合串行通道仿真。</li>
+    <li><strong>适用性</strong>：国内射频领域应用较多，SI领域逐渐普及。学习重点是理解仿真背后的物理意义，而非软件操作。</li>
+  </ul>
+
+  <h3 id="s4-2">4.2 实验一：验证返回电流的分布规律</h3>
+  <p><strong>目标</strong>：验证返回电流与信号电流等大反向，且分布在所有耦合导线上。</p>
+
+  <p><strong>电路搭建步骤</strong>：</p>
+  <ol>
+    <li>新建工程，选择&ldquo;时域仿真&rdquo;（Transient）。</li>
+    <li>添加信号源：方波，幅值1V，上升/下降沿0.1ns，周期10ns。</li>
+    <li>添加传输线模型：使用&ldquo;MLIN&rdquo;（微带线）或&ldquo;CPW&rdquo;（共面波导）元件。</li>
+    <li>设置叠层（Stackup）：
+      <ul>
+        <li>两层板，Layer1为信号层，Layer2为参考平面（GND）。</li>
+        <li>介质厚度：4 mil，$arepsilon_r$=4.2，$	an\delta$=0.02。</li>
+        <li>铜厚：1.2 mil（1oz），电导率 $5.8 \times 10^7$ S/m。</li>
+      </ul>
+    </li>
+    <li>添加同层邻近信号线（平行走线），间距16 mil，线宽6 mil，长度2000 mil。</li>
+    <li>在信号线源端串联50&Omega;电阻（模拟输出阻抗）。</li>
+    <li>在接收端用高阻（1M&Omega;）模拟开路，以便观察全反射。</li>
+    <li>添加三个电流探头（I_Probe）：
+      <ul>
+        <li>信号线源端：测量入射电流。</li>
+        <li>参考平面返回路径：测量参考平面上的返回电流。</li>
+        <li>邻近信号线：测量邻近线上的返回电流。</li>
+      </ul>
+    </li>
+    <li>设置仿真时间10ns，步长0.01ns。</li>
+  </ol>
+
+  <p><strong>仿真结果</strong>：</p>
+  <ul>
+    <li>入射电流峰值 &asymp; 11mA。</li>
+    <li>参考平面返回电流峰值 &asymp; 10mA（占91%）。</li>
+    <li>邻近线返回电流峰值 &asymp; 1mA（占9%）。</li>
+    <li>两返回电流之和 = 入射电流，方向相反。</li>
+  </ul>
+
+  <div class="info-box teal">
+    <strong>结论</strong>：返回电流严格满足电流守恒，且主要分布在距离最近的参考平面上。
+  </div>
+
+  <h3 id="s4-3">4.3 实验二：改变返回路径距离，观察电流分布变化</h3>
+  <p><strong>设置变更</strong>：</p>
+  <ul>
+    <li>将介质厚度（Layer1到Layer2距离）改为60 mil（模拟两层板厚度）。</li>
+    <li>邻近线间距保持6 mil。</li>
+    <li>其余参数不变。</li>
+  </ul>
+
+  <p><strong>仿真结果</strong>：</p>
+  <ul>
+    <li>入射电流 &asymp; 17mA（因输出阻抗变化，但比例关系不变）。</li>
+    <li>参考平面返回电流 &asymp; 3mA（占~18%）。</li>
+    <li>邻近线返回电流 &asymp; 4mA（占~24%）。</li>
+  </ul>
+
+  <div class="info-box teal">
+    <strong>结论</strong>：当参考平面远而邻近线近时，返回电流主要从邻近线回流。<strong>距离决定分配</strong>。
+  </div>
+
+  <h3 id="s4-4">4.4 实验三：移除邻近线，观察唯一返回路径</h3>
+  <p><strong>设置</strong>：</p>
+  <ul>
+    <li>移除同层邻近信号线（或将其甩到很远位置，如间距&gt;100mil）。</li>
+    <li>仅保留参考平面，距离60 mil。</li>
+  </ul>
+
+  <p><strong>结果</strong>：</p>
+  <ul>
+    <li>无论参考平面多远，返回电流全部通过参考平面（唯一路径）。</li>
+    <li>入射电流 &asymp; 17mA，参考平面返回电流 &asymp; 17mA。</li>
+  </ul>
+
+  <div class="info-box teal">
+    <strong>结论</strong>：信号总会找到返回路径。没有其他耦合导体时，即使参考平面很远，也由它承载所有返回电流。
+  </div>
+</section>
+
+<!-- ========== CHAPTER 5 ========== -->
+<section class="chapter" id="ch5">
+  <div class="chapter-num">第五章</div>
+  <h2 class="chapter-title">工程应用：共面波导与两层板阻抗控制</h2>
+
+  <h3 id="s5-1">5.1 应用场景</h3>
+  <p><strong>低成本两层板设计</strong>（如DDR内存、消费电子产品）：</p>
+  <ul>
+    <li>只有顶层和底层，无内层参考平面。</li>
+    <li>底层通常布线密集，无法提供完整的参考平面。</li>
+    <li>传统微带线（底层参考）无法工作，因为返回路径太远（1.6mm &asymp; 63mil），环路电感极大，阻抗失控（&gt;250&Omega;）。</li>
+  </ul>
+
+  <p><strong>解决方案</strong>：采用<strong>共面波导（Coplanar Waveguide, CPW）</strong>结构。</p>
+
+  <h3 id="s5-2">5.2 共面波导设计细节</h3>
+  <p><strong>结构</strong>：</p>
+  <ul>
+    <li>信号线走顶层。</li>
+    <li>信号线两侧平行布置<strong>包地线</strong>（伴随地，Guard Trace）。</li>
+    <li>包地线通过过孔连接到地平面（底层或内层），形成低阻抗返回路径。</li>
+    <li>信号线与包地线的间距为 $s$，线宽为 $w$。</li>
+  </ul>
+
+  <table>
+    <thead><tr><th>参数</th><th>值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>板厚</td><td>1.6mm (63mil)</td><td>常见两层板厚度</td></tr>
+      <tr><td>信号线宽 $w$</td><td>5 mil</td><td>目标阻抗约50-80&Omega;</td></tr>
+      <tr><td>包地线宽</td><td>10 mil</td><td>略宽于信号线，提供足够回流面积</td></tr>
+      <tr><td>信号到地间距 $s$</td><td>5 mil</td><td>间距越小耦合越强，但受制于制造能力（最小4mil）</td></tr>
+      <tr><td>介质 $arepsilon_r$</td><td>4.2 (FR4)</td><td>常规FR4板材</td></tr>
+      <tr><td>铜厚</td><td>1 oz (1.2 mil)</td><td>常规铜箔</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s5-3">5.3 阻抗仿真对比</h3>
+  <table>
+    <thead><tr><th>结构</th><th>实测阻抗</th><th>反射系数（匹配75&Omega;）</th><th>信号质量</th></tr></thead>
+    <tbody>
+      <tr><td>孤立信号线（无包地、无近参考）</td><td>~250&Omega;</td><td>&Gamma;&asymp;0.54</td><td>极差，无法使用</td></tr>
+      <tr><td>共面波导（包地，s=5mil）</td><td>~82&Omega;</td><td>&Gamma;&asymp;0.045</td><td>良好，可跑DDR3-1600</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>为什么82&Omega;可用？</strong></p>
+  <ul>
+    <li>DDR3 的 ODT（On-Die Termination）可选 40/60/75&Omega;。选择 75&Omega; 时，反射系数 $\Gamma = (82-75)/(82+75) \approx 0.045$，反射能量仅 4.5%。</li>
+    <li>实测眼图满足规范（VIH/VIL 余量充足）。</li>
+    <li>一些两层板方案甚至可将阻抗调至 60&Omega;（通过调整线宽/间距），性能更优。</li>
+  </ul>
+
+  <h3 id="s5-4">5.4 共面波导阻抗公式及参数详解</h3>
+  <p>共面波导的特性阻抗（无底层参考平面，$h \to \infty$）近似公式：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$Z_0 = \frac{60\pi}{\sqrt{\varepsilon_{eff}}} \cdot \frac{1}{\frac{K(k)}{K'(k)}}$$
+  </p>
+  <p>其中，</p>
+  <p style="text-align:center; font-size:15px;">
+    $$k = \frac{w}{w + 2s}, \quad \varepsilon_{eff} = \frac{\varepsilon_r + 1}{2}$$
+  </p>
+
+  <table>
+    <thead><tr><th>符号</th><th>含义</th><th>单位</th><th>典型值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>$Z_0$</td><td>特性阻抗</td><td>&Omega; (欧姆)</td><td>50-100&Omega;</td><td>目标阻抗由协议决定</td></tr>
+      <tr><td>$arepsilon_{eff}$</td><td>有效介电常数</td><td>无量纲</td><td>2.6-3.5</td><td>介于1和$arepsilon_r$之间，因电场分布在空气和介质中</td></tr>
+      <tr><td>$arepsilon_r$</td><td>相对介电常数</td><td>无量纲</td><td>4.2 (FR4)</td><td>介质材料固有参数</td></tr>
+      <tr><td>$K(k)$</td><td>第一类完全椭圆积分</td><td>无量纲</td><td>取决于 $k$</td><td>数学函数，可查表或软件计算</td></tr>
+      <tr><td>$K'(k)$</td><td>$K(\sqrt{1-k^2})$</td><td>无量纲</td><td>互补模数</td><td>$K(k)/K'(k)$ 比值决定阻抗</td></tr>
+      <tr><td>$w$</td><td>信号线宽度</td><td>mil 或 mm</td><td>5-10 mil</td><td>线宽&uarr; &rarr; 阻抗&darr;</td></tr>
+      <tr><td>$s$</td><td>信号线到地线间距</td><td>mil 或 mm</td><td>5-10 mil</td><td>间距&uarr; &rarr; 阻抗&uarr;（耦合减弱）</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>简化经验公式</strong>（工程常用）：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$Z_0 \approx \frac{60}{\sqrt{\varepsilon_r}} \ln\left(\frac{4h}{0.67\pi w}\right) \quad \text{(微带线)}$$
+  </p>
+  <p>对于共面波导，更准确计算需用场求解器或查标准曲线。</p>
+
+  <h3 id="s5-5">5.5 微带线阻抗公式及参数详解</h3>
+  <p>微带线特性阻抗近似公式（适用 $w/h \le 2$）：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$Z_0 = \frac{87}{\sqrt{\varepsilon_r + 1.41}} \ln\left(\frac{5.98h}{0.8w + t}\right)$$
+  </p>
+
+  <table>
+    <thead><tr><th>符号</th><th>含义</th><th>单位</th><th>典型值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>$Z_0$</td><td>特性阻抗</td><td>&Omega;</td><td>50&Omega;</td><td>常用标准值</td></tr>
+      <tr><td>$arepsilon_r$</td><td>基板相对介电常数</td><td>无量纲</td><td>4.2 (FR4)</td><td>频率升高会略有下降（介电色散）</td></tr>
+      <tr><td>$h$</td><td>介质厚度（信号层到参考平面距离）</td><td>mil</td><td>4-10 mil</td><td>厚度&uarr; &rarr; 阻抗&uarr;</td></tr>
+      <tr><td>$w$</td><td>信号线宽度</td><td>mil</td><td>5-10 mil</td><td>宽度&uarr; &rarr; 阻抗&darr;</td></tr>
+      <tr><td>$t$</td><td>铜箔厚度</td><td>mil</td><td>1.2 mil (1oz)</td><td>厚度影响较小，通常忽略</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box warn">
+    <strong>注意</strong>：该公式仅适用于微带线，共面波导需用不同公式。
+  </div>
+
+  <h3 id="s5-6">5.6 共面波导设计注意事项</h3>
+  <table>
+    <thead><tr><th>要点</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>包地线不能断点</strong></td><td>断点会导致返回路径中断，阻抗突变，严重反射。包地线必须全程伴随信号线。</td></tr>
+      <tr><td><strong>均匀间距</strong></td><td>信号线到两侧地线的间距必须保持一致，否则阻抗沿线变化。</td></tr>
+      <tr><td><strong>地线过孔</strong></td><td>包地线应每隔一定距离（如100-200mil）通过过孔连接到地平面，降低地线电感。</td></tr>
+      <tr><td><strong>避免浮空地线</strong></td><td>如果包地线只是悬空（不通过过孔接地），它只是孤立的导体，反而可能引入串扰。</td></tr>
+      <tr><td><strong>考虑制造公差</strong></td><td>PCB厂家对线宽、间距有最小公差（通常&plusmn;1mil），设计时留有余量。</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== CHAPTER 6 ========== -->
+<section class="chapter" id="ch6">
+  <div class="chapter-num">第六章</div>
+  <h2 class="chapter-title">高频效应与材料选择</h2>
+
+  <h3 id="s6-1">6.1 趋肤效应及公式参数详解</h3>
+  <p><strong>定义</strong>：高频电流集中在导体表面流动，穿透深度（趋肤深度）：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$\delta = \sqrt{rac{2}{\omega \mu \sigma}} = rac{1}{\sqrt{\pi f \mu \sigma}}$$
+  </p>
+
+  <table>
+    <thead><tr><th>符号</th><th>含义</th><th>单位</th><th>典型值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>$\delta$</td><td>趋肤深度</td><td>&mu;m 或 mil</td><td>2.1&mu;m @1GHz</td><td>电流密度下降到表面 $1/e$ 的距离</td></tr>
+      <tr><td>$\omega$</td><td>角频率</td><td>rad/s</td><td>$\omega=2\pi f$</td><td>频率越高，趋肤深度越小</td></tr>
+      <tr><td>$f$</td><td>频率</td><td>Hz</td><td>$1 \times 10^9$ Hz (1GHz)</td><td>关键频率点</td></tr>
+      <tr><td>$\mu$</td><td>导体磁导率</td><td>H/m</td><td>$\mu_0=4\pi \times 10^{-7}$</td><td>铜是非磁性，使用真空磁导率</td></tr>
+      <tr><td>$\sigma$</td><td>导体电导率</td><td>S/m</td><td>$5.8 \times 10^7$ (铜)</td><td>温度升高会降低</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>计算示例</strong>：铜在1GHz时，$\delta = 1/\sqrt{\pi \times 10^9 \times 4\pi \times 10^{-7} \times 5.8 \times 10^7} \approx 2.09$ &mu;m。</p>
+
+  <p><strong>工程意义</strong>：1oz铜厚（35&mu;m）远大于2.1&mu;m，因此高频电流只使用表面薄层。表面粗糙度（$R_q$）若达到1-2&mu;m，会显著增加损耗，高速设计需用低粗糙度铜箔（如RTF，$R_q$&lt;0.5&mu;m）。</p>
+
+  <div class="canvas-wrap">
+    <div class="canvas-label">图 6-1　趋肤效应示意 — 高频电流集中在导体表面 δ 深度内流动</div>
+    <canvas id="cvs-skin-effect" height="320"></canvas>
+  </div>
+
+  <h3 id="s6-2">6.2 介质损耗及参数</h3>
+  <p>介质损耗角正切 $	an\delta$，是介质材料损耗的度量。信号衰减系数：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$lpha_d = rac{\pi f}{c} \sqrt{arepsilon_r} \cdot 	an\delta$$
+  </p>
+
+  <table>
+    <thead><tr><th>符号</th><th>含义</th><th>单位</th><th>典型值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>$lpha_d$</td><td>介质损耗衰减系数</td><td>Np/m 或 dB/in</td><td>0.1-10 dB/in</td><td>转换为dB更常用</td></tr>
+      <tr><td>$f$</td><td>频率</td><td>Hz</td><td>越高损耗越大</td><td>与频率成正比</td></tr>
+      <tr><td>$c$</td><td>真空中光速</td><td>$3 \times 10^8$ m/s</td><td>常数</td><td></td></tr>
+      <tr><td>$arepsilon_r$</td><td>相对介电常数</td><td>无量纲</td><td>4.2 (FR4)</td><td>影响相位速度</td></tr>
+      <tr><td>$	an\delta$</td><td>损耗角正切</td><td>无量纲</td><td>0.02 @1GHz (FR4)</td><td>低损耗材料 &lt;0.001</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s6-3">6.3 返回电流的高频行为</h3>
+  <ul>
+    <li>高频返回电流集中在参考平面靠近信号线的表面（趋肤效应），不穿透整个平面厚度。</li>
+    <li>即使平面很厚，有效回路也只在表面薄层，因此<strong>表面粗糙度</strong>对返回路径损耗有显著影响。</li>
+  </ul>
+</section>
+
+<!-- ========== CHAPTER 7 ========== -->
+<section class="chapter" id="ch7">
+  <div class="chapter-num">第七章</div>
+  <h2 class="chapter-title">反射系数公式及参数详解</h2>
+
+  <p>在阻抗匹配计算中常用到反射系数：</p>
+  <p style="text-align:center; font-size:15px;">
+    $$\Gamma = rac{Z_L - Z_0}{Z_L + Z_0}$$
+  </p>
+
+  <table>
+    <thead><tr><th>符号</th><th>含义</th><th>单位</th><th>典型值</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>$\Gamma$</td><td>电压反射系数</td><td>无量纲</td><td>$-1 \le \Gamma \le 1$</td><td>0表示完全匹配</td></tr>
+      <tr><td>$Z_L$</td><td>负载阻抗</td><td>&Omega;</td><td>75&Omega; (ODT)</td><td>接收端看到的阻抗</td></tr>
+      <tr><td>$Z_0$</td><td>传输线特性阻抗</td><td>&Omega;</td><td>82&Omega; (共面波导)</td><td>设计值</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>计算示例</strong>：$Z_0$=82&Omega;, $Z_L$=75&Omega;, $\Gamma = (82-75)/(82+75) = 7/157 \approx 0.0446$。反射功率比 $= \Gamma^2 \approx 0.002 = 0.2\%$，很小。</p>
+</section>
+
+<!-- ========== CHAPTER 8 ========== -->
+<section class="chapter" id="ch8">
+  <div class="chapter-num">第八章</div>
+  <h2 class="chapter-title">返回路径设计的关键原则</h2>
+
+  <table>
+    <thead><tr><th>原则</th><th>说明</th><th>检查方法</th></tr></thead>
+    <tbody>
+      <tr><td>连续参考平面</td><td>信号线下方的参考平面不能被分割或挖空</td><td>查看PCB层叠与布线，避免跨分割</td></tr>
+      <tr><td>换层回流过孔</td><td>信号换层时，在过孔附近添加回流地过孔</td><td>确保信号换层时参考平面跟随</td></tr>
+      <tr><td>包地线接地</td><td>共面波导的包地线必须通过过孔接地</td><td>检查包地线过孔间距</td></tr>
+      <tr><td>避免浮空导体</td><td>未接地的孤立导体可能成为辐射源或串扰路径</td><td>检查是否有未连接的线头</td></tr>
+      <tr><td>差分对返回路径</td><td>差分信号返回路径由彼此提供，但仍需参考平面</td><td>差分线下方保持完整地平面</td></tr>
+      <tr><td>缝补电容</td><td>跨分割区域时，用0.1&mu;F或更小的电容连接分割的两侧</td><td>跨分割处添加电容</td></tr>
+    </tbody>
+  </table>
+
+<div class="canvas-wrap">
+    <div class="canvas-label">图 8-1　信号换层回流过孔示意 — 地过孔为返回电流提供低阻抗路径</div>
+    <canvas id="cvs-layer-via" height="360"></canvas>
+  </div>
+
+</section>
+
+<!-- ========== CHAPTER 9 ========== -->
+<section class="chapter" id="ch9">
+  <div class="chapter-num">第九章</div>
+  <h2 class="chapter-title">常见误区与澄清</h2>
+
+  <table>
+    <thead><tr><th>误区</th><th>正解</th></tr></thead>
+    <tbody>
+      <tr><td>返回电流只在信号末端产生</td><td>信号每向前传播一点，就同时产生返回电流，是<strong>连续分布</strong>的过程</td></tr>
+      <tr><td>参考平面必须是GND</td><td>任何导体都可以，但GND最稳定。电源平面需搭配去耦电容</td></tr>
+      <tr><td>两层板无法跑高速信号</td><td>共面波导结构可实现DDR3-1600，甚至更高</td></tr>
+      <tr><td>回流通路走最低直流电阻</td><td>高频走最低<strong>电感</strong>路径（即最近路径）</td></tr>
+      <tr><td>包地线不需要过孔接地</td><td>必须接地，否则成为悬浮天线，恶化EMI</td></tr>
+      <tr><td>所有信号都需要50&Omega;阻抗</td><td>50&Omega;是常见标准，但DDR常用60&Omega;，USB 90&Omega;，PCIe 85&Omega;，应根据协议选择</td></tr>
+      <tr><td>公式中的常数都是精确的</td><td>近似公式有&plusmn;5-10%误差，最终以场求解器或实测为准</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== CHAPTER 10 ========== -->
+<section class="chapter" id="ch10">
+  <div class="chapter-num">第十章</div>
+  <h2 class="chapter-title">总结与下讲预告</h2>
+
+  <h3>本讲核心结论</h3>
+  <ol>
+    <li><strong>传输线 = 有信号返回路径的信号线</strong>。返回电流与信号电流同时产生，等大反向。</li>
+    <li><strong>返回电流分布由距离（环路电感）决定</strong>：距离越近，电流越大。参考平面近（4mil）占90%以上；参考平面远（60mil）且邻近线近（6mil）时，邻近线占主导。</li>
+    <li><strong>参考平面不一定是GND</strong>，但非地平面需谨慎处理去耦。</li>
+    <li><strong>两层板可以通过共面波导（包地）控制阻抗</strong>，实测82&Omega;可配合ODT实现DDR3高速运行。</li>
+    <li>高频下趋肤效应和介质损耗显著，需根据速率选择合适的材料。</li>
+    <li><strong>工程设计中，掌握公式中每个参数的物理意义和典型取值范围，比死记公式更重要。</strong></li>
+  </ol>
+
+  <h3>下讲预告：时域反射（TDR）与反射原理</h3>
+  <ul>
+    <li>反射的产生原因（阻抗不连续）</li>
+    <li>反射系数的计算与测量</li>
+    <li>TDR测量原理与应用</li>
+    <li>端接匹配策略</li>
+  </ul>
+</section>
+
+</div><!-- .content -->
+</div><!-- .main-wrap -->
+
+
+<script>
+// ============================================================
+// Canvas 2-1: 传输线截面结构对比图 (微带线 / 带状线 / 共面波导)
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-tline-section');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = cvs.clientWidth;
+    const cssH = 320;
+    cvs.width = cssW * dpr;
+    cvs.height = cssH * dpr;
+    cvs.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = cssW, h = cssH;
+    ctx.clearRect(0, 0, w, h);
+
+    const cols = 3;
+    const colW = w / cols;
+    const topM = 32, botM = 50;
+    const traceH = 12, planeH = 8, gapH = 28, viaR = 4;
+
+    const titles = ['微带线 (Microstrip)', '带状线 (Stripline)', '共面波导 (CPW)'];
+
+    for(let ci = 0; ci < cols; ci++) {
+      const cx = colW * ci + colW / 2;
+      const lx = colW * ci + 34;
+      const rx = colW * (ci + 1) - 34;
+      const sectionH = h - topM - botM;
+
+      // Section title
+      ctx.fillStyle = '#1c1b19';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(titles[ci], cx, 18);
+
+      // Background fill for dielectric
+      const dieY = topM + 10;
+      const dieH = sectionH - 20;
+      ctx.fillStyle = '#e8e6df';
+      ctx.fillRect(lx, dieY, rx - lx, dieH);
+
+      if(ci === 0) {
+        // === MICROSTRIP ===
+        // Signal trace (top)
+        const sigY = dieY + 20;
+        ctx.fillStyle = '#cd7f32';
+        ctx.fillRect(cx - 50, sigY, 100, traceH);
+        // Dielectric label
+        ctx.fillStyle = '#8c8883';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('介质 (FR4)', cx, sigY + traceH + gapH/2 + 4);
+        // Reference plane (bottom)
+        const refY = dieY + dieH - 14;
+        ctx.fillStyle = '#444441';
+        ctx.fillRect(lx, refY, rx - lx, planeH);
+        // Labels
+        ctx.fillStyle = '#cd7f32';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('信号线', cx, sigY - 8);
+        ctx.fillStyle = '#444441';
+        ctx.fillText('参考平面 (GND)', cx, refY + planeH + 12);
+        // Annotations
+        ctx.fillStyle = '#8c8883';
+        ctx.font = '9px sans-serif';
+        ctx.fillText('顶层', cx, sigY - 20);
+        ctx.fillText('底层', cx, refY + planeH + 24);
+
+      } else if(ci === 1) {
+        // === STRIPLINE ===
+        const topRefY = dieY + 8;
+        ctx.fillStyle = '#444441';
+        ctx.fillRect(lx, topRefY, rx - lx, planeH);
+
+        const sigY = dieY + dieH/2 - traceH/2;
+        ctx.fillStyle = '#cd7f32';
+        ctx.fillRect(cx - 50, sigY, 100, traceH);
+
+        const botRefY = dieY + dieH - planeH - 8;
+        ctx.fillStyle = '#444441';
+        ctx.fillRect(lx, botRefY, rx - lx, planeH);
+
+        // Dielectric labels
+        ctx.fillStyle = '#8c8883';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('介质 (FR4)', cx, (topRefY + planeH + sigY)/2 + 4);
+        ctx.fillText('介质 (FR4)', cx, (sigY + traceH + botRefY)/2 + 4);
+
+        // Labels
+        ctx.fillStyle = '#444441';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('参考平面 (GND)', cx, topRefY - 8);
+        ctx.fillText('参考平面 (GND)', cx, botRefY + planeH + 12);
+        ctx.fillStyle = '#cd7f32';
+        ctx.fillText('信号线', cx, sigY - 8);
+
+        // Annotation
+        ctx.fillStyle = '#8c8883';
+        ctx.font = '9px sans-serif';
+        ctx.fillText('内层', cx, sigY + traceH + 14);
+
+      } else {
+        // === COPLANAR WAVEGUIDE ===
+        const sigY = dieY + dieH/2 - traceH/2;
+        const sigW = 40;
+        ctx.fillStyle = '#cd7f32';
+        ctx.fillRect(cx - sigW/2, sigY, sigW, traceH);
+
+        // Ground traces on both sides
+        const gndW = 28;
+        const gndGap = 16;
+        ctx.fillStyle = '#444441';
+        ctx.fillRect(cx - sigW/2 - gndGap - gndW, sigY, gndW, traceH);
+        ctx.fillRect(cx + sigW/2 + gndGap, sigY, gndW, traceH);
+
+        // Ground vias (small squares)
+        ctx.fillStyle = '#555350';
+        for(let v = 0; v < 3; v++) {
+          const vxL = cx - sigW/2 - gndGap - gndW/2;
+          const vxR = cx + sigW/2 + gndGap + gndW/2;
+          const vy = sigY - 10 - v * 18;
+          ctx.fillRect(vxL - 3, vy - 3, 6, 6);
+          ctx.fillRect(vxR - 3, vy - 3, 6, 6);
+        }
+
+        // Optional bottom reference plane (dashed)
+        const botRefY = dieY + dieH - 14;
+        ctx.strokeStyle = '#8c8883';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(lx, botRefY);
+        ctx.lineTo(rx, botRefY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Dielectric label
+        ctx.fillStyle = '#8c8883';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('介质 (FR4)', cx, sigY - 20);
+
+        // Labels
+        ctx.fillStyle = '#cd7f32';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('信号线', cx, sigY + traceH + 14);
+        ctx.fillStyle = '#444441';
+        ctx.fillText('地线', cx - sigW/2 - gndGap - gndW/2, sigY + traceH + 14);
+        ctx.fillText('地线', cx + sigW/2 + gndGap + gndW/2, sigY + traceH + 14);
+
+        ctx.fillStyle = '#8c8883';
+        ctx.font = '9px sans-serif';
+        ctx.fillText('包地过孔', cx - sigW/2 - gndGap - gndW/2, sigY - 12);
+        ctx.fillText('包地过孔', cx + sigW/2 + gndGap + gndW/2, sigY - 12);
+        ctx.fillText('底层参考平面（可选）', cx, botRefY + planeH + 14);
+      }
+
+      // Section divider
+      if(ci < cols - 1) {
+        ctx.strokeStyle = '#d4d3cf';
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([3, 5]);
+        ctx.beginPath();
+        ctx.moveTo(rx + 10, topM);
+        ctx.lineTo(rx + 10, h - botM);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ============================================================
+// Canvas 3-1: 返回电流分配示意图
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-return-current');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = cvs.clientWidth;
+    const cssH = 340;
+    cvs.width = cssW * dpr;
+    cvs.height = cssH * dpr;
+    cvs.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = cssW, h = cssH;
+    ctx.clearRect(0, 0, w, h);
+
+    const sigX = w * 0.36;
+    const adjX = w * 0.68;
+    const sigY = 78;
+    const refY = sigY + 130;
+    const adjY = sigY;
+
+    // Reference plane
+    ctx.fillStyle = '#444441';
+    ctx.fillRect(40, refY, w - 80, 10);
+    ctx.fillStyle = '#555350';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('参考平面 (GND)', w/2, refY + 26);
+
+    // Signal line (cross-section)
+    ctx.fillStyle = '#cd7f32';
+    ctx.fillRect(sigX - 18, sigY, 36, 14);
+    ctx.fillStyle = '#1c1b19';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('信号线', sigX, sigY - 12);
+
+    // Adjacent line (same layer as signal line)
+    ctx.fillStyle = '#16599e';
+    ctx.fillRect(adjX - 14, adjY, 28, 14);
+    ctx.fillStyle = '#16599e';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('邻近线', adjX, adjY - 12);
+
+    // Distance annotations
+    // d_ref: vertical from signal to ref plane
+    ctx.strokeStyle = '#8c8883';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(sigX - 50, sigY + 14);
+    ctx.lineTo(sigX - 50, refY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Double-arrow ends
+    ctx.beginPath();
+    ctx.moveTo(sigX - 55, sigY + 14);
+    ctx.lineTo(sigX - 45, sigY + 14);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sigX - 55, refY);
+    ctx.lineTo(sigX - 45, refY);
+    ctx.stroke();
+    ctx.fillStyle = '#8c8883';
+    ctx.font = 'italic 11px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('d_ref', sigX - 56, (sigY + 14 + refY)/2 + 4);
+
+    // d_adj: horizontal from signal to adjacent (same layer)
+    ctx.strokeStyle = '#8c8883';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(sigX + 18, sigY - 20);
+    ctx.lineTo(adjX - 14, sigY - 20);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(sigX + 18, sigY - 24);
+    ctx.lineTo(sigX + 18, sigY - 16);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(adjX - 14, sigY - 24);
+    ctx.lineTo(adjX - 14, sigY - 16);
+    ctx.stroke();
+    ctx.fillStyle = '#8c8883';
+    ctx.font = 'italic 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('d_adj', (sigX + 18 + adjX - 14)/2, sigY - 28);
+
+    // Current arrows
+    const arrowW = 6, arrowH = 8;
+
+    // I_signal (on signal line, rightward)
+    function drawArrow(x, y, dx, dy, color, label, labelPos) {
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const angle = Math.atan2(dy, dx);
+      const len = Math.sqrt(dx*dx + dy*dy);
+      const hx = x + dx, hy = y + dy;
+      ctx.moveTo(x, y);
+      ctx.lineTo(hx, hy);
+      ctx.stroke();
+      // Arrowhead
+      ctx.beginPath();
+      ctx.moveTo(hx, hy);
+      ctx.lineTo(hx - arrowH*Math.cos(angle - 0.6), hy - arrowH*Math.sin(angle - 0.6));
+      ctx.lineTo(hx - arrowH*Math.cos(angle + 0.6), hy - arrowH*Math.sin(angle + 0.6));
+      ctx.closePath();
+      ctx.fill();
+      // Label
+      ctx.fillStyle = color;
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, labelPos[0], labelPos[1]);
+    }
+
+    // I_signal: left to right above signal trace
+    drawArrow(sigX - 50, sigY + 7, 80, 0, '#cd7f32', 'I_signal', [sigX - 10, sigY - 24]);
+
+    // I_ref: right to left on ref plane (opposite direction)
+    drawArrow(sigX + 50, refY + 5, -80, 0, '#444441', 'I_ref', [sigX + 10, refY - 16]);
+
+    // I_adj: right to left on adjacent line
+    drawArrow(adjX + 40, adjY + 5, -60, 0, '#16599e', 'I_adj', [adjX + 10, adjY + 22]);
+
+    // Coupling arcs from signal to ref and adj
+    ctx.strokeStyle = 'rgba(145,55,25,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+    // Signal to ref plane (field lines)
+    ctx.beginPath();
+    ctx.moveTo(sigX - 20, sigY + 14);
+    ctx.quadraticCurveTo(sigX - 20, (sigY + 14 + refY)/2, sigX - 20, refY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sigX + 20, sigY + 14);
+    ctx.quadraticCurveTo(sigX + 20, (sigY + 14 + refY)/2, sigX + 20, refY);
+    ctx.stroke();
+
+    // Signal to adjacent (field lines, horizontal coupling)
+    ctx.strokeStyle = 'rgba(22,89,158,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(sigX + 18, sigY + 7);
+    ctx.quadraticCurveTo((sigX + 18 + adjX - 14)/2, sigY - 18, adjX - 14, adjY + 7);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Legend box
+    const lgX = w * 0.12, lgY = h - 52;
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.strokeStyle = '#d4d3cf';
+    ctx.lineWidth = 0.5;
+    ctx.fillRect(lgX, lgY, 240, 38);
+    ctx.strokeRect(lgX, lgY, 240, 38);
+
+    ctx.fillStyle = '#cd7f32';
+    ctx.fillRect(lgX + 10, lgY + 8, 18, 4);
+    ctx.fillStyle = '#1c1b19';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('I_signal  信号电流', lgX + 34, lgY + 14);
+
+    ctx.fillStyle = '#444441';
+    ctx.fillRect(lgX + 10, lgY + 24, 18, 4);
+    ctx.fillStyle = '#1c1b19';
+    ctx.fillText('I_ref       参考平面返回电流', lgX + 34, lgY + 30);
+
+    ctx.fillStyle = '#16599e';
+    ctx.fillRect(lgX + 140, lgY + 8, 18, 4);
+    ctx.fillStyle = '#1c1b19';
+    ctx.fillText('I_adj  邻近线', lgX + 164, lgY + 14);
+    ctx.fillText('返回电流', lgX + 164, lgY + 30);
+
+    // Distribution formula hint
+    ctx.fillStyle = '#8c8883';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('I_adj / I_ref  ∝  d_ref / d_adj    (距离比决定分配比例)', w/2, h - 10);
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ============================================================
+// Canvas 6-1: 趋肤效应示意图
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-skin-effect');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = cvs.clientWidth;
+    const cssH = 320;
+    cvs.width = cssW * dpr;
+    cvs.height = cssH * dpr;
+    cvs.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = cssW, h = cssH;
+    ctx.clearRect(0, 0, w, h);
+
+    const cx = w * 0.32, cy = h/2;
+    const rectW = 100, rectH = 180;
+    const delta = 18; // skin depth in px
+
+    // Left side: conductor cross-section
+    // Conductor body
+    ctx.fillStyle = '#c8c4bb';
+    ctx.fillRect(cx - rectW/2, cy - rectH/2, rectW, rectH);
+    ctx.strokeStyle = '#8c8883';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(cx - rectW/2, cy - rectH/2, rectW, rectH);
+
+    // Surface current layer (highlighted border)
+    // Top surface
+    const gradTop = ctx.createLinearGradient(cx - rectW/2, cy - rectH/2, cx - rectW/2, cy - rectH/2 + delta);
+    gradTop.addColorStop(0, '#cd7f32');
+    gradTop.addColorStop(1, 'rgba(205,127,50,0.05)');
+    ctx.fillStyle = gradTop;
+    ctx.fillRect(cx - rectW/2, cy - rectH/2, rectW, delta);
+
+    // Bottom surface
+    const gradBot = ctx.createLinearGradient(cx - rectW/2, cy + rectH/2, cx - rectW/2, cy + rectH/2 - delta);
+    gradBot.addColorStop(0, '#cd7f32');
+    gradBot.addColorStop(1, 'rgba(205,127,50,0.05)');
+    ctx.fillStyle = gradBot;
+    ctx.fillRect(cx - rectW/2, cy + rectH/2 - delta, rectW, delta);
+
+    // Left surface
+    const gradL = ctx.createLinearGradient(cx - rectW/2, 0, cx - rectW/2 + delta, 0);
+    gradL.addColorStop(0, '#cd7f32');
+    gradL.addColorStop(1, 'rgba(205,127,50,0.05)');
+    ctx.fillStyle = gradL;
+    ctx.fillRect(cx - rectW/2, cy - rectH/2, delta, rectH);
+
+    // Right surface
+    const gradR = ctx.createLinearGradient(cx + rectW/2, 0, cx + rectW/2 - delta, 0);
+    gradR.addColorStop(0, '#cd7f32');
+    gradR.addColorStop(1, 'rgba(205,127,50,0.05)');
+    ctx.fillStyle = gradR;
+    ctx.fillRect(cx + rectW/2 - delta, cy - rectH/2, delta, rectH);
+
+    // Label: conductor
+    ctx.fillStyle = '#1c1b19';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('导体截面 (铜)', cx, cy - rectH/2 - 14);
+
+    // δ annotation on top
+    ctx.strokeStyle = '#913719';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(cx + rectW/2 + 10, cy - rectH/2);
+    ctx.lineTo(cx + rectW/2 + 50, cy - rectH/2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + rectW/2 + 10, cy - rectH/2 + delta);
+    ctx.lineTo(cx + rectW/2 + 50, cy - rectH/2 + delta);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Vertical arrow
+    ctx.strokeStyle = '#913719';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx + rectW/2 + 36, cy - rectH/2);
+    ctx.lineTo(cx + rectW/2 + 36, cy - rectH/2 + delta);
+    ctx.stroke();
+    // Arrowheads
+    ctx.fillStyle = '#913719';
+    ctx.beginPath();
+    ctx.moveTo(cx + rectW/2 + 36, cy - rectH/2);
+    ctx.lineTo(cx + rectW/2 + 32, cy - rectH/2 + 6);
+    ctx.lineTo(cx + rectW/2 + 40, cy - rectH/2 + 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + rectW/2 + 36, cy - rectH/2 + delta);
+    ctx.lineTo(cx + rectW/2 + 32, cy - rectH/2 + delta - 6);
+    ctx.lineTo(cx + rectW/2 + 40, cy - rectH/2 + delta - 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#913719';
+    ctx.font = 'bold italic 12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('δ', cx + rectW/2 + 44, cy - rectH/2 + delta/2 + 4);
+
+    // Current density profile (right side)
+    const profileCX = w * 0.68;
+    const profileCY = cy;
+    const profileW = 120, profileH = rectH;
+
+    // Axes
+    ctx.strokeStyle = '#8c8883';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(profileCX - profileW/2, profileCY - profileH/2);
+    ctx.lineTo(profileCX - profileW/2, profileCY + profileH/2);
+    ctx.lineTo(profileCX + profileW/2, profileCY + profileH/2);
+    ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = '#8c8883';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('导体内部', profileCX, profileCY + profileH/2 + 32);
+    ctx.save();
+    ctx.translate(profileCX - profileW/2 - 14, profileCY);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText('电流密度 J', 0, 0);
+    ctx.restore();
+
+    // Surface position markers (on X-axis)
+    ctx.fillStyle = '#8c8883';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('表面', profileCX - profileW/2 + 4, profileCY + profileH/2 + 12);
+    ctx.fillText('内部', profileCX + profileW/2 - 4, profileCY + profileH/2 + 12);
+
+    // Exponential decay curve: J = J0 * exp(-x/delta)
+    // Map x=0 (surface) to left axis, x=max (center) to right
+    const curveL = profileCX - profileW/2;
+    const curveR = profileCX + profileW/2;
+    const curveTop = profileCY - profileH/2 + 4;
+    const curveBot = profileCY + profileH/2 - 4;
+
+    // Decay from surface on both sides
+    ctx.strokeStyle = '#913719';
+    ctx.lineWidth = 2;
+
+    // Left side decay (top surface inward)
+    ctx.beginPath();
+    for(let i = 0; i <= 100; i++) {
+      const t = i / 100;
+      const x = curveL + t * profileW;
+      // Exponential: J/J0 = exp(-distance/delta)
+      // distance from surface in px units, let's map delta to ~40px
+      const pxToDelta = profileW / 5; // 5*delta spans the full width
+      const j = Math.exp(-t * profileW / pxToDelta);
+      const y = curveBot - j * (curveBot - curveTop);
+      if(i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Right side decay (bottom surface inward)
+    ctx.strokeStyle = '#913719';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    for(let i = 0; i <= 100; i++) {
+      const t = i / 100;
+      const x = curveL + t * profileW;
+      const j = Math.exp(-t * profileW / pxToDelta);
+      const y = curveTop + j * (curveBot - curveTop);
+      if(i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // J0 reference line
+    ctx.strokeStyle = '#8c8883';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    ctx.moveTo(curveL, curveTop);
+    ctx.lineTo(curveR, curveTop);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#8c8883';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('J₀', curveR + 4, curveTop + 4);
+
+    // Delta marker on curve
+    const deltaX = curveL + pxToDelta;
+    ctx.strokeStyle = '#913719';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(deltaX, curveTop + 6);
+    ctx.lineTo(deltaX, curveBot);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#913719';
+    ctx.font = 'bold italic 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('δ', deltaX, curveBot + 14);
+    ctx.fillText('J₀/e', deltaX, curveTop - 6);
+
+    // Connecting arrow between cross-section and profile
+    ctx.strokeStyle = '#8c8883';
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(cx + rectW/2 + 70, cy);
+    ctx.lineTo(profileCX - profileW/2 - 16, cy);
+    ctx.stroke();
+    // Arrowhead
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#8c8883';
+    ctx.beginPath();
+    ctx.moveTo(profileCX - profileW/2 - 16, cy);
+    ctx.lineTo(profileCX - profileW/2 - 10, cy - 5);
+    ctx.lineTo(profileCX - profileW/2 - 10, cy + 5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Title for profile
+    ctx.fillStyle = '#1c1b19';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('电流密度分布', profileCX, profileCY - profileH/2 - 14);
+
+    // Bottom note
+    ctx.fillStyle = '#8c8883';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('δ = 1/√(πfμσ)    铜 @1GHz: δ ≈ 2.1 μm    表面粗糙度 Rq 接近 δ 时损耗显著增加', w/2, h - 10);
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ============================================================
+// Canvas 8-1: 换层回流过孔示意图
+// ============================================================
+(function(){
+  const cvs = document.getElementById('cvs-layer-via');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = cvs.clientWidth;
+    const cssH = 360;
+    cvs.width = cssW * dpr;
+    cvs.height = cssH * dpr;
+    cvs.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = cssW, h = cssH;
+    ctx.clearRect(0, 0, w, h);
+
+    const pad = 28;
+    const topY = 55, botY = h - 55;
+    const midY = (topY + botY) / 2;
+    const refH = 8;
+    const ref1Y = topY + 22;
+    const ref2Y = botY - 22 - refH;
+    const l1Y = topY;
+    const l2Y = botY - 14;
+    const sigViaX = w * 0.30;
+    const gndViaX = sigViaX + 90;
+    const sigW = 4;
+
+    // === Dielectric between reference planes ===
+    ctx.fillStyle = '#e8e6df';
+    ctx.fillRect(pad, ref1Y + refH, w - 2*pad, ref2Y - ref1Y - refH);
+
+    // === Reference plane 1 (top GND) ===
+    ctx.fillStyle = '#444441';
+    ctx.fillRect(pad, ref1Y, sigViaX - 18 - pad, refH);
+    ctx.fillRect(sigViaX + 18, ref1Y, w - pad - sigViaX - 18, refH);
+
+    // === Reference plane 2 (bottom GND) ===
+    ctx.fillStyle = '#444441';
+    ctx.fillRect(pad, ref2Y, sigViaX - 18 - pad, refH);
+    ctx.fillRect(sigViaX + 18, ref2Y, w - pad - sigViaX - 18, refH);
+
+    // === Signal via (vertical, through anti-pads) ===
+    ctx.strokeStyle = '#cd7f32';
+    ctx.lineWidth = sigW;
+    ctx.beginPath();
+    ctx.moveTo(sigViaX, l1Y);
+    ctx.lineTo(sigViaX, l2Y);
+    ctx.stroke();
+
+    // === Signal via pads ===
+    ctx.fillStyle = '#cd7f32';
+    ctx.beginPath(); ctx.arc(sigViaX, l1Y, 9, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ececec';
+    ctx.beginPath(); ctx.arc(sigViaX, l1Y, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#cd7f32';
+    ctx.beginPath(); ctx.arc(sigViaX, l2Y, 9, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ececec';
+    ctx.beginPath(); ctx.arc(sigViaX, l2Y, 4, 0, Math.PI*2); ctx.fill();
+
+    // === Ground via (connects ref1 to ref2) ===
+    ctx.strokeStyle = '#444441';
+    ctx.lineWidth = sigW;
+    ctx.beginPath();
+    ctx.moveTo(gndViaX, ref1Y + refH/2);
+    ctx.lineTo(gndViaX, ref2Y + refH/2);
+    ctx.stroke();
+    // Ground via pads on ref planes
+    ctx.fillStyle = '#444441';
+    ctx.beginPath(); ctx.arc(gndViaX, ref1Y + refH/2, 9, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gndViaX, ref2Y + refH/2, 9, 0, Math.PI*2); ctx.fill();
+
+    // === Signal traces ===
+    ctx.strokeStyle = '#cd7f32';
+    ctx.lineWidth = sigW;
+    // Top layer: signal in from left
+    ctx.beginPath();
+    ctx.moveTo(pad, l1Y);
+    ctx.lineTo(sigViaX - 9, l1Y);
+    ctx.stroke();
+    // Bottom layer: signal out to right
+    ctx.beginPath();
+    ctx.moveTo(sigViaX + 9, l2Y);
+    ctx.lineTo(w - pad, l2Y);
+    ctx.stroke();
+
+    // === Return current path (blue dashed with arrows) ===
+    ctx.strokeStyle = '#16599e';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+
+    // Top ref: return current from left to ground via
+    ctx.beginPath();
+    ctx.moveTo(pad + 20, ref1Y + refH/2);
+    ctx.lineTo(gndViaX - 9, ref1Y + refH/2);
+    ctx.stroke();
+
+    // Down through ground via
+    ctx.beginPath();
+    ctx.moveTo(gndViaX, ref1Y + refH/2 + 9);
+    ctx.lineTo(gndViaX, ref2Y + refH/2 - 9);
+    ctx.stroke();
+
+    // Bottom ref: return current from ground via to right
+    ctx.beginPath();
+    ctx.moveTo(gndViaX + 9, ref2Y + refH/2);
+    ctx.lineTo(w - pad - 20, ref2Y + refH/2);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    // Return current arrowheads
+    function triArrow(x, y, angle) {
+      ctx.fillStyle = '#16599e';
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - 10*Math.cos(angle - 0.45), y - 10*Math.sin(angle - 0.45));
+      ctx.lineTo(x - 10*Math.cos(angle + 0.45), y - 10*Math.sin(angle + 0.45));
+      ctx.closePath();
+      ctx.fill();
+    }
+    triArrow(gndViaX - 9, ref1Y + refH/2, 0);        // pointing right → ground via
+    triArrow(gndViaX, ref2Y + refH/2 - 9, Math.PI/2); // pointing down through ground via
+    triArrow(w - pad - 20, ref2Y + refH/2, 0);        // pointing right on bottom ref
+
+    // === Labels ===
+    // Signal labels
+    ctx.fillStyle = '#cd7f32';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('信号过孔', sigViaX - 14, l1Y - 18);
+    ctx.textAlign = 'left';
+    ctx.fillText('信号线', pad + 44, l1Y - 10);
+
+    // Ground via label
+    ctx.fillStyle = '#444441';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('地过孔', gndViaX + 14, ref1Y - 4);
+
+    // Return current label
+    ctx.fillStyle = '#16599e';
+    ctx.textAlign = 'left';
+    ctx.fillText('返回电流', gndViaX + 14, ref2Y + refH + 12);
+    ctx.fillText('路径', gndViaX + 14, ref2Y + refH + 26);
+
+    // Layer labels (right side)
+    ctx.fillStyle = '#8c8883';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Layer 1 (顶层信号)', w - 18, l1Y + 4);
+    ctx.fillText('参考平面 (GND)', w - 18, ref1Y + 4);
+    ctx.fillText('介质 (FR4)', w - 18, midY + 4);
+    ctx.fillText('参考平面 (GND)', w - 18, ref2Y + 4);
+    ctx.fillText('Layer 2 (底层信号)', w - 18, l2Y + 4);
+
+    // Direction arrows on signal traces
+    ctx.fillStyle = '#cd7f32';
+    ctx.font = 'italic 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('信号输入 →', pad + 40, l1Y - 22);
+    ctx.fillText('→ 信号输出', w - pad - 50, l2Y + 22);
+
+    // Highlight box around via area
+    const boxX = sigViaX - 22, boxY2 = l1Y - 22;
+    const boxW = gndViaX - sigViaX + 44, boxH2 = l2Y - l1Y + 44;
+    ctx.strokeStyle = 'rgba(145,55,25,0.22)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    ctx.strokeRect(boxX, boxY2, boxW, boxH2);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#913719';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('换层区域', boxX + boxW/2, boxY2 - 6);
+
+    // Bottom note
+    ctx.fillStyle = '#8c8883';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('信号换层时，地过孔为返回电流提供低阻抗路径，避免返回电流绕行导致环路面积增大', w/2, h - 8);
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+</script>
+
+<script>
+(function() {
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const chapters = document.querySelectorAll('.chapter');
+  
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(function(a) {
+          a.classList.remove('active');
+          if (a.getAttribute('href') === '#' + id) {
+            a.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+
+  chapters.forEach(function(ch) { observer.observe(ch); });
+})();
+</script>
+
+</body>
+</html>
