@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>高速模拟电路调试案例</title>
+<meta name="category" content="硬件">
+<meta name="date" content="2026-05-22">
+<meta name="description" content="高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。">
 <script>
 window.MathJax = {
   tex: {
@@ -276,7 +279,7 @@ tr:nth-child(even) td { background: #fafaf8; }
   background: var(--surface);
   letter-spacing: 0.03em;
 }
-canvas { display: block; max-width: 100%; height: auto; }
+canvas { display: block; width: 100%; }
 
 .canvas-ctrls {
   padding: 8px 16px 12px;
@@ -378,7 +381,6 @@ img.inline-img {
     <li class="sub"><a href="#s3-1">3.1 补偿电容的极点引入</a></li>
     <li class="sub"><a href="#s3-2">3.2 AD8099 补偿网络设计细节</a></li>
     <li class="sub"><a href="#s3-3">3.3 三种经典补偿技术</a></li>
-    <li class="sub"><a href="#s3-4">3.4 补偿参数交互计算器</a></li>
     <li><a href="#ch4">第四章 工程经验与设计规范</a></li>
     <li class="sub"><a href="#s4-1">4.1 逐级增益分配策略</a></li>
     <li class="sub"><a href="#s4-2">4.2 高频 PCB 布局规范</a></li>
@@ -410,9 +412,12 @@ img.inline-img {
   <h3 id="s1-1">1.1 基本电路结构</h3>
   <p>本案例涉及一个基于 <strong>AD8099</strong> 高速运放的两级级联放大电路。AD8099 是 ADI 公司推出的超低噪声、高速电压反馈运算放大器，其增益带宽积高达 3.8 GHz，压摆率达 1350 V/µs，典型应用于高速 ADC 驱动、射频/中频放大和仪器仪表前端。</p>
 
-  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779024661954-6a93c077-7b55-4957-b892-5d300a4f09a1.png" alt="电路结构图" />
+  <div class="canvas-wrap">
+    <div class="canvas-label">图 1-1　两级 AD8099 级联放大电路结构框图（总增益 100× / 40 dB，1~20 MHz）</div>
+    <canvas id="cvs-block-diagram" height="200"></canvas>
+  </div>
 
-  <p>电路的级联架构为：输入信号 → 第一级 AD8099（G₁ = +10 V/V）→ 第二级 AD8099（G₂ = +10 V/V）→ 输出。总增益 100 倍（40 dB），目标工作频率覆盖 1 MHz ~ 20 MHz 带宽。</p>
+  <p>电路的级联架构为：输入信号 → 第一级 AD8099（G₁ = +10 V/V）→ 高通滤波（HPF）→ 第二级 AD8099（G₂ = +10 V/V）→ 低通滤波（LPF）→ 缓冲级（×1）→ 输出。总增益 100 倍（40 dB），目标工作频率覆盖 1 MHz ~ 20 MHz 带宽。</p>
 
   <div class="info-box">
     <strong>工程背景：</strong>AD8099 是一款"条件稳定"放大器——在低增益配置（+2 至 +10）下必须使用外部补偿网络。这一特性使得它在获得极低噪声（0.95 nV/√Hz）的同时，对 PCB 布局和补偿参数异常敏感。
@@ -444,7 +449,10 @@ img.inline-img {
     <li><strong>增益大于 +15：</strong>无需外部补偿。此时反馈深度已足够浅，开环相移在 0 dB 穿越点处仍留有充分裕度。</li>
   </ul>
 
-  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779027497770-4d404c39-98f8-409d-b7fa-15f970c0c1b4.png" alt="补偿网络电路结构" />
+  <div class="canvas-wrap">
+    <div class="canvas-label">图 1-3　AD8099 外部补偿网络电路结构（含 $R_F$、$R_G$、$R_S$、$C_F$、$C_C$、$R_C$、$C_1$ 七大关键元件）</div>
+    <img src="../image/high-speed-analog-debug-02.jpg" alt="AD8099 外部补偿网络电路结构" style="width:100%; border-radius: var(--radius);">
+  </div>
 
   <h4>七大补偿元件详解</h4>
   <p>根据 AD8099 数据手册 Figure 59 的电路结构，完整的补偿网络包含以下关键元件：</p>
@@ -460,7 +468,24 @@ img.inline-img {
     </tbody>
   </table>
 
-  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779027756534-740664c4-965b-4a39-8e1c-96c422102d66.png" alt="手册Table 4推荐值" />
+  <table class="param-table">
+    <caption>表 1-1　AD8099 不同增益配置下的外部补偿元件推荐值（数据手册 Table 4）</caption>
+    <thead>
+      <tr>
+        <th>增益</th><th>封装</th><th>$R_F$ (Ω)</th><th>$R_G$ (Ω)</th><th>$R_S$ (Ω)</th>
+        <th>$C_F$ (pF)</th><th>$R_C$ (Ω)</th><th>$C_C$ (pF)</th><th>$C_1$ (pF)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>−1</td><td>SOIC</td><td>250</td><td>250</td><td>50</td><td>1.5</td><td>50</td><td>4</td><td>1.5</td></tr>
+      <tr><td>+2</td><td>SOIC</td><td>250</td><td>250</td><td>50</td><td>1.5</td><td>50</td><td>4</td><td>1.5</td></tr>
+      <tr><td>+2</td><td>LFCSP</td><td>250</td><td>250</td><td>50</td><td>0.5</td><td>50</td><td>5</td><td>2</td></tr>
+      <tr><td>−1</td><td>LFCSP</td><td>250</td><td>250</td><td>50</td><td>1.0</td><td>50</td><td>5</td><td>2</td></tr>
+      <tr><td>+5</td><td>LFCSP/SOIC</td><td>499</td><td>124</td><td>20</td><td>0.5</td><td>50</td><td>1</td><td>0</td></tr>
+      <tr><td>+10</td><td>LFCSP/SOIC</td><td>499</td><td>54</td><td>0</td><td>0</td><td>0</td><td>0.5</td><td>0</td></tr>
+      <tr><td>+20</td><td>LFCSP/SOIC</td><td>499</td><td>26</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    </tbody>
+  </table>
 
   <div class="info-box teal">
     <strong>关键认知：</strong>手册 Table 4 给出的推荐值是基于厂家评估板（Optimized PCB Layout）的实测结果。实际 PCB 的走线长度、过孔数量和焊盘尺寸都会引入额外寄生参数，因此手册值仅作为调试起点，最终值必须通过实验微调确定。
@@ -503,8 +528,6 @@ img.inline-img {
     $$\angle A(j\omega) + \angle \beta(j\omega) = 180^\circ \text{（或 } -180^\circ\text{）}$$
     <span class="var">$A$ 为开环增益，$\beta$ 为反馈系数。同时满足幅度和相位条件即发生振荡。</span>
   </div>
-
-  <img class="inline-img" src="https://cdn.nlark.com/yuque/0/2026/png/38952283/1779059342740-7ab71b50-1517-4f92-9456-2011bd560b14.png" alt="振荡条件分析图" />
 
   <p>在两级级联结构中，总开环增益为两级各自开环增益的乘积。即使单级在目标频段有足够的相位裕度（通常 > 45°），两级串联后总相移翻倍，很可能在某个频率点上同时满足 Barkhausen 条件。</p>
 
@@ -595,10 +618,6 @@ img.inline-img {
 
   <p>从波特图角度理解：补偿电容在高频段使反馈系数 $\beta$ 增大（反馈加深），从而拉低环路增益 $|A\beta|$ 的 0 dB 穿越点，使其发生在开环相移尚未急剧恶化的较低频率，以此换取相位裕度。</p>
 
-  <div class="canvas-wrap">
-    <div class="canvas-label">图 3-1　补偿电容对环路增益波特图的影响（概念示意）</div>
-    <canvas id="cvs-bode" height="300"></canvas>
-  </div>
 
   <h3 id="s3-2">3.2 AD8099 补偿网络设计细节</h3>
 
@@ -640,26 +659,6 @@ img.inline-img {
     <strong>补偿技术选择决策树：</strong>需要极致带宽 → 超前补偿；带宽可牺牲 → 环路内补偿（最简单）；低频精密且带宽无关 → 滞后补偿。AD8099 的 Pin5 补偿机制本质上属于环路内补偿，芯片内部已将补偿节点引出以简化设计。
   </div>
 
-  <h3 id="s3-4">3.4 补偿参数交互计算器</h3>
-  <p>以下交互式计算器可帮助直观理解 $C_C$ 与增益、相位裕度和带宽之间的关系。拖动滑块观察参数变化趋势。</p>
-
-  <div class="canvas-wrap">
-    <div class="canvas-label">图 3-2　补偿电容 $C_C$ 与闭环增益对相位裕度和带宽的影响</div>
-    <canvas id="cvs-comp-calc" height="280"></canvas>
-    <div class="canvas-ctrls">
-      <label>$C_C$ (pF):</label>
-      <input type="range" id="cc-slider" min="1" max="10" value="5">
-      <span class="cv" id="cc-val">5.0 pF</span>
-      <label style="margin-left:16px;">增益 (V/V):</label>
-      <input type="range" id="gain-slider" min="2" max="15" value="10">
-      <span class="cv" id="gain2-val">+10</span>
-    </div>
-    <div style="padding:4px 16px 12px; display:flex; gap:24px; font-size:13px;">
-      <span>估算相位裕度: <strong id="est-pm" style="color:var(--accent);">~40°</strong></span>
-      <span>估算-3dB带宽: <strong id="est-bw" style="color:var(--teal);">~380 MHz</strong></span>
-      <span>状态: <strong id="est-status" style="color:var(--coral);">临界</strong></span>
-    </div>
-  </div>
 </section>
 
 <!-- ========== CHAPTER 4 ========== -->
@@ -832,7 +831,7 @@ img.inline-img {
 
 <script>
 // ============================================================
-// Canvas 2-1: PCB Parasitic Model
+// Canvas 2-1: PCB Parasitic Model (transmission-line style)
 // ============================================================
 (function(){
   const cvs = document.getElementById('cvs-parasitic');
@@ -840,55 +839,125 @@ img.inline-img {
   const ctx = cvs.getContext('2d');
 
   function draw() {
-    const w = cvs.width = cvs.clientWidth;
-    const h = cvs.height = cvs.clientHeight;
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = cvs.clientWidth;
+    const cssH = 240;
+    cvs.width = cssW * dpr;
+    cvs.height = cssH * dpr;
+    cvs.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = cssW, h = cssH;
     ctx.clearRect(0,0,w,h);
 
-    const y = 35;
-    const pad = 20;
-    const segW = (w - pad*2) / 6;
+    const segs = 4;
+    const padL = 30, padR = 30;
+    const segW = (w - padL - padR) / segs;
+    const traceY = 42;
+    const gndY = traceY + 92;
 
-    // PCB trace with distributed RLC
-    for(let i=0; i<6; i++) {
-      const x = pad + i*segW;
-      const cx = x + segW/2;
+    // Input / Output labels
+    ctx.fillStyle = '#8c8883'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('输入', padL, traceY - 14);
+    ctx.fillText('输出', w-padR, traceY - 14);
 
-      // R
-      ctx.strokeStyle = '#913719'; ctx.lineWidth = 2;
+    for(let i = 0; i < segs; i++) {
+      const segLeft = padL + i * segW;
+      const segRight = segLeft + segW;
+
+      // Layout: [wire] → [R zig-zag] → [wire] → [L coils] → [wire] → [C to GND]
+      // R in left portion, L in right portion, separated by wire gap
+
+      // --- Resistor R (standard zig-zag symbol, breaks the trace) ---
+      const rW = 30;
+      const rStart = segLeft + segW * 0.06;
+      const rEnd = rStart + rW;
+      const rAmp = 4.5;   // peak amplitude of zig-zag
+      // wire: segLeft → rStart
+      ctx.strokeStyle = '#444441'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(segLeft, traceY); ctx.lineTo(rStart, traceY); ctx.stroke();
+      // standard US-style resistor: zig-zag with ~4 full peaks
+      // pattern: entry → half-up → [down, up, down, up, ...] → half-down → exit
+      ctx.strokeStyle = '#913719'; ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(x, y+30); ctx.lineTo(x+6, y+20); ctx.lineTo(x+12, y+40); ctx.lineTo(x+18, y+20); ctx.lineTo(x+24, y+40); ctx.lineTo(x+segW-6, y+30);
+      ctx.moveTo(rStart, traceY);
+      // total points: 1(half up) + 8(full zig-zag vertices) + 1(half down) = 10 segments
+      // 4 peaks up, 3 peaks down (or vice versa) — standard is ~4 visible zig-zag teeth
+      const nPts = 8;  // number of zig-zag vertices (even = starts up, ends down)
+      const dx = rW / (nPts + 1);  // horizontal spacing including half-tooth at each end
+      // half-tooth: go to first peak (up)
+      ctx.lineTo(rStart + dx * 0.5, traceY - rAmp);
+      // full zig-zag vertices
+      for (let z = 0; z < nPts; z++) {
+        const px = rStart + dx * 0.5 + dx * (z + 1);
+        const py = traceY + (z % 2 === 0 ? rAmp : -rAmp);
+        ctx.lineTo(px, py);
+      }
+      // half-tooth: return to trace level
+      ctx.lineTo(rEnd, traceY);
       ctx.stroke();
+      // R label (below)
       ctx.fillStyle = '#913719'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('R', cx, y+52);
+      ctx.fillText('R≈10mΩ', rStart + rW/2, traceY + rAmp + 13);
 
-      // L
-      const lx = cx - 8;
+      // --- Inductor L (coils, breaks the trace) ---
+      const lGap = 36;
+      const coilR = 5;
+      const nCoils = 4;
+      const lLeft = rEnd + segW * 0.28;   // well separated from R
+      const lRight = lLeft + lGap;
+      // wire: rEnd → lLeft (gap between R and L)
+      ctx.strokeStyle = '#444441'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(rEnd, traceY); ctx.lineTo(lLeft, traceY); ctx.stroke();
+      // coils (break trace)
       ctx.strokeStyle = '#7d4908'; ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(lx+30, y+78, 10, Math.PI, 0, false);
-      ctx.arc(lx+50, y+78, 10, Math.PI, 0, false);
-      ctx.stroke();
-      ctx.fillStyle = '#7d4908';
-      ctx.fillText('L', cx + 20, y+100);
+      for(let c=0; c<nCoils; c++) {
+        const arcX = lLeft + coilR + c * coilR * 2;
+        ctx.beginPath();
+        ctx.arc(arcX, traceY, coilR, Math.PI, 0, false);
+        ctx.stroke();
+      }
+      // vertical drops at coil ends
+      ctx.strokeStyle = '#7d4908'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(lLeft, traceY); ctx.lineTo(lLeft, traceY - coilR); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lRight, traceY); ctx.lineTo(lRight, traceY - coilR); ctx.stroke();
+      // L label (above)
+      ctx.fillStyle = '#7d4908'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('L≈4nH', (lLeft+lRight)/2, traceY - coilR - 6);
+      // wire: lRight → segRight
+      ctx.strokeStyle = '#444441'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(lRight, traceY); ctx.lineTo(segRight, traceY); ctx.stroke();
 
-      // C to GND
-      ctx.strokeStyle = '#16599e';
-      ctx.beginPath(); ctx.moveTo(cx + 25, y+78); ctx.lineTo(cx + 25, y+110); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx + 18, y+110); ctx.lineTo(cx + 32, y+110); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx + 18, y+114); ctx.lineTo(cx + 32, y+114); ctx.stroke();
-      ctx.fillStyle = '#16599e';
-      ctx.fillText('C', cx + 25, y+128);
-
+      // --- Shunt capacitor C to GND (centered between R and L) ---
+      const rCenter = rStart + rW / 2;
+      const lCenter = (lLeft + lRight) / 2;
+      const capX = (rCenter + lCenter) / 2;
+      const capTopY = traceY + 28;
+      const capBotY = capTopY + 6;
+      // wire down
+      ctx.strokeStyle = '#16599e'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(capX, traceY); ctx.lineTo(capX, capTopY - 2); ctx.stroke();
+      // plates
+      ctx.strokeStyle = '#16599e'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(capX-10, capTopY); ctx.lineTo(capX+10, capTopY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(capX-10, capBotY); ctx.lineTo(capX+10, capBotY); ctx.stroke();
+      // wire to GND
+      ctx.strokeStyle = '#16599e'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(capX, capBotY); ctx.lineTo(capX, gndY); ctx.stroke();
       // GND symbol
-      ctx.strokeStyle = '#8c8883';
-      ctx.beginPath(); ctx.moveTo(cx + 20, y+114); ctx.lineTo(cx + 30, y+114); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx + 22, y+118); ctx.lineTo(cx + 28, y+118); ctx.stroke();
+      ctx.strokeStyle = '#8c8883'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(capX-10, gndY); ctx.lineTo(capX+10, gndY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(capX-7, gndY+4); ctx.lineTo(capX+7, gndY+4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(capX-4, gndY+8); ctx.lineTo(capX+4, gndY+8); ctx.stroke();
+      // C label
+      ctx.fillStyle = '#16599e'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('C≈1pF', capX, capBotY + 14);
     }
 
-    // Label
-    ctx.fillStyle = '#8c8883'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('每段代表 ~5 mm PCB 走线的 RLC 分布参数模型', w/2, y+155);
-    ctx.fillText('L ≈ 4 nH/5mm  |  C ≈ 1 pF/5mm (对地)  |  R ≈ 10 mΩ/5mm', w/2, y+172);
+    // Segment label
+    ctx.fillStyle = '#555350'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('← 每节 ≈ 5 mm PCB 走线的 RLC 分布参数 →', w/2, gndY + 22);
+    ctx.fillStyle = '#8c8883'; ctx.font = '9px sans-serif';
+    ctx.fillText('总走线 25 mm：L ≈ 20 nH（300 MHz 阻抗约 37 Ω）  |  C ≈ 5 pF（对地）  |  R ≈ 50 mΩ', w/2, gndY + 36);
   }
   draw();
   window.addEventListener('resize', draw);
@@ -906,8 +975,14 @@ img.inline-img {
   const ctx = cvs.getContext('2d');
 
   function draw() {
-    const w = cvs.width = cvs.clientWidth;
-    const h = cvs.height = cvs.clientHeight;
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = cvs.clientWidth;
+    const cssH = 260;
+    cvs.width = cssW * dpr;
+    cvs.height = cssH * dpr;
+    cvs.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = cssW, h = cssH;
     ctx.clearRect(0,0,w,h);
 
     const pm = parseInt(slider.value);
@@ -923,10 +998,11 @@ img.inline-img {
     lblEl.style.color = color;
     valEl.style.color = color;
 
-    const left = 50, right = w-30, top = 25, bottom = h-30;
-    const pw = right-left, ph = bottom-top;
+    const left = 52, right = w - 24;
+    const top = 28, bottom = h - 28;
+    const pw = right - left, ph = bottom - top;
 
-    // Grid
+    // Grid lines
     ctx.strokeStyle = '#d4d3cf'; ctx.lineWidth = 0.5;
     for(let i=1; i<=9; i++) {
       const y = top + ph * i/10;
@@ -936,60 +1012,87 @@ img.inline-img {
     ctx.strokeStyle = '#8c8883'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(left, top); ctx.lineTo(left, bottom); ctx.lineTo(right, bottom); ctx.stroke();
 
-    // Labels
-    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.fillText('2.0', left-8, top + ph*0.1);
-    ctx.fillText('1.0', left-8, top + ph*0.5);
-    ctx.fillText('0.0', left-8, bottom);
+    // Y axis labels
+    ctx.fillStyle = '#8c8883'; ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText('2.0×', left-6, top + ph*0.05);
+    ctx.fillText('1.5×', left-6, top + ph*0.25);
+    ctx.fillText('1.0×', left-6, top + ph*0.5);
+    ctx.fillText('0.5×', left-6, top + ph*0.75);
+    ctx.fillText('0', left-6, bottom);
 
-    // Ideal step
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 2; ctx.setLineDash([5,5]);
+    // Y=1.0 baseline (target amplitude)
+    const y1 = top + ph * 0.5;
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(left, y1); ctx.lineTo(right, y1); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Ideal step (dashed)
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1.5; ctx.setLineDash([5,5]);
     ctx.beginPath();
-    ctx.moveTo(left+20, top + ph*0.5);
-    ctx.lineTo(left+50, top + ph*0.5);
-    ctx.lineTo(left+50, top + ph*0.1);
-    ctx.lineTo(right, top + ph*0.1);
+    ctx.moveTo(left+10, bottom);
+    ctx.lineTo(left+40, bottom);
+    ctx.lineTo(left+40, y1);
+    ctx.lineTo(right-10, y1);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'left';
-    ctx.fillText('理想阶跃', left+55, top + ph*0.15);
+    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('理想阶跃', left+44, y1-10);
 
-    // Damping factor from PM
-    // Approximate: ζ ≈ PM/100
+    // Step starts at x=left+40
+    const stepX0 = left + 40;
+    const stepW = pw - 40;
+    const pts = 400;
+
+    // Damping: map PM to zeta
+    // PM ≈ 100*zeta for underdamped; for PM<15 we show oscillation growing
     const zeta = pm / 100;
-    const omega_n = 1;
+    // amplitude from 0 to 1, plotted as y from bottom going up
+    // y_val in canvas coords: bottom=0 level, y1=amplitude 1.0
 
     ctx.strokeStyle = color; ctx.lineWidth = 2.5;
     ctx.beginPath();
 
-    const pts = 300;
-    for(let i=0; i<=pts; i++) {
-      const t = i * 12 / pts;
-      let y_val;
+    for(let i = 0; i <= pts; i++) {
+      const t = i * 14 / pts;  // time axis 0..14 natural periods
+      let amp;
 
-      if(t < 1.5) {
-        y_val = top + ph*0.5;
+      if(t < 1.0) {
+        // pre-step
+        amp = 0;
       } else {
-        const tau = t - 1.5;
-        if(zeta < 1) {
-          const omega_d = omega_n * Math.sqrt(1 - zeta*zeta);
-          const decay = Math.exp(-zeta * omega_n * tau);
-          y_val = top + ph*0.1 + ph*0.4 * (1 - decay * (Math.cos(omega_d * tau) + (zeta/Math.sqrt(1-zeta*zeta)) * Math.sin(omega_d * tau)));
+        const tau = t - 1.0;
+        if(pm < 12) {
+          // Unstable: growing oscillation
+          const omega_d = 4.5;
+          const growth = Math.exp(0.15 * tau);
+          amp = Math.sin(omega_d * tau) * growth * 0.5;
+        } else if(zeta < 1) {
+          const omega_n = 1;
+          const omega_d = omega_n * Math.sqrt(Math.max(0.001, 1 - zeta*zeta));
+          const decay = Math.exp(-zeta * omega_n * tau * 2.5);
+          amp = 1 - decay * (Math.cos(omega_d * tau * 3) + (zeta / Math.max(0.01, Math.sqrt(1 - zeta*zeta))) * Math.sin(omega_d * tau * 3));
         } else {
-          const tau2 = tau / (1 + (pm-60)*0.1);
-          y_val = top + ph*0.1 + ph*0.4 * (1 - Math.exp(-tau2));
+          // Overdamped
+          const tc = 0.4 + zeta * 0.8;
+          amp = 1 - Math.exp(-tau / tc);
         }
       }
 
-      const x = left + 50 + (pw-50) * (i/pts);
-      y_val = Math.max(top, Math.min(bottom, y_val));
-      if(i===0) ctx.moveTo(x, y_val); else ctx.lineTo(x, y_val);
+      // Convert amplitude to canvas y — NO clamping so oscillation shows above/below
+      // amp=0 → bottom, amp=1 → y1, amp=2 → top+ph*0 (top area)
+      const canvasY = bottom - amp * ph * 0.5;
+      const x = stepX0 + stepW * (i / pts);
+
+      // Only clamp to prevent going completely off-screen (allow full 2x range)
+      const clampedY = Math.max(top - ph*0.1, Math.min(bottom + 10, canvasY));
+      if(i === 0) ctx.moveTo(x, clampedY); else ctx.lineTo(x, clampedY);
     }
     ctx.stroke();
 
-    // PM value box
-    ctx.fillStyle = color; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('PM = ' + pm + '°', right-100, top + 20);
+    // PM annotation box
+    ctx.fillStyle = color; ctx.font = `bold 13px sans-serif`; ctx.textAlign = 'right';
+    ctx.fillText('PM = ' + pm + '°  ' + label, right - 4, top + 14);
   }
 
   slider.addEventListener('input', draw);
@@ -998,203 +1101,165 @@ img.inline-img {
 })();
 
 // ============================================================
-// Canvas 3-1: Bode Plot Concept
+// Canvas 1-1: Block Diagram - Five-Stage Cascade (matching user reference image)
 // ============================================================
 (function(){
-  const cvs = document.getElementById('cvs-bode');
+  const cvs = document.getElementById('cvs-block-diagram');
   if(!cvs) return;
   const ctx = cvs.getContext('2d');
 
   function draw() {
-    const w = cvs.width = cvs.clientWidth;
-    const h = cvs.height = cvs.clientHeight;
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = cvs.clientWidth;
+    const cssH = 200;
+    cvs.width = cssW * dpr;
+    cvs.height = cssH * dpr;
+    cvs.style.height = cssH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = cssW, h = cssH;
     ctx.clearRect(0,0,w,h);
 
-    const midY = h/2;
-    const left = 55, right = w-30;
+    // Style matching user reference image:
+    // Light blue fill (#e3eef9), dark blue border (#16599e), blue arrows (#16599e)
+    const blockFill = '#e3eef9';
+    const blockStroke = '#16599e';
+    const arrowColor = '#16599e';
+    const textColor = '#1c1b19';
+    const labelColor = '#555350';
 
-    // Divider
-    ctx.strokeStyle = '#d4d3cf'; ctx.lineWidth = 0.5;
-    ctx.beginPath(); ctx.moveTo(left, midY); ctx.lineTo(right, midY); ctx.stroke();
+    const blockH = 64;
+    const blockR = 8;
+    const arrowLen = 10;
+    const margin = 18;
 
-    // Top: Gain plot
-    ctx.fillStyle = '#8c8883'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('环路增益 |Aβ| (dB)', left, 15);
+    // 5 blocks: Vin → 10x amp → HPF → 10x amp → LPF → Buffer → Vout
+    const blocks = [
+      { label1: '10倍电压', label2: '放大' },
+      { label1: '高通滤波', label2: '(HPF)' },
+      { label1: '10倍电压', label2: '放大' },
+      { label1: '低通滤波', label2: '(LPF)' },
+      { label1: '缓冲级',   label2: '(×1)' }
+    ];
+    const n = blocks.length;
 
-    // Without compensation
-    ctx.strokeStyle = 'rgba(145,55,25,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
-    ctx.beginPath();
-    ctx.moveTo(left, 28);
-    ctx.bezierCurveTo(left+50, 28, left+100, 28, left+140, midY-20);
-    ctx.lineTo(right-20, midY-20);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#913719'; ctx.textAlign = 'left';
-    ctx.fillText('未补偿：高频0dB穿越', left+145, midY-30);
+    // Compute block width to fit within canvas
+    const minBlockW = 80;
+    const maxBlockW = 130;
+    const arrowSpace = 28; // space for each arrow between blocks
+    const totalArrowSpace = (n + 1) * arrowSpace; // including Vin and Vout arrows
+    const blockW = Math.max(minBlockW, Math.min(maxBlockW, (w - margin*2 - totalArrowSpace) / n));
+    const totalBlocksW = blockW * n;
+    const totalGaps = (n + 1) * arrowSpace;
+    const startX = (w - totalBlocksW - totalGaps) / 2 + arrowSpace;
+    const blockY = (h - blockH) / 2 - 6;
+    const midY = blockY + blockH / 2;
 
-    // With compensation
-    ctx.strokeStyle = '#16599e'; ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(left, 28);
-    ctx.bezierCurveTo(left+50, 28, left+100, 40, left+140, midY+5);
-    ctx.bezierCurveTo(left+180, midY-10, left+220, midY-20, right-20, midY-25);
-    ctx.stroke();
-    ctx.fillStyle = '#16599e';
-    ctx.fillText('已补偿：0dB穿越提前到低频', left+145, midY-4);
+    // Helper: draw arrow with triangle head
+    function drawArrow(x1, y1, x2, y2, color) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const headLen = 8;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      // Arrow head
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - headLen * Math.cos(angle - Math.PI / 6),
+        y2 - headLen * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - headLen * Math.cos(angle + Math.PI / 6),
+        y2 - headLen * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
 
-    // 0dB line
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
-    ctx.beginPath(); ctx.moveTo(left, midY+5); ctx.lineTo(right, midY+5); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText('0 dB', right-30, midY+2);
+    // Helper: draw rounded rect
+    function roundRect(x, y, bw, bh, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + bw - r, y);
+      ctx.arcTo(x + bw, y, x + bw, y + r, r);
+      ctx.lineTo(x + bw, y + bh - r);
+      ctx.arcTo(x + bw, y + bh, x + bw - r, y + bh, r);
+      ctx.lineTo(x + r, y + bh);
+      ctx.arcTo(x, y + bh, x, y + bh - r, r);
+      ctx.lineTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+    }
 
-    // Bottom: Phase plot
-    ctx.fillText('环路相位 ∠Aβ (°)', left, midY+15);
+    // Draw Vin label + arrow
+    const vinX = startX - arrowSpace;
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Vin', vinX, midY);
+    drawArrow(vinX + 14, midY, startX, midY, arrowColor);
 
-    ctx.strokeStyle = 'rgba(145,55,25,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
-    ctx.beginPath();
-    ctx.moveTo(left, midY+35);
-    ctx.bezierCurveTo(left+60, midY+35, left+100, midY+40, left+140, midY+60);
-    ctx.bezierCurveTo(left+180, midY+80, left+240, midY+90, right-20, midY+95);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    // Draw each block
+    for (let i = 0; i < n; i++) {
+      const bx = startX + i * (blockW + arrowSpace);
 
-    ctx.strokeStyle = '#16599e'; ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(left, midY+35);
-    ctx.bezierCurveTo(left+60, midY+35, left+100, midY+38, left+140, midY+45);
-    ctx.bezierCurveTo(left+180, midY+50, left+240, midY+60, right-20, midY+70);
-    ctx.stroke();
+      // Block fill
+      ctx.fillStyle = blockFill;
+      roundRect(bx, blockY, blockW, blockH, blockR);
+      ctx.fill();
 
-    // -180° line
-    ctx.strokeStyle = 'rgba(145,55,25,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
-    ctx.beginPath(); ctx.moveTo(left, midY+85); ctx.lineTo(right, midY+85); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#913719';
-    ctx.fillText('−180°（振荡线）', right-80, midY+82);
+      // Block border
+      ctx.strokeStyle = blockStroke;
+      ctx.lineWidth = 1.5;
+      roundRect(bx, blockY, blockW, blockH, blockR);
+      ctx.stroke();
 
-    ctx.fillStyle = '#913719'; ctx.textAlign = 'left';
-    ctx.fillText('未补偿', left+250, midY+55);
-    ctx.fillStyle = '#16599e';
-    ctx.fillText('已补偿', left+250, midY+42);
+      // Block text (two lines, centered)
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(blocks[i].label1, bx + blockW / 2, midY - 8);
+      ctx.font = '12px sans-serif';
+      ctx.fillText(blocks[i].label2, bx + blockW / 2, midY + 10);
 
-    // Annotation: phase margin
-    ctx.strokeStyle = '#36650f'; ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(left+160, midY+55);
-    ctx.lineTo(left+160, midY+85);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(left+155, midY+80);
-    ctx.lineTo(left+160, midY+85);
-    ctx.lineTo(left+165, midY+80);
-    ctx.stroke();
-    ctx.fillStyle = '#36650f'; ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('PM ≈ 30°', left+120, midY+70);
+      // Arrow to next block (or to Vout)
+      if (i < n - 1) {
+        drawArrow(bx + blockW, midY, bx + blockW + arrowSpace, midY, arrowColor);
+      }
+    }
+
+    // Last arrow to Vout
+    const lastBx = startX + (n - 1) * (blockW + arrowSpace);
+    const voutX = lastBx + blockW + arrowSpace;
+    drawArrow(lastBx + blockW, midY, voutX - 14, midY, arrowColor);
+
+    // Vout label
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Vout', voutX, midY);
+
+    // Bottom annotation
+    ctx.fillStyle = labelColor;
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('总增益 = 10 × 10 = 100 V/V（40 dB）  ·  目标带宽 1 MHz ~ 20 MHz', w / 2, h - 14);
   }
   draw();
   window.addEventListener('resize', draw);
 })();
 
 // ============================================================
-// Canvas 3-2: Compensation Calculator
+// Canvas 1-3: REPLACED with static image (high-speed-analog-debug-02.jpg)
 // ============================================================
-(function(){
-  const cvs = document.getElementById('cvs-comp-calc');
-  const ccSlider = document.getElementById('cc-slider');
-  const gainSlider = document.getElementById('gain-slider');
-  const ccVal = document.getElementById('cc-val');
-  const gain2Val = document.getElementById('gain2-val');
-  const estPm = document.getElementById('est-pm');
-  const estBw = document.getElementById('est-bw');
-  const estStatus = document.getElementById('est-status');
-  if(!cvs) return;
-  const ctx = cvs.getContext('2d');
-
-  function draw() {
-    const w = cvs.width = cvs.clientWidth;
-    const h = cvs.height = cvs.clientHeight;
-    ctx.clearRect(0,0,w,h);
-
-    const cc = parseFloat(ccSlider.value);
-    const gain = parseInt(gainSlider.value);
-    ccVal.textContent = cc.toFixed(1) + ' pF';
-    gain2Val.textContent = '+' + gain;
-
-    // Empirical model (simplified from AD8099 behavior)
-    const ccRatio = cc / 5; // normalized
-    const gainFactor = gain / 10;
-
-    const pmEst = Math.min(75, Math.max(5, 20 + ccRatio * 35 - (gain - 5) * 3));
-    const bwEst = Math.min(550, Math.max(50, 550 / (1 + ccRatio * 1.5)));
-
-    estPm.textContent = '~' + Math.round(pmEst) + '°';
-    estBw.textContent = '~' + Math.round(bwEst) + ' MHz';
-
-    let statusText, statusColor;
-    if(pmEst < 20) { statusText = '不稳定'; statusColor = '#913719'; }
-    else if(pmEst < 40) { statusText = '临界'; statusColor = '#7d4908'; }
-    else if(pmEst < 55) { statusText = '稳定'; statusColor = '#36650f'; }
-    else { statusText = '保守'; statusColor = '#0d6751'; }
-    estStatus.textContent = statusText;
-    estStatus.style.color = statusColor;
-
-    // Bar chart: PM
-    const left = 80, right = w-50, top=30, bot=h-50;
-    const ph = bot - top;
-
-    // PM bar
-    const barW = 40, gap = 20;
-    const barX1 = left + 80;
-
-    ctx.fillStyle = '#8c8883'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.fillText('相位裕度', barX1-10, top+20);
-    ctx.fillText('0°', barX1-10, bot);
-    ctx.fillText('90°', barX1-10, top);
-
-    // PM bar background
-    ctx.fillStyle = '#f1efe9'; ctx.strokeStyle = '#d4d3cf';
-    ctx.beginPath(); ctx.roundRect(barX1, top, barW, ph, 4); ctx.fill(); ctx.stroke();
-
-    const pmH = ph * Math.min(pmEst/90, 1);
-    ctx.fillStyle = statusColor;
-    ctx.beginPath(); ctx.roundRect(barX1, bot-pmH, barW, pmH, 4); ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = statusColor; ctx.textAlign = 'center';
-    ctx.fillText(Math.round(pmEst) + '°', barX1+barW/2, bot-pmH-10);
-    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'left';
-    ctx.fillText('相位裕度', barX1+barW+8, top+ph/2-6);
-    ctx.fillText(statusText, barX1+barW+8, top+ph/2+8);
-
-    // BW bar
-    const barX2 = barX1 + barW + 120;
-    ctx.fillStyle = '#8c8883'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('−3dB 带宽', barX2-10, top+20);
-    ctx.fillText('0', barX2-10, bot);
-    ctx.fillText('550MHz', barX2-10, top);
-
-    ctx.fillStyle = '#f1efe9'; ctx.strokeStyle = '#d4d3cf';
-    ctx.beginPath(); ctx.roundRect(barX2, top, barW, ph, 4); ctx.fill(); ctx.stroke();
-
-    const bwH = ph * Math.min(bwEst/550, 1);
-    ctx.fillStyle = '#0d6751';
-    ctx.beginPath(); ctx.roundRect(barX2, bot-bwH, barW, bwH, 4); ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = '#0d6751'; ctx.textAlign = 'center';
-    ctx.fillText(Math.round(bwEst) + 'M', barX2+barW/2, bot-bwH-10);
-    ctx.fillStyle = '#8c8883'; ctx.textAlign = 'left';
-    ctx.fillText('−3dB 带宽', barX2+barW+8, top+ph/2);
-
-    // Bottom note
-    ctx.fillStyle = '#8c8883'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('注意：以上为基于典型行为的估算值，非精确计算。实际值受 PCB 布局、温度和器件批次影响。', w/2, h-8);
-  }
-
-  ccSlider.addEventListener('input', draw);
-  gainSlider.addEventListener('input', draw);
-  window.addEventListener('resize', draw);
-  draw();
-})();
 
 // ============================================================
 // Sidebar active tracking
