@@ -31,6 +31,20 @@ var siteData = {
           file: 'articles/hardware-intro.html'
         },
         {
+          id: 'highpass-filter_20260524_151223_322',
+          title: '一阶高通滤波器与零点分析',
+          date: '2026-05-24',
+          summary: '一阶RC高通滤波器的电路结构、传递函数推导、零极点分析与波特图解读',
+          file: 'articles/highpass-filter_20260524_151223_322.html'
+        },
+        {
+          id: 'passive-highpass-filter',
+          title: '无源高通滤波器的传递函数',
+          date: '2026-05-24',
+          summary: '以一阶RC与二阶LC高通滤波器为研究对象，推导复频域传递函数，系统分析极点/零点与伯德图特性，涵盖品质因数Q对频率响应的影响及工程选型考量。',
+          file: 'articles/passive-highpass-filter.html'
+        },
+        {
           id: 'signal-conditioning',
           title: '信号调理核心原理',
           date: '2026-05-22',

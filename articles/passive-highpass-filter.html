@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="category" content="硬件">
+<meta name="description" content="以一阶RC与二阶LC高通滤波器为研究对象，推导复频域传递函数，系统分析极点/零点与伯德图特性，涵盖品质因数Q对频率响应的影响及工程选型考量。">
+<meta name="date" content="2026-05-24">
+<title>无源高通滤波器的传递函数</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$']],
+    displayMath: [['$$', '$$']]
+  }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg:        #f5f4f1;
+  --card-bg:   #ffffff;
+  --text:      #1a1a1a;
+  --text2:     #555555;
+  --accent:    #2dd4bf;
+  --sidebar:   #111827;
+  --sidebar-text: #9ca3af;
+  --border:    #e5e5e5;
+  --canvas-bg: #ececec;
+  --code-bg:   #f0f0f0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.layout { display: flex; min-height: 100vh; }
+
+/* 侧边栏 */
+.sidebar {
+  position: fixed;
+  width: 260px;
+  height: 100vh;
+  background: var(--sidebar);
+  color: var(--sidebar-text);
+  padding: 40px 24px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e5e7eb;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  letter-spacing: 2px;
+}
+
+.toc { list-style: none; }
+
+.toc li { margin-bottom: 4px; }
+
+.toc a {
+  display: block;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.toc a:hover,
+.toc a.active {
+  color: var(--accent);
+  background: rgba(45,212,191,0.08);
+}
+
+.toc .toc-h3 { padding-left: 28px; font-size: 13px; }
+
+.back-home {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.back-home a {
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.back-home a:hover { color: var(--accent); }
+
+/* 主内容区 */
+.main {
+  margin-left: 260px;
+  flex: 1;
+  padding: 40px 32px 80px;
+  max-width: calc(900px + 260px);
+}
+
+.chapter {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+h2 {
+  font-size: 24px;
+  color: var(--text);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent);
+}
+
+h3 {
+  font-size: 18px;
+  color: var(--text);
+  margin: 24px 0 12px;
+}
+
+h4 {
+  font-size: 16px;
+  color: var(--text2);
+  margin: 16px 0 8px;
+}
+
+p { margin-bottom: 12px; }
+
+/* 表格 */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+}
+
+thead { background: #f0f0f0; }
+
+th {
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 10px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+tr:nth-child(even) { background: #fafafa; }
+
+tr:last-child td { border-bottom: none; }
+
+/* 信息提示框 */
+.info-box, .warn-box, .tip-box {
+  padding: 14px 18px;
+  border-radius: 6px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.info-box {
+  border-left: 4px solid #3b82f6;
+  background: #eff6ff;
+  color: #1e3a5f;
+}
+
+.warn-box {
+  border-left: 4px solid #f59e0b;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.tip-box {
+  border-left: 4px solid #10b981;
+  background: #ecfdf5;
+  color: #064e3b;
+}
+
+/* Canvas 容器 */
+.canvas-wrap {
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 20px 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.canvas-wrap canvas {
+  display: block;
+  margin: 0 auto;
+  background: var(--canvas-bg);
+  border-radius: 4px;
+}
+
+.figure-caption {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ── 三栏原理图（一阶高通） ── */
+.fig-wrap {
+  margin: 20px 0;
+  background: #ececec;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px 16px 16px;
+  overflow-x: auto;
+}
+.fig-header {
+  font-size: 18px; font-weight: bold; color: #000;
+  background-color: #ffff00; padding: 2px 8px;
+  display: inline-block; margin-bottom: 14px;
+  border: 1px solid #000;
+}
+.fig-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 16px;
+}
+.fig-left {
+  flex: 0 0 210px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.fig-left-title {
+  font-size: 14px; font-weight: bold; margin-bottom: 8px;
+  text-align: center; border-bottom: 2px solid black; padding-bottom: 2px; width: 100%;
+}
+.fig-mid {
+  flex: 1;
+  border: 2px solid #000; border-radius: 20px;
+  padding: 15px 18px; background-color: #e6f7ff;
+  display: flex; flex-direction: column; justify-content: center;
+  align-self: flex-end; margin-bottom: 32px;
+  font-size: 15px; line-height: 1.7;
+}
+.fig-right {
+  flex: 0 0 380px; position: relative;
+}
+.fig-right-title {
+  position: absolute; top: -32px; left: 50%;
+  transform: translateX(-50%);
+  background: #000; color: #fff;
+  padding: 5px 20px; font-size: 16px; font-weight: bold;
+  white-space: nowrap; border-radius: 4px; z-index: 10;
+}
+.fig-overlay {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; pointer-events: none;
+}
+
+.fig-math { font-family: "Times New Roman", serif; font-style: italic; }
+.fig-frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; }
+.fig-num { border-bottom: 1px solid black; padding: 0 4px; }
+.fig-den { padding: 0 4px; }
+.fig-green { color: green; font-weight: bold; }
+.fig-red { color: red; font-weight: bold; }
+.fig-arrow-line { display: inline-block; width: 30px; height: 1px; background: black; vertical-align: middle; margin: 0 2px; position: relative; }
+.fig-arrow-line::after { content: ''; position: absolute; right: 0; top: -3px; border-left: 4px solid black; border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
+.fig-box { border: 1px solid #999; padding: 2px 8px; display: inline-block; margin-top: 6px; border-radius: 4px; }
+
+/* 代码块 */
+code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* 摘要/关键词 */
+.article-meta {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.article-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.abstract-label, .keywords-label {
+  font-weight: 700;
+  color: var(--text);
+  margin-right: 8px;
+}
+
+.keywords-label { margin-top: 8px; display: inline-block; }
+
+.keyword-tag {
+  display: inline-block;
+  background: #e5f7f4;
+  color: #0d7d6e;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  margin: 2px 4px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; max-width: 100%; }
+  .chapter { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- 侧边栏 -->
+<nav class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="toc">
+    <li><a href="#c1">第一章 引言</a></li>
+    <li><a href="#c2">第二章 复频域阻抗建模基础</a></li>
+    <li><a href="#c3">第三章 一阶RC高通滤波器分析</a></li>
+    <li><a href="#c4">第四章 二阶LC高通滤波器分析</a></li>
+    <li><a href="#c5">第五章 极点与零点的叠加规律</a></li>
+    <li><a href="#c6">第六章 结论与展望</a></li>
+  </ul>
+  <div class="back-home">
+    <a href="../index.html">← 返回首页</a>
+  </div>
+</nav>
+
+<!-- 主内容 -->
+<main class="main">
+
+<!-- 文章头部 -->
+<div class="article-meta">
+  <div class="article-title">无源高通滤波器的传递函数</div>
+  <p>
+    <span class="abstract-label">摘要</span>
+    本文以一阶RC高通滤波器与二阶LC高通滤波器为研究对象，从电路阻抗建模出发，推导其复频域传递函数，系统分析极点与零点的数学定义与物理意义，并结合伯德图（波特图）揭示幅频特性与相频特性的变化规律。研究表明，高通滤波器通过零点与极点的协同作用实现通高频、阻低频的滤波特性，其伯德图的斜率与相移可通过极点/零点的阶次进行线性叠加预测。本文可为开关电源反馈环路分析等工程场景提供理论支撑。
+  </p>
+  <p>
+    <span class="keywords-label">关键词</span>
+    <span class="keyword-tag">无源高通滤波器</span>
+    <span class="keyword-tag">传递函数</span>
+    <span class="keyword-tag">极点</span>
+    <span class="keyword-tag">零点</span>
+    <span class="keyword-tag">伯德图</span>
+    <span class="keyword-tag">复频域分析</span>
+  </p>
+</div>
+
+<!-- 第一章 -->
+<div class="chapter" id="c1">
+  <h2>第一章 引言</h2>
+  <p>在电力电子与信号处理领域，无源滤波器是抑制噪声、匹配阻抗的核心基础电路。低通滤波器仅包含极点特性，而高通滤波器同时包含极点与零点，是完整理解线性系统频率响应的关键载体。本文针对一阶RC与二阶LC高通滤波器，从数学建模、极点/零点分析到伯德图特性展开系统研究，为后续多模块级联系统的频率响应分析提供理论框架。</p>
+</div>
+
+<!-- 第二章 -->
+<div class="chapter" id="c2">
+  <h2>第二章 复频域阻抗建模基础</h2>
+
+  <h3>2.1 元件阻抗的复频域表示</h3>
+  <p>在复频域 $ s = \sigma + j\omega $ 中，无源元件的阻抗可表示为：</p>
+  <ul>
+    <li>电阻 R：$ Z_R = R $（与频率无关）</li>
+    <li>电容 C：$ Z_C = \frac{1}{sC} $（频率越高，阻抗越小）</li>
+    <li>电感 L：$ Z_L = sL $（频率越高，阻抗越大）</li>
+  </ul>
+
+  <div class="tip-box">
+    <strong>工程直觉</strong>：电容在直流时相当于开路（$s \to 0$ 时 $Z_C \to \infty$），在高频时相当于短路；电感恰好相反。这一对偶关系是所有无源滤波器设计的基石。
+  </div>
+
+  <h3>2.2 传递函数的定义</h3>
+  <p>传递函数 $G(s)$ 定义为输出信号与输入信号的复频域比值，即：</p>
+  $$ G(s) = \frac{V_{\text{out}}(s)}{V_{\text{in}}(s)} $$
+  <p>对于分压型无源滤波器，可通过<strong>分压公式</strong>建立 $G(s)$：</p>
+  $$ G(s) = \frac{Z_{\text{out}}}{Z_{\text{total}}} $$
+  <p>其中 $Z_{\text{out}}$ 为输出端口等效阻抗，$Z_{\text{total}}$ 为输入到输出的总串联阻抗。</p>
+</div>
+
+<!-- 第三章 -->
+<div class="chapter" id="c3">
+  <h2>第三章 一阶RC高通滤波器分析</h2>
+
+  <div class="fig-wrap">
+    <div class="fig-header">1、高通滤波器、零点</div>
+    <div class="fig-content">
+      <!-- 电路图 SVG -->
+      <div class="fig-left">
+        <div class="fig-left-title">一阶滤波器</div>
+        <svg width="200" height="160" viewBox="0 0 200 160" style="overflow:visible;">
+          <text x="5" y="55" font-family="Times New Roman" font-style="italic" font-size="14" fill="#000">V</text>
+          <text x="15" y="59" font-family="Times New Roman" font-size="9" fill="#000">i</text>
+          <circle cx="26" cy="52" r="2.5" stroke="#000" stroke-width="1.5" fill="#fff"/>
+          <line x1="28" y1="52" x2="48" y2="52" stroke="#000" stroke-width="1.5"/>
+          <line x1="48" y1="34" x2="48" y2="70" stroke="#000" stroke-width="1.8"/>
+          <line x1="63" y1="34" x2="63" y2="70" stroke="#000" stroke-width="1.8"/>
+          <line x1="63" y1="52" x2="100" y2="52" stroke="#000" stroke-width="1.5"/>
+          <text x="55" y="88" font-family="Times New Roman" font-size="12" text-anchor="middle" fill="#000">1/Cs</text>
+          <circle cx="100" cy="52" r="3.5" fill="#000"/>
+          <line x1="100" y1="52" x2="170" y2="52" stroke="#000" stroke-width="1.5"/>
+          <text x="175" y="56" font-family="Times New Roman" font-style="italic" font-size="14" fill="#000">V</text>
+          <text x="185" y="59" font-family="Times New Roman" font-size="9" fill="#000">o</text>
+          <circle cx="193" cy="52" r="2.5" stroke="#000" stroke-width="1.5" fill="#fff"/>
+          <line x1="100" y1="52" x2="100" y2="72" stroke="#000" stroke-width="1.5"/>
+          <polyline points="100,72 110,78 90,88 110,98 90,108 110,118 100,124" stroke="#000" stroke-width="1.5" fill="none" stroke-linejoin="miter"/>
+          <line x1="100" y1="124" x2="100" y2="140" stroke="#000" stroke-width="1.5"/>
+          <text x="116" y="100" font-family="Times New Roman" font-style="italic" font-size="14" fill="#000">R</text>
+          <line x1="88" y1="140" x2="112" y2="140" stroke="#000" stroke-width="2.2"/>
+          <line x1="92" y1="146" x2="108" y2="146" stroke="#000" stroke-width="1.8"/>
+          <line x1="96" y1="152" x2="104" y2="152" stroke="#000" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <!-- 公式区 -->
+      <div class="fig-mid">
+        <div style="margin-bottom:8px;">
+          传递函数：<span class="fig-math">G(s)</span> =
+          <span class="fig-frac"><span class="fig-num fig-math">RCs</span><span class="fig-den fig-math">RCs+1</span></span>
+        </div>
+        <div style="margin-left:40px;">或</div>
+        <div style="display:flex;align-items:center;">
+          <span class="fig-math">G(s)</span> =
+          <span class="fig-frac"><span class="fig-num fig-math">s</span><span class="fig-den fig-math">s + ω<sub>0</sub></span></span>
+          <div style="margin-left:10px;display:flex;flex-direction:column;font-size:13px;">
+            <div style="display:flex;align-items:center;"><span class="fig-arrow-line"></span><span class="fig-green">单零点</span></div>
+            <div style="margin-left:35px;margin-top:1px;">在 ω = 0</div>
+            <div style="height:12px;"></div>
+            <div style="display:flex;align-items:center;"><span class="fig-arrow-line"></span><span class="fig-red">单极点</span></div>
+            <div style="margin-left:35px;margin-top:1px;">在 ω = ω<sub>0</sub></div>
+          </div>
+        </div>
+        <div class="fig-box" style="align-self:center;">
+          ω<sub>0</sub> = <span class="fig-frac"><span class="fig-num fig-math">1</span><span class="fig-den fig-math">RC</span></span> &nbsp;&nbsp; (ω = 2πf)
+        </div>
+      </div>
+      <!-- 伯德图 SVG -->
+      <div class="fig-right">
+        <div class="fig-right-title">伯德图（波特图）</div>
+        <svg id="bode-rc-svg" width="380" height="290" viewBox="0 0 380 290" style="overflow:visible;">
+          <defs>
+            <pattern id="grid-major" width="38" height="220" patternUnits="userSpaceOnUse">
+              <path d="M 38 0 L 38 220" fill="none" stroke="#aaa" stroke-width="0.7"/>
+            </pattern>
+            <pattern id="grid-minor" width="7.6" height="220" patternUnits="userSpaceOnUse">
+              <path d="M 7.6 0 L 7.6 220" fill="none" stroke="#eee" stroke-width="0.4"/>
+            </pattern>
+          </defs>
+          <rect x="50" y="35" width="304" height="220" fill="url(#grid-minor)" />
+          <rect x="50" y="35" width="304" height="220" fill="url(#grid-major)" />
+          <line x1="50" y1="90" x2="354" y2="90" stroke="#e0e0e0" stroke-width="0.5"/>
+          <line x1="50" y1="145" x2="354" y2="145" stroke="#e0e0e0" stroke-width="0.5"/>
+          <line x1="50" y1="200" x2="354" y2="200" stroke="#e0e0e0" stroke-width="0.5"/>
+          <line x1="50" y1="35" x2="50" y2="255" stroke="#000" stroke-width="1.5"/>
+          <text x="2" y="42" font-size="12" font-family="SimSun" fill="#000" font-weight="bold">0dB</text>
+          <text x="2" y="148" font-size="12" font-family="SimSun" fill="#000" font-weight="bold">-20dB</text>
+          <text x="2" y="254" font-size="12" font-family="SimSun" fill="#000" font-weight="bold">-40dB</text>
+          <line x1="354" y1="35" x2="354" y2="255" stroke="#000" stroke-width="1.5"/>
+          <text x="360" y="42" font-size="12" font-family="SimSun" fill="#000" font-weight="bold">90</text>
+          <text x="360" y="254" font-size="12" font-family="SimSun" fill="#000" font-weight="bold">0</text>
+          <text x="372" y="148" font-size="12" font-family="SimSun" fill="#000" font-weight="bold" transform="rotate(90 372,148)" writing-mode="tb" letter-spacing="4">相位(度)</text>
+          <line x1="50" y1="255" x2="354" y2="255" stroke="#000" stroke-width="1.5"/>
+          <text x="202" y="282" font-size="12" font-family="SimSun" fill="#000" font-weight="bold" text-anchor="middle" letter-spacing="2">频率</text>
+          <path d="M 50 255 L 126 35 L 354 35" stroke="#000" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline id="bode-rc-mag" stroke="#000" stroke-width="1.6" fill="none" stroke-dasharray="6,4" stroke-linecap="round" stroke-linejoin="round" points=""/>
+          <polyline id="bode-rc-phase" stroke="#000" stroke-width="1.5" fill="none" stroke-dasharray="5,3" stroke-linecap="round" stroke-linejoin="round" points=""/>
+          <g transform="translate(170, 50)">
+            <rect x="0" y="0" width="78" height="42" rx="2" fill="rgba(255,255,255,0.95)" stroke="#000" stroke-width="1.2"/>
+            <text x="39" y="17" font-size="12" font-family="SimSun" fill="#000" font-weight="bold" text-anchor="middle">ω₀ = 1/RC</text>
+            <line x1="6" y1="23" x2="72" y2="23" stroke="#000" stroke-width="1"/>
+            <text x="39" y="37" font-size="12" font-family="SimSun" fill="#000" font-weight="bold" text-anchor="middle">单 极 点</text>
+          </g>
+          <g transform="translate(70, 190)">
+            <text x="0" y="0" font-size="12" font-family="SimSun" fill="#000" font-weight="bold" transform="rotate(-71)">20dB/dec</text>
+            <line x1="-5" y1="-5" x2="50" y2="-42" stroke="#000" stroke-width="1" opacity="0.6"/>
+          </g>
+          <circle cx="335" cy="268" r="7" fill="#90EE90" opacity="0.85" stroke="#228B22" stroke-width="1.2"/>
+          <path d="M 332 264 L 338 270 M 338 264 L 332 270" stroke="#228B22" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <h3>3.1 电路结构与传递函数推导</h3>
+  <p>一阶RC高通滤波器由串联电容 $C$ 与并联接地电阻 $R$ 组成，输出取自电阻两端。代入分压公式：</p>
+  $$ G(s) = \frac{R}{\frac{1}{sC} + R} $$
+  <p>为消除分母分数项，分子分母同乘 $sC$：</p>
+  $$ G(s) = \frac{R \cdot sC}{\left( \frac{1}{sC} + R \right) \cdot sC} = \frac{RCs}{RCs + 1} $$
+  <p>进一步整理为标准形式：</p>
+  $$ G(s) = \frac{s}{s + \omega_0}, \quad \omega_0 = \frac{1}{RC} $$
+  <p>其中 $\omega_0 = 2\pi f_0$ 为截止角频率，$f_0$ 为截止频率。</p>
+
+  <h3>3.2 极点与零点分析</h3>
+  <ul>
+    <li><strong>零点</strong>：令分子 $s = 0$，解得零点位置 $\omega = 0$（直流频率处），物理意义为直流信号被完全阻断，增益为 0。</li>
+    <li><strong>极点</strong>：令分母 $s + \omega_0 = 0$，解得单极点位置 $\omega = \omega_0$，物理意义为频率达到截止频率时，增益达到最大值（无源滤波器中为衰减最大值）。</li>
+  </ul>
+
+  <div class="info-box">
+    <strong>零点与极点的直观理解</strong>：零点位于原点意味着 $G(0) = 0$——直流无法通过。极点位于 $-\omega_0$（实轴左侧）意味着系统是稳定的，且在 $\omega_0$ 附近增益曲线开始"拐弯"。
+  </div>
+
+  <h3>3.3 伯德图特性</h3>
+
+  <h4>3.3.1 幅频特性</h4>
+  <ul>
+    <li>低频段 $\omega < \omega_0$：零点主导，斜率为 $+20\ \text{dB/dec}$（正 1 斜率），增益随频率升高线性增加。</li>
+    <li>拐点 $\omega = \omega_0$：单极点作用，斜率由 $+20\ \text{dB/dec}$ 变为 $0\ \text{dB/dec}$，高频段增益趋于稳定。</li>
+  </ul>
+
+  <h4>3.3.2 相频特性</h4>
+  <ul>
+    <li>低频段 $\omega < 0.1\omega_0$：零点主导，相位稳定在 $+90^\circ$。</li>
+    <li>过渡段 $0.1\omega_0 < \omega < 10\omega_0$：单极点作用，相位从 $+90^\circ$ 逐渐下降。</li>
+    <li>高频段 $\omega > 10\omega_0$：相位稳定在 $0^\circ$，单极点贡献的 $-90^\circ$ 相移与零点的 $+90^\circ$ 相移完全抵消。</li>
+  </ul>
+
+  <!-- 伯德图已包含在上方三栏图中 -->
+</div>
+
+<!-- 第四章 -->
+<div class="chapter" id="c4">
+  <h2>第四章 二阶LC高通滤波器分析</h2>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas-lc-circuit" width="700" height="300"></canvas>
+    <div class="figure-caption">图 2：二阶LC高通滤波器电路结构</div>
+  </div>
+
+  <h3>4.1 电路结构与传递函数推导</h3>
+  <p>二阶LC高通滤波器由串联电容 $C$、串联电感 $L$ 与并联接地电阻 $R$ 组成，输出取自电感与电阻两端。代入分压公式：</p>
+  $$ G(s) = \frac{sL \parallel R}{\frac{1}{sC} + sL \parallel R} = \frac{\frac{sLR}{Ls+R}}{\frac{1}{sC} + \frac{sLR}{Ls+R}} $$
+  <p>分子分母同乘 $\frac{Ls+R}{sLR}$ 消除分数项：</p>
+  $$ G(s) = \frac{1}{1 + \frac{1}{sC} \cdot \frac{Ls+R}{sLR}} $$
+  <p>分子分母同乘 $sCsLR$ 消除分数项：</p>
+  $$ G(s) = \frac{sCsLR}{sCsLR + Ls + R} = \frac{s^2 CL}{s^2 CL + \frac{Ls}{R} + 1} $$
+  <p>整理为标准二阶高通形式：</p>
+  $$ G(s) = \frac{s^2}{s^2 + \frac{\omega_0}{Q}s + \omega_0^2}, \quad \omega_0 = \frac{1}{\sqrt{LC}}, \quad Q = R\sqrt{\frac{C}{L}} $$
+
+  <div class="info-box">
+    <strong>推导方法总结</strong>：无源滤波器传递函数推导的核心步骤为——(1) 复频域阻抗定义 → (2) 分压/分流公式建立比值 → (3) 等式两边同乘非零因子消去分数 → (4) 多项式展开合并 → (5) 整理为标准形式。这一方法适用于任意 RLC 网络。
+  </div>
+
+  <h3>4.2 极点与零点分析</h3>
+  <ul>
+    <li><strong>双重零点</strong>：分子 $s^2 = 0$，零点位置 $\omega = 0$（二阶重合零点），物理意义为对低频信号的双重抑制作用。</li>
+    <li><strong>双重极点</strong>：分母二阶多项式等于 0，解得极点位置 $\omega = \omega_0$（二阶重合极点），物理意义为在截止频率处对零点的双重抵消作用。</li>
+  </ul>
+
+  <h3>4.3 伯德图特性</h3>
+
+  <h4>4.3.1 幅频特性</h4>
+  <ul>
+    <li>低频段 $\omega < \omega_0$：双重零点主导，斜率为 $+40\ \text{dB/dec}$（正 2 斜率），增益随频率升高加速增加。</li>
+    <li>拐点 $\omega = \omega_0$：双重极点作用，斜率由 $+40\ \text{dB/dec}$ 变为 $0\ \text{dB/dec}$，高频段增益趋于稳定。</li>
+  </ul>
+
+  <h4>4.3.2 相频特性</h4>
+  <ul>
+    <li>低频段：双重零点主导，相位稳定在 $+180^\circ$。</li>
+    <li>过渡段：双重极点作用，相位从 $+180^\circ$ 线性下降。</li>
+    <li>高频段：相位稳定在 $0^\circ$，双重极点贡献的 $-180^\circ$ 相移与双重零点的 $+180^\circ$ 相移完全抵消。</li>
+  </ul>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas-lc-bode" width="700" height="420"></canvas>
+    <div class="figure-caption">图 4：二阶LC高通滤波器伯德图（幅频 + 相频）</div>
+  </div>
+
+  <h3>4.4 品质因数 Q 对频率响应的影响</h3>
+  <p>品质因数 $Q = R\sqrt{C/L}$ 是二阶系统区别于一阶系统的关键参数。将传递函数代入频域 $s = j\omega$：</p>
+  $$ G(j\omega) = \frac{-\omega^2}{-\omega^2 + j\frac{\omega_0}{Q}\omega + \omega_0^2} = \frac{(\omega/\omega_0)^2}{(\omega/\omega_0)^2 - 1 - j\frac{1}{Q}(\omega/\omega_0)} $$
+  <p>在谐振频率 $\omega = \omega_0$ 附近，$Q$ 值直接决定幅频曲线的"峰化"程度：</p>
+
+  <table>
+    <thead>
+      <tr><th>阻尼状态</th><th>Q 值范围</th><th>极点位置</th><th>幅频特征</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>欠阻尼</td><td>$Q > 0.5$</td><td>共轭复极点（实部 < 虚部）</td><td>$\omega_0$ 附近出现谐振峰，$Q$ 越大峰值越高</td></tr>
+      <tr><td>临界阻尼</td><td>$Q = 0.5$</td><td>二重实极点</td><td>无谐振峰，从 +40 dB/dec 平缓过渡至 0</td></tr>
+      <tr><td>过阻尼</td><td>$Q < 0.5$</td><td>两个不等实极点</td><td>无谐振峰，过渡段延长，拐点分散为两段</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box">
+    <strong>工程警示</strong>：在开关电源反馈环路中，LC 输出滤波器与误差放大器的补偿网络级联时，过高的 $Q$ 值会导致环路增益在 $\omega_0$ 处出现剧烈谐振峰，极易引发自激振荡。设计时通常将 $Q$ 控制在 0.5~1 之间以保证足够的相位裕度。
+  </div>
+</div>
+
+<!-- 第五章 -->
+<div class="chapter" id="c5">
+  <h2>第五章 极点与零点的叠加规律</h2>
+
+  <h3>5.1 斜率叠加规则</h3>
+  <p>多个极点/零点级联时，总幅频斜率为各模块斜率的代数和：</p>
+
+  <table>
+    <thead>
+      <tr><th>类型</th><th>斜率贡献</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>单零点</td><td>$+20\ \text{dB/dec}$</td></tr>
+      <tr><td>单极点</td><td>$-20\ \text{dB/dec}$</td></tr>
+      <tr><td>双重零点</td><td>$+40\ \text{dB/dec}$</td></tr>
+      <tr><td>双重极点</td><td>$-40\ \text{dB/dec}$</td></tr>
+    </tbody>
+  </table>
+
+  <p>例如：单零点 + 单极点 → 总斜率 $0\ \text{dB/dec}$；双重零点 + 双重极点 → 总斜率 $0\ \text{dB/dec}$。</p>
+
+  <h3>5.2 相移叠加规则</h3>
+  <p>总相移为各模块相移的代数和，相移变化发生在极点/零点频率的前后 10 倍频范围内：</p>
+
+  <table>
+    <thead>
+      <tr><th>类型</th><th>相移贡献</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>单零点</td><td>$+90^\circ$</td></tr>
+      <tr><td>单极点</td><td>$-90^\circ$</td></tr>
+      <tr><td>双重零点</td><td>$+180^\circ$</td></tr>
+      <tr><td>双重极点</td><td>$-180^\circ$</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <strong>设计技巧</strong>：在开关电源补偿网络设计中，利用"零点补极点"的思想——在环路增益穿越 0dB 的频率附近放置一个零点，可以抵消该处极点带来的 $-90^\circ$ 相移，提升相位裕度。一阶 RC 高通传递函数 $G(s) = s/(s + \omega_0)$ 就是"一个零点 + 一个极点"的原型。
+  </div>
+
+  <h3>5.3 RC 与 LC 滤波器的工程选型考量</h3>
+  <p>在实际工程应用中，RC 与 LC 高通滤波器的选择不仅取决于阶次需求，还需综合考虑以下因素：</p>
+
+  <table>
+    <thead>
+      <tr><th>考量维度</th><th>RC 一阶高通</th><th>LC 二阶高通</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>阻带衰减斜率</td><td>+20 dB/dec</td><td>+40 dB/dec</td></tr>
+      <tr><td>元件数量</td><td>2 个（R + C）</td><td>3 个（C + L + R）</td></tr>
+      <tr><td>功率损耗</td><td>电阻持续耗散功率</td><td>理想 L/C 无耗散（实际有 ESR/EPR）</td></tr>
+      <tr><td>体积与成本</td><td>低（贴片 RC 极小）</td><td>高（电感体积大、成本高）</td></tr>
+      <tr><td>谐振风险</td><td>无</td><td>存在，需关注 Q 值</td></tr>
+      <tr><td>负载效应</td><td>后级输入阻抗影响截止频率</td><td>同样受影响，但可通过缓冲级隔离</td></tr>
+      <tr><td>典型应用</td><td>音频耦合、AC 耦合、直流隔离</td><td>射频前端、电源 EMI 滤波、扬声器分频</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>选型建议</strong>：</p>
+  <ul>
+    <li>若仅需隔离直流分量且频率不高（音频/传感器），RC 一阶高通即可胜任，成本极低。</li>
+    <li>若对阻带衰减要求严格（如射频镜像抑制、电源纹波滤除），应选用 LC 二阶或更高阶滤波器。</li>
+    <li>LC 滤波器中，电感的内阻（DCR）和电容的等效串联电阻（ESR）会引入额外的零极点，高频建模时不可忽略。</li>
+    <li>当负载不是纯阻性时（如后接运放输入级），应使用缓冲器（电压跟随器）隔离，避免负载阻抗改变传递函数特性。</li>
+  </ul>
+
+  <div class="warn-box">
+    <strong>注意</strong>：无源滤波器的传递函数推导假定输出端开路（无负载电流）。当接入有限阻抗负载时，$Z_{\text{out}}$ 被负载分流，传递函数需要重新建模。在精密设计中，建议在滤波器输出端增加单位增益缓冲器。
+  </div>
+</div>
+
+<!-- 第六章 -->
+<div class="chapter" id="c6">
+  <h2>第六章 结论与展望</h2>
+  <p>本文通过对一阶RC与二阶LC高通滤波器的数学建模与特性分析，明确了极点与零点在传递函数中的定义，揭示了其在伯德图中的表现规律。研究发现：</p>
+  <ol>
+    <li>高通滤波器通过零点阻断低频信号，通过极点在截止频率处抵消零点作用，实现通高频、阻低频的特性。</li>
+    <li>极点/零点的阶次直接决定伯德图的斜率与相移幅度，且满足线性叠加规律。</li>
+    <li>传递函数的化简核心在于<strong>同乘非零因子消除分数项</strong>，并整理为标准二阶系统形式。</li>
+  </ol>
+  <p>后续可进一步研究多极点/零点级联系统的频率响应，以及品质因数 $Q$ 对二阶系统谐振峰值的影响，为开关电源反馈环路的稳定性设计提供更深入的理论支撑。</p>
+</div>
+
+</main>
+</div>
+
+<script>
+(function() {
+  // ===== Canvas 工具函数 =====
+  function setupCanvas(canvas, w, h) {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return ctx;
+  }
+
+  // ===== 一阶 RC 高通滤波器伯德图 SVG 计算 =====
+  (function() {
+    var svg = document.getElementById('bode-rc-svg');
+    if (!svg) return;
+    var magPoly = document.getElementById('bode-rc-mag');
+    var phasePoly = document.getElementById('bode-rc-phase');
+    if (!magPoly || !phasePoly) return;
+
+    var xL = 50, xR = 354, yT = 35, yB = 255, dBtop = 0, dBbot = -40;
+    var xOmega0 = 126, pxPerDec = 38;
+
+    function logOmega(x) { return (x - xOmega0) / pxPerDec; }
+    function dBtoY(dB) { return yT + (dBtop - dB) / (dBtop - dBbot) * (yB - yT); }
+    function degToY(deg) { return yT + (90 - deg) / 90 * (yB - yT); }
+
+    var n = 300, mergeEnd = 86, magPts = [], phasePts = [];
+
+    for (var x = xL; x <= mergeEnd; x += 2) {
+      magPts.push(x.toFixed(1) + ',' + (yB + (-220/76) * (x - 50)).toFixed(1));
+    }
+    for (var i = 0; i <= n; i++) {
+      var x = mergeEnd + (xR - mergeEnd) * i / n;
+      var u = Math.pow(10, logOmega(x));
+      var dB = 20 * Math.log10(u / Math.sqrt(u * u + 1));
+      magPts.push(x.toFixed(1) + ',' + dBtoY(dB).toFixed(1));
+    }
+    for (var i = 0; i <= n; i++) {
+      var x = xL + (xR - xL) * i / n;
+      var u = Math.pow(10, logOmega(x));
+      phasePts.push(x.toFixed(1) + ',' + degToY(90 - Math.atan(u) * 180 / Math.PI).toFixed(1));
+    }
+
+    magPoly.setAttribute('points', magPts.join(' '));
+    phasePoly.setAttribute('points', phasePts.join(' '));
+  })();
+
+  // ===== 图2：二阶 LC 高通滤波器电路图 =====
+  (function drawLC() {
+    const canvas = document.getElementById('canvas-lc-circuit');
+    const ctx = setupCanvas(canvas, 700, 300);
+    const W = 700, H = 300;
+    const midY = H / 2;
+
+    ctx.fillStyle = '#ececec';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // 输入端口
+    const xIn = 60;
+    ctx.beginPath();
+    ctx.moveTo(xIn, midY - 30);
+    ctx.lineTo(xIn, midY + 30);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Vin', xIn, midY - 42);
+    ctx.fillText('+', xIn + 16, midY - 14);
+    ctx.fillText('−', xIn + 16, midY + 20);
+
+    // 上导线 (Vin → C)
+    ctx.beginPath();
+    ctx.moveTo(xIn, midY - 30);
+    ctx.lineTo(140, midY - 30);
+    ctx.stroke();
+
+    // 电容 C
+    const capX = 180, capY = midY - 30;
+    ctx.beginPath();
+    ctx.moveTo(capX - 25, capY);
+    ctx.lineTo(capX - 25, capY - 22);
+    ctx.lineTo(capX + 25, capY - 22);
+    ctx.lineTo(capX + 25, capY);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('C', capX, capY - 32);
+
+    // 电容右 → 电感
+    ctx.beginPath();
+    ctx.moveTo(capX + 25, capY);
+    ctx.lineTo(240, capY);
+    ctx.stroke();
+
+    // 电感 L（线圈符号）
+    const indX = 280, indY = midY - 30;
+    const loops = 3;
+    const loopR = 12;
+    const loopSpacing = 20;
+    ctx.beginPath();
+    ctx.moveTo(indX - loopSpacing * 1.5, indY);
+    for (let i = 0; i < loops; i++) {
+      const cx = indX - loopSpacing * 1.5 + loopSpacing / 2 + i * loopSpacing;
+      ctx.arc(cx, indY, loopR, 0, Math.PI * 2, false);
+    }
+    ctx.stroke();
+    // 电感两端延长线
+    ctx.beginPath();
+    ctx.moveTo(indX - loopSpacing * 1.5 - loopR - 4, indY);
+    ctx.lineTo(indX - loopSpacing * 1.5, indY);
+    ctx.moveTo(indX - loopSpacing * 1.5 + loops * loopSpacing, indY);
+    ctx.lineTo(indX - loopSpacing * 1.5 + loops * loopSpacing + loopR + 4, indY);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('L', indX - 4, indY - 28);
+
+    // 电感右 → 向下到 R 上端
+    const rX = 390;
+    ctx.beginPath();
+    ctx.moveTo(indX - loopSpacing * 1.5 + loops * loopSpacing + loopR + 4, indY);
+    ctx.lineTo(rX, indY);
+    ctx.lineTo(rX, midY - 50);
+    ctx.stroke();
+
+    // 输出端口 Vout（取自 L 与 R 两端）
+    const voutX = 510;
+    ctx.beginPath();
+    ctx.moveTo(rX, midY - 40);
+    ctx.lineTo(voutX, midY - 40);
+    ctx.moveTo(voutX, midY - 40);
+    ctx.lineTo(voutX, midY - 70);
+    ctx.moveTo(voutX, midY - 70);
+    ctx.lineTo(voutX - 12, midY - 58);
+    ctx.moveTo(voutX, midY - 70);
+    ctx.lineTo(voutX + 12, midY - 58);
+    ctx.moveTo(rX, midY + 10);
+    ctx.lineTo(voutX, midY + 10);
+    ctx.moveTo(voutX, midY + 10);
+    ctx.lineTo(voutX, midY + 40);
+    ctx.moveTo(voutX, midY + 40);
+    ctx.lineTo(voutX - 12, midY + 28);
+    ctx.moveTo(voutX, midY + 40);
+    ctx.lineTo(voutX + 12, midY + 28);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Vout', voutX, midY - 82);
+    ctx.fillText('+', voutX + 20, midY - 52);
+    ctx.fillText('−', voutX + 20, midY + 24);
+
+    // 电阻 R
+    const rTop = midY - 50, rBot = midY + 10;
+    ctx.beginPath();
+    const segH = (rBot - rTop) / 6;
+    ctx.moveTo(rX, rTop);
+    ctx.lineTo(rX - 25, rTop + segH);
+    ctx.lineTo(rX + 25, rTop + 2 * segH);
+    ctx.lineTo(rX - 25, rTop + 3 * segH);
+    ctx.lineTo(rX + 25, rTop + 4 * segH);
+    ctx.lineTo(rX - 25, rTop + 5 * segH);
+    ctx.lineTo(rX, rBot);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 14px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('R', rX + 18, (rTop + rBot) / 2 + 4);
+
+    // 接地
+    const gndX = rX;
+    ctx.beginPath();
+    ctx.moveTo(gndX, midY + 10);
+    ctx.lineTo(gndX, midY + 28);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(gndX - 20, midY + 28);
+    ctx.lineTo(gndX + 20, midY + 28);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(gndX - 12, midY + 34);
+    ctx.lineTo(gndX + 12, midY + 34);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(gndX - 4, midY + 40);
+    ctx.lineTo(gndX + 4, midY + 40);
+    ctx.stroke();
+
+    // 下导线
+    ctx.beginPath();
+    ctx.moveTo(xIn, midY + 30);
+    ctx.lineTo(voutX, midY + 40);
+    ctx.stroke();
+
+    // 输入地接地
+    ctx.beginPath();
+    ctx.moveTo(xIn, midY + 30);
+    ctx.lineTo(xIn, midY + 48);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(xIn - 16, midY + 48);
+    ctx.lineTo(xIn + 16, midY + 48);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(xIn - 10, midY + 54);
+    ctx.lineTo(xIn + 10, midY + 54);
+    ctx.stroke();
+
+    // 连接点
+    function dot(x, y) {
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.85)';
+      ctx.fill();
+    }
+    dot(rX, midY + 10);
+    dot(rX, midY - 40);
+    dot(rX, midY - 50);
+  })();
+
+  // ===== 图3：一阶 RC 伯德图（已由上方 SVG 替代） =====
+
+  // ===== 图4：二阶 LC 伯德图 =====
+  (function drawLCBode() {
+    const canvas = document.getElementById('canvas-lc-bode');
+    const ctx = setupCanvas(canvas, 700, 420);
+    const W = 700, H = 420;
+    const topH = 200, botH = 180, gap = 40;
+
+    ctx.fillStyle = '#ececec';
+    ctx.fillRect(0, 0, W, H);
+
+    const margin = { top: 25, left: 55, right: 30 };
+
+    function drawGrid(ox, oy, w, h) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 0.8;
+      const ticksX = 5;
+      const ticksY = 6;
+      for (let i = 0; i <= ticksX; i++) {
+        const x = ox + (i / ticksX) * w;
+        ctx.beginPath();
+        ctx.moveTo(x, oy);
+        ctx.lineTo(x, oy + h);
+        ctx.stroke();
+      }
+      for (let j = 0; j <= ticksY; j++) {
+        const y = oy + (j / ticksY) * h;
+        ctx.beginPath();
+        ctx.moveTo(ox, y);
+        ctx.lineTo(ox + w, y);
+        ctx.stroke();
+      }
+    }
+
+    // === 幅频面板 ===
+    const afOx = margin.left, afOy = margin.top;
+    const afW = W - margin.left - margin.right, afH = topH - margin.top;
+    drawGrid(afOx, afOy, afW, afH);
+
+    // 坐标轴
+    ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(afOx, afOy);
+    ctx.lineTo(afOx, afOy + afH);
+    ctx.lineTo(afOx + afW, afOy + afH);
+    ctx.stroke();
+
+    const logMin = -2.2, logMax = 2.2;
+    const toX = function(logVal) { return afOx + ((logVal - logMin) / (logMax - logMin)) * afW; };
+    const toYdb = function(db) { return afOy + afH * (1 - (db + 40) / 40); };
+
+    // 渐近线
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 4]);
+    // +40dB/dec 段
+    const yBottom = toYdb(-40);
+    const xCorner = toX(0);
+    ctx.beginPath();
+    ctx.moveTo(toX(logMin), yBottom);
+    ctx.lineTo(xCorner, toYdb(0));
+    ctx.stroke();
+    // 平坦段
+    ctx.beginPath();
+    ctx.moveTo(xCorner, toYdb(0));
+    ctx.lineTo(toX(logMax), toYdb(0));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 实际曲线 (Q=0.707)
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    const steps = 120;
+    for (let i = 0; i <= steps; i++) {
+      const logW = logMin + (i / steps) * (logMax - logMin);
+      const w = Math.pow(10, logW);
+      const w2 = w * w;
+      const denom = Math.sqrt((1 - w2) * (1 - w2) + (w / 0.707) * (w / 0.707));
+      const mag = 20 * Math.log10(w2 / denom);
+      const db = Math.max(-42, mag);
+      const x = toX(logW), y = toYdb(db);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // 标注
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    const slopeLabelX = toX(-1.4), slopeLabelY = toYdb(-12);
+    ctx.fillText('+40 dB/dec', slopeLabelX, slopeLabelY);
+
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.font = 'italic 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ω₀', xCorner, afOy + afH + 18);
+
+    // Y轴
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    for (let db = -40; db <= 0; db += 10) {
+      ctx.fillText(db + ' dB', afOx - 6, toYdb(db) + 4);
+    }
+
+    // X轴
+    ctx.textAlign = 'center';
+    const xLabels = [
+      { val: -2, text: '0.01ω₀' },
+      { val: -1, text: '0.1ω₀' },
+      { val: 0, text: 'ω₀' },
+      { val: 1, text: '10ω₀' },
+      { val: 2, text: '100ω₀' }
+    ];
+    xLabels.forEach(function(l) {
+      ctx.fillText(l.text, toX(l.val), afOy + afH + 16);
+    });
+
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('幅频特性  |G(jω)|', afOx + 10, afOy - 8);
+
+    // === 相频面板 ===
+    const pfOy = afOy + afH + gap;
+    const pfH = botH;
+    drawGrid(afOx, pfOy, afW, pfH);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(afOx, pfOy);
+    ctx.lineTo(afOx, pfOy + pfH);
+    ctx.lineTo(afOx + afW, pfOy + pfH);
+    ctx.stroke();
+
+    const toYphase = function(deg) { return pfOy + pfH * (1 - (deg / 180)); };
+
+    // 渐近线
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(toX(logMin), toYphase(180));
+    ctx.lineTo(toX(-1), toYphase(180));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(toX(-1), toYphase(180));
+    ctx.lineTo(toX(1), toYphase(0));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(toX(1), toYphase(0));
+    ctx.lineTo(toX(logMax), toYphase(0));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 实际曲线
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+      const logW = logMin + (i / steps) * (logMax - logMin);
+      const w = Math.pow(10, logW);
+      const phase = 180 - Math.atan2(w / 0.707, 1 - w * w) * (180 / Math.PI);
+      const x = toX(logW), y = toYphase(Math.max(0, Math.min(180, phase)));
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Y轴
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'right';
+    [0, 45, 90, 135, 180].forEach(function(d) {
+      ctx.fillText(d + '°', afOx - 6, toYphase(d) + 4);
+    });
+
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 13px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('相频特性  ∠G(jω)', afOx + 10, pfOy - 8);
+  })();
+
+  // ===== IntersectionObserver 侧边栏高亮 =====
+  (function() {
+    const sections = document.querySelectorAll('.chapter');
+    const links = document.querySelectorAll('.toc a');
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          links.forEach(function(link) {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + entry.target.id) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(function(s) { observer.observe(s); });
+  })();
+})();
+</script>
+
+</body>
+</html>
