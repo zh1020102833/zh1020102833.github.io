@@ -24,6 +24,13 @@ var siteData = {
           file: 'articles/eeg-signal-chain.html'
         },
         {
+          id: 'filter-circuits-and-dsp',
+          title: '滤波电路与数字信号处理',
+          date: '2026-05-23',
+          summary: '整合模拟滤波（无源/有源、响应类型、拓扑结构、设计方法）与数字滤波（IIR、FIR、卡尔曼、匹配、中值）核心知识，适用于电路设计与嵌入式开发参考。',
+          file: 'articles/filter-circuits-and-dsp.html'
+        },
+        {
           id: 'hardware-intro',
           title: '硬件设计入门基础',
           date: '2026-05-22',

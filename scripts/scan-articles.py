@@ -129,7 +129,7 @@ def generate_article_data_js(articles):
     cat_entries = []
     # 按预定义顺序生成分类，确保每个分类都出现（即使为空）
     for cat_name in CATEGORY_ORDER:
-        art_list = categories.get(cat_name, [])
+        art_list = categories.pop(cat_name, [])
         art_lines = []
         for i, art in enumerate(art_list):
             comma = "," if i < len(art_list) - 1 else ""
@@ -141,6 +141,27 @@ def generate_article_data_js(articles):
           file: '{}'
         }}{}""".format(art['id'], art['title'], art['date'], art['summary'], art['file'], comma))
 
+        articles_block = "\n".join(art_lines)
+        cat_entries.append("""    {{
+      name: '{}',
+      articles: [
+{}
+      ]
+    }}""".format(cat_name, articles_block))
+
+    # 追加未在 CATEGORY_ORDER 中的分类（防止文章被静默丢弃）
+    for cat_name in sorted(categories.keys()):
+        art_list = categories[cat_name]
+        art_lines = []
+        for i, art in enumerate(art_list):
+            comma = "," if i < len(art_list) - 1 else ""
+            art_lines.append("""        {{
+          id: '{}',
+          title: '{}',
+          date: '{}',
+          summary: '{}',
+          file: '{}'
+        }}{}""".format(art['id'], art['title'], art['date'], art['summary'], art['file'], comma))
         articles_block = "\n".join(art_lines)
         cat_entries.append("""    {{
       name: '{}',
