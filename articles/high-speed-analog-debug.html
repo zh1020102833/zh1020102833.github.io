@@ -111,6 +111,19 @@ body {
 .sidebar-nav .sub a:hover { color: #d1d5db; }
 .sidebar-nav .sub a.active { color: var(--sidebar-active); }
 
+.sidebar-home {
+  display: block;
+  padding: 8px 24px;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-home:hover { color: var(--sidebar-active); background: var(--sidebar-hover); }
+
 /* ===== MAIN ===== */
 .main-wrap {
   margin-left: var(--sidebar-w);
@@ -391,6 +404,8 @@ img.inline-img {
     <li class="sub"><a href="#s5-2">5.2 运放选型与布局</a></li>
     <li class="sub"><a href="#s5-3">5.3 稳定性判据</a></li>
   </ul>
+  <a class="sidebar-home" href="../index.html" title="返回首页">← 返回首页</a>
+
 </aside>
 
 <!-- ========== MAIN CONTENT ========== -->

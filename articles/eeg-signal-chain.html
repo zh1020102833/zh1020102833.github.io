@@ -65,6 +65,19 @@ body{
   font-weight:600;color:#f3f4f6;font-size:0.86rem;
   padding:8px 20px 4px;margin-top:8px;
 }
+
+.sidebar-home {
+  display: block;
+  padding: 8px 20px;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #9ca3af;
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-home:hover { color: #60a5fa; background: rgba(96,165,250,.10); }
 .main{flex:1;max-width:900px;padding:48px 48px 100px;margin:0 auto;background:#f5f4f1;}
 
 /* ── Typography ── */
@@ -267,6 +280,8 @@ canvas{display:block;width:100%;}
   <a href="#s9-hw">硬件设计要点</a>
   <a href="#s9-sw">软件驱动逻辑</a>
   <a href="#s9-plan">立项前建议</a>
+
+  <a class="sidebar-home" href="../index.html" title="返回首页">← 返回首页</a>
 </nav>
 
 <!-- ── Main ── -->
