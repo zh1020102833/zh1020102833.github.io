@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纳伏表竞品调研与技术方案报告</title>
+<meta name="category" content="硬件">
+<meta name="date" content="2026-05-25">
+<meta name="description" content="吉时利2182A纳伏表竞品调研、技术架构分析、器件选型与国产替代方案，含622x电流源配套分析和全球市场数据。">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg: #f5f4f1; --surface: #ffffff; --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.15);
+  --text: #1c1b19; --text-sec: #555350; --text-hint: #8c8883;
+  --accent: #16599e; --accent-light: #e3eef9;
+  --teal: #0d6751; --teal-light: #dff3ec;
+  --coral: #913719; --coral-light: #f9e9e2;
+  --amber: #7d4908; --amber-light: #f9ecd6;
+  --purple: #4e44b0; --purple-light: #eceafc;
+  --green: #36650f; --green-light: #e9f2db;
+  --radius: 8px; --radius-lg: 12px;
+  --sidebar-w: 260px; --sidebar-bg: #111827; --sidebar-text: #9ca3af;
+  --sidebar-active: #2dd4bf; --sidebar-hover: #1f2937; --sidebar-heading: #6b7280;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.75;
+  display: flex; min-height: 100vh;
+}
+.sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+  background: var(--sidebar-bg); overflow-y: auto; z-index: 100; padding: 28px 0 40px;
+}
+.sidebar-title { font-size: 13px; font-weight: 500; color: var(--sidebar-heading); letter-spacing: 0.06em; padding: 0 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
+.sidebar-nav { list-style: none; padding: 0; }
+.sidebar-nav li { margin: 0; }
+.sidebar-nav a { display: block; padding: 7px 24px; font-size: 13px; color: var(--sidebar-text); text-decoration: none; border-left: 3px solid transparent; }
+.sidebar-nav a:hover { color: #e5e7eb; background: var(--sidebar-hover); }
+.sidebar-nav a.active { color: var(--sidebar-active); border-left-color: var(--sidebar-active); background: rgba(45,212,191,0.06); }
+.sidebar-home { display: block; padding: 8px 24px; margin-top: 24px; font-size: 13px; color: var(--sidebar-text); text-decoration: none; border-top: 1px solid rgba(255,255,255,0.08); }
+.sidebar-home:hover { color: var(--sidebar-active); }
+.main-wrap { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+.page-header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 40px 0 32px; text-align: center; }
+.page-header h1 { font-size: 24px; font-weight: 500; color: var(--text); }
+.page-header p { margin-top: 8px; color: var(--text-sec); font-size: 13px; }
+.content { max-width: 900px; margin: 0 auto; padding: 32px 28px 80px; }
+.chapter { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 36px 40px; margin-bottom: 28px; scroll-margin-top: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+h2 { font-size: 19px; font-weight: 500; color: var(--text); margin: 28px 0 16px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border); }
+h3 { font-size: 15px; font-weight: 500; color: var(--text); margin: 22px 0 10px; }
+h4 { font-size: 14px; font-weight: 500; color: var(--text-sec); margin: 16px 0 8px; }
+p { margin-bottom: 12px; color: var(--text); font-size: 14px; }
+ul, ol { padding-left: 22px; margin-bottom: 14px; }
+li { margin: 6px 0; color: var(--text); font-size: 14px; }
+strong { font-weight: 500; color: var(--text); }
+blockquote { border-left: 3px solid var(--border-med); padding: 8px 16px; margin: 14px 0; color: var(--text-sec); font-size: 13px; background: #fafaf8; border-radius: 0 6px 6px 0; }
+blockquote p { color: var(--text-sec); font-size: 13px; margin-bottom: 6px; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 16px 0; font-size: 13px; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+thead th { background: #f0f0f0; font-weight: 500; padding: 10px 14px; text-align: left; font-size: 12px; border-bottom: 0.5px solid var(--border); }
+tbody td { padding: 9px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: top; }
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:last-child td { border-bottom: none; }
+code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: "SF Mono","Consolas",monospace; font-size: 12px; }
+pre { background: #f0f0f0; border-radius: var(--radius); padding: 14px 18px; overflow-x: auto; margin: 14px 0; font-size: 12px; line-height: 1.6; }
+pre code { background: none; padding: 0; }
+hr { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
+@media (max-width: 768px) { .sidebar { display: none; } .main-wrap { margin-left: 0; } .content { padding: 20px 16px; } .chapter { padding: 24px 20px; } }
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#ch1">第一章 执行摘要</a></li>
+    <li><a href="#ch2">第二章 竞品格局</a></li>
+    <li><a href="#ch3">第三章 技术架构分析</a></li>
+    <li><a href="#ch4">第四章 方案与指标</a></li>
+    <li><a href="#ch5">第五章 开发路线图</a></li>
+    <li><a href="#ch6">第六章 配套电流源分析</a></li>
+    <li><a href="#ch7">第七章 全球市场</a></li>
+    <li><a href="#ch8">第八章 低热连接器</a></li>
+  </ul>
+  <a class="sidebar-home" href="../index.html">← 返回首页</a>
+</nav>
+<div class="main-wrap">
+  <header class="page-header">
+    <h1>纳伏表竞品调研与技术方案报告</h1>
+    <p>对标 Keithley 2182A · 竞品调研 + 技术选型 + 方案建议 · 2026-05-25</p>
+  </header>
+  <div class="content">
+<section class="chapter" id="ch1">
+<h2>文档信息</h2>
+
+<table><thead><tr><th>项目</th><th>内容</th></tr></thead><tbody><tr><td>项目名称</td><td>国产纳伏表开发 — 对标 Keithley 2182A</td></tr><tr><td>文档类型</td><td>竞品调研 + 技术选型 + 方案建议</td></tr><tr><td>版本</td><td>V1.0</td></tr><tr><td>日期</td><td>2026-05-25</td></tr><tr><td>目标读者</td><td>产品经理 / 硬件工程师（有 pA 级电流检测经验）</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch2">
+<h2>一、执行摘要</h2>
+
+<strong>核心结论</strong>：在公开可查渠道中，目前未发现国产量产纳伏专用仪器。方瞳科技 FT3570 是七位半万用表（8nVpp 噪声），并非专用纳伏表。尚无产品能直接对标 Keithley 2182A 的 15nVpp@1s 水平。<strong>重要发现</strong>：老款 Keithley 2182（非 A 版）在特定测试条件下（源电阻 1kΩ、模拟滤波开启、数字滤波 100）的噪声指标为 70 nV p‑p（Keithley 2182 Service Manual Page 93），这可能是您提到的"国内有一家做到了70nV"的参考基准。建议以"先达 70nVpp → 再追 15nVpp"分两阶段开发，技术路线采用<strong>分立 JFET 斩波调制前端 + Σ-Δ ADC + 低热电势全链路设计</strong>。
+
+<strong>与 pA 电流检测仪的差异</strong>（给工程师的快速对比）：
+
+<table><thead><tr><th>维度</th><th>pA 电流检测仪</th><th>纳伏表</th></tr></thead><tbody><tr><td>被测信号</td><td>pA-nA 级电流</td><td>nV-μV 级电压</td></tr><tr><td>输入阻抗需求</td><td>极高（>10TΩ 虚拟地）</td><td>极高但用途不同（>10GΩ 电压测量）</td></tr><tr><td>核心噪声源</td><td>输入偏置电流噪声、漏电流</td><td>热电势（Thermal EMF）、1/f 电压噪声</td></tr><tr><td>前端拓扑</td><td>跨阻放大器（TIA）</td><td>斩波调制差分放大器</td></tr><tr><td>最大敌人</td><td>PCB 漏电流、湿度、污染</td><td>异种金属结温差、继电器线圈发热</td></tr><tr><td>可复用经验</td><td>屏蔽、Guard 环、三同轴连接</td><td>屏蔽、Guard 环、低热材料（方向不同）</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch3">
+<h2>二、竞品格局（三梯队 + 标杆）</h2>
+
+<h3>2.1 对标标杆</h3>
+
+<h4>Keithley 2182A（Keithley Instruments / 泰克 Tektronix）</h4>
+
+<table><thead><tr><th>参数类别</th><th>详细指标</th></tr></thead><tbody><tr><td><strong>电压量程</strong></td><td>10mV / 100mV / 1V / 10V / 100V（满量程，含 20% 超量程）</td></tr><tr><td><strong>最高分辨率</strong></td><td>1 nV（10mV 量程）</td></tr><tr><td><strong>有效位数</strong></td><td>5½（高速）/ 7½（数字滤波+平均）</td></tr><tr><td><strong>输入阻抗</strong></td><td>>10GΩ（10mV~10V）/ 10MΩ±1%（100V）</td></tr><tr><td><strong>直流精度（24h, ±1°C）</strong></td><td>10mV: ±(20+4) ppm；100mV: ±(10+3) ppm；1V: ±(7+2) ppm；10V: ±(2+1) ppm；100V: ±(10+3) ppm</td></tr><tr><td><strong>噪声（1s 响应）</strong></td><td><strong>15 nV p-p</strong></td></tr><tr><td><strong>噪声（60ms 响应）</strong></td><td><strong>40–50 nV p-p</strong></td></tr><tr><td><strong>噪声 RMS</strong></td><td>1.2 nVrms</td></tr><tr><td><strong>Delta 模式噪声</strong></td><td>30 nV p-p @24Hz（单次读数），多次平均可低至 1 nV</td></tr><tr><td><strong>NMRR</strong></td><td><strong>110 dB</strong>（与电源线同步）</td></tr><tr><td><strong>输入噪声密度</strong></td><td>~2.5 nV/√Hz（从 15nVpp@0.5Hz 等效带宽推算）</td></tr><tr><td><strong>通道数</strong></td><td>2（独立，可差分/比值/通道1-通道2）</td></tr><tr><td><strong>温度测量</strong></td><td>-200°C~1820°C，内置热电偶线性化 + 冷端补偿</td></tr><tr><td><strong>电阻测量范围</strong></td><td>10nΩ~200MΩ（配合 6220/6221 电流源，Delta 模式）</td></tr><tr><td><strong>输入接头</strong></td><td>特殊低热电势铜接头（2107-4 型 1.2m 低热输入电缆）</td></tr><tr><td><strong>可编程滤波器</strong></td><td>0.1Hz~1kHz 可编程，模拟（2 极 13Hz）+ 数字（移动平均）</td></tr><tr><td><strong>ADC</strong></td><td>积分型（PLC 同步），最高 1200 读数/s（低分辨率模式）</td></tr><tr><td><strong>通信接口</strong></td><td>GPIB (IEEE-488.2)、RS-232C、SCPI</td></tr><tr><td><strong>缓冲</strong></td><td>1024 读数</td></tr><tr><td><strong>参考价格</strong></td><td>~$8,030 USD</td></tr></tbody></table>
+
+<strong>技术特点总结</strong>：
+<ul>
+<li>斩波稳定放大器 + 低热电势开关</li>
+<li>Delta 模式（电流极性反转同步测量，消除热电势）</li>
+<li>电源线周期同步（110dB NMRR，几乎无需额外屏蔽）</li>
+<li><strong>与 6220/6221 电流源硬件级同步</strong>（这是 2182A 最核心的竞争壁垒之一）</li>
+</ul>
+
+<strong>额外可核验来源</strong>：
+<ul>
+<li>分销页给出"最佳 DC 电压精度 ±0.005% rdg + 4 digits"（rs-online.com）</li>
+<li>公开复述页描述 1s 响应 15nV p‑p 及 Delta mode 最高 24Hz 协同</li>
+</ul>
+
+<hr>
+
+<h4>Keithley 2182（老款，非 A 版）— 重要参考基准</h4>
+
+<strong>这是"70nV"数字的可能来源！</strong>
+
+<table><thead><tr><th>参数类别</th><th>详细指标</th></tr></thead><tbody><tr><td><strong>噪声（特定条件）</strong></td><td><strong>70 nV p‑p</strong>（源电阻 1kΩ，模拟滤波开启，数字滤波 100）</td></tr><tr><td><strong>噪声（其他条件）</strong></td><td>如 300 nV p‑p 等，详见 Service Manual 噪声性能表格</td></tr><tr><td><strong>来源</strong></td><td>Keithley 2182 Service Manual Page 93（噪声性能表格）</td></tr></tbody></table>
+
+<blockquote><p><strong>关键解读</strong>：老款 2182 在特定条件（源电阻 1kΩ、模拟滤波开启、数字滤波 100）下测得 <strong>70 nV p‑p</strong>。您提到"国内有一家做到了 70nV"，极有可能是指对标老款 2182 在此条件下的噪声水平，而非 60ms 响应时间的典型指标。<strong>建议在 Phase 0 预研期间，要求供应商明确说明该 70nV 的完整测试条件</strong>（源电阻、NPLC、滤波器配置、带宽等），避免误解。如果该产品的 70nV 是基于 1kΩ 源阻 + 强滤波条件，则其实际噪声能力远不及 2182A 的 15nVpp@1s（0Ω 短路输入）。</p></blockquote>
+
+<hr>
+
+<h4>Keysight 34420A（是德科技）</h4>
+
+<table><thead><tr><th>参数类别</th><th>详细指标</th></tr></thead><tbody><tr><td><strong>电压量程</strong></td><td>1mV / 10mV / 100mV / 1V / 10V / 100V</td></tr><tr><td><strong>分辨率</strong></td><td>100 pV（7½位）</td></tr><tr><td><strong>噪声</strong></td><td><strong>1.3 nVrms / 8 nVpp</strong>（2 分钟观测窗口）</td></tr><tr><td><strong>直流精度（24h）</strong></td><td>1mV: 0.0025+0.0020%；10mV: 0.0025+0.0002%；100mV: 0.0015+0.0003%；1V: 0.0010+0.0003%；10V: 0.0002+0.0001%；100V: 0.0010+0.0004%</td></tr><tr><td><strong>输入阻抗</strong></td><td>>10GΩ（1mV~10V）/ 10MΩ（100V）</td></tr><tr><td><strong>通道数</strong></td><td>2（内置低噪声扫描器）</td></tr><tr><td><strong>温度测量</strong></td><td>SPRT/RTD/热敏电阻/热电偶，SPRT 精度 +0.003°C</td></tr><tr><td><strong>参考价格</strong></td><td>~$5,000–$6,000 USD</td></tr></tbody></table>
+
+<strong>定位差异</strong>：34420A 是"带纳伏前端的 7½位万用表"，2182A 是"纯纳伏专用仪器"。34420A 的 2 分钟噪声 8nVpp 与 2182A 的 1s 噪声 15nVpp 在不同时间窗口下，<strong>不能直接数值比较</strong>。噪声与时间窗口存在明确关系（噪声 ∝ 1/√t），若将 34420A 的观测窗口压缩到 1 秒，其噪声会显著高于 15nVpp；反之，将 2182A 的响应时间延长到类似尺度，其噪声也可低于 15nVpp。工程上需换算比较。
+
+<hr>
+
+<h3>2.3 国产高精度 DMM（非专用纳伏表）</h3>
+
+<blockquote><p><strong>注意</strong>：FT3570 虽然噪声指标优异（8nVpp），但其官方定位是"七位半万用表"，并非专用纳伏表，因此归入本板块。其对标产品为 Keysight 34420A，两者均属于"带低噪声前端的七位半万用表"这一类。</p></blockquote>
+
+<h4>方瞳科技 FT3570 七位半万用表（重点）</h4>
+
+<table><thead><tr><th>参数类别</th><th>详细指标</th></tr></thead><tbody><tr><td><strong>官方分类</strong></td><td><strong>七位半数字万用表</strong>（非专用纳伏表）</td></tr><tr><td><strong>电压量程</strong></td><td>1mV–100V（每量程 20% 设计余量）</td></tr><tr><td><strong>电阻量程</strong></td><td>1Ω–1MΩ</td></tr><tr><td><strong>分辨率</strong></td><td>7½位，100pV 显示灵敏度 / 100nΩ 显示灵敏度</td></tr><tr><td><strong>噪声</strong></td><td><strong>1.3 nVrms / 8 nVpp</strong>（2 分钟量级）</td></tr><tr><td><strong>通道数</strong></td><td>2（内置低噪声可编程扫描）</td></tr><tr><td><strong>温度测量</strong></td><td>SPRT/RTD/热敏电阻/热电偶，最高 ±0.003°C</td></tr><tr><td><strong>通信接口</strong></td><td>COM + LAN</td></tr><tr><td><strong>最大读数速率</strong></td><td>1000 读数/s</td></tr><tr><td><strong>对标产品</strong></td><td>Keysight 34420A（架构和指标高度接近）</td></tr></tbody></table>
+
+<blockquote><p><strong>⚠️ 100pV ≠ nV 测量能力</strong>：</p>
+<p>> FT3570 标称的"100pV 灵敏度"是 7½ 位显示在 1mV 量程的末位数字分辨率（1 LSD），而非真实可分辨的噪声底限。实际有效噪声底限为 <strong>8nVpp</strong>，末位约 80 个计数被噪声淹没。这意味着：</p>
+<p>- <strong>能测到 nV 级信号</strong>（8nV 约为 2182A 15nV@1s 的一半），但<strong>无法达到 1nV 级有效测量</strong></p>
+<p>- 与 2182A 的本质区别：2182A 通过 Delta 模式多次平均可将有效噪声降为 <strong>~1nV</strong>，FT3570 无 Delta 模式、无电流源硬件同步能力</p>
+<p>- <strong>未见与 6220/6221 类电流源的硬件同步能力</strong>，这两点是 2182A 的核心壁垒</p></blockquote>
+
+<hr>
+
+<h4>其他国产高精度 DMM</h4>
+
+<hr>
+
+<h3>2.4 第三梯队（开源/学术/潜在进入者）</h3>
+
+<table><thead><tr><th>来源</th><th>项目</th><th>噪声水平</th><th>技术路线</th></tr></thead><tbody><tr><td>GitHub (curtisseizert)</td><td>Nanovoltmeter</td><td><strong><1.2 nV/√Hz，1.36 nV p-p @10000s</strong></td><td>分立 JFET（Sziklai 拓扑）+ 斩波调制解调 + AD4030-24 ADC + 自动归零 DAC 反馈</td></tr><tr><td>GitHub (okokfun)</td><td>nvm / Nanovoltmeter</td><td><1.2 nV/√Hz</td><td>35 片 MCP6V51 并联 + IF3602 JFET</td></tr><tr><td>Analog Devices (AN)</td><td>Chopped FET Amplifier</td><td><strong>40 nV p-p (0.1-10Hz)</strong></td><td>LTC6241 + 分立 JFET + LTC1799 时钟</td></tr></tbody></table>
+
+<strong>特别关注</strong>：curtisseizert 的开源设计达到了惊人的 1.36nV p-p（较 2182A 的 15nV p-p 更优），但这来自<strong>10 秒采样周期 × 10000 秒观测</strong>，是极高的平均效果。其设计具有完整的工程参考价值（见下文技术架构章节）。
+
+<hr>
+
+<h3>2.5 关于"70nV 国产产品"的说明</h3>
+
+<p>在本次调研范围内的公开渠道中，<strong>未找到任何国产纳伏表产品明确标注 70nV 噪声水平</strong>。但 Keithley 2182 Service Manual（Page 93）明确列出了 <strong>70 nV p‑p</strong> 这一噪声值（测试条件：源电阻 1kΩ、模拟滤波开启、数字滤波 100）。</p>
+
+<strong>关键提醒</strong>：如果那家国产公司的"70nV"是基于与 Keithley 2182 相同的测试条件（1kΩ 源阻 + 强滤波），则需要警惕以下问题：
+<ul>
+<li><strong>源电阻贡献的 Johnson 噪声</strong>：1kΩ 电阻在室温下产生 ~4 nV/√Hz 热噪声，在窄带宽下可降到几十 nV，但对测量条件要求严苛</li>
+<li><strong>与 2182A 的直接差距</strong>：2182A 在 <strong>0Ω 短路输入</strong> 下实现 15nVpp@1s，如果国产产品需要 1kΩ 源阻 + 强滤波才能达到 70nV，则实际噪声底限差距巨大</li>
+</ul>
+
+<strong>建议 Phase 0 要求供应商明确说明</strong>：70nV 的完整测试条件（源电阻、NPLC、滤波器配置、等效噪声带宽）。
+
+<hr>
+
+</div>
+<section class="chapter" id="ch4">
+<h2>三、技术架构深度分析</h2>
+
+<h3>3.1 系统框图（通用纳伏表架构）</h3>
+
+<p>``<code></p>
+<p>┌─────────────────────────────────────────────────────────────────┐</p>
+<p>│                         输入前端                                  │</p>
+<p>│  低热电势接线柱 → 低热继电器 → 输入保护(GDT+限流) → 斩波调制开关    │</p>
+<p>└─────────────────────────────────────────────────────────────────┘</p>
+<p>│</p>
+<p>▼</p>
+<p>┌─────────────────────────────────────────────────────────────────┐</p>
+<p>│                      斩波调制前置放大器                            │</p>
+<p>│  ┌──────────┐    ┌──────────────┐    ┌──────────┐               │</p>
+<p>│  │ 调制开关  │───▶│ 分立JFET差分 │───▶│ 解调开关  │───▶ 输出运放   │</p>
+<p>│  │ (SW1)    │    │ 高增益放大器  │    │ (SW2)    │    (ADA4625)  │</p>
+<p>│  └──────────┘    └──────────────┘    └──────────┘               │</p>
+<p>│        ▲                                  │                      │</p>
+<p>│        │          ┌──────────┐            │                      │</p>
+<p>│        └──────────│ Vos DAC  │◀───────────┘ (自动归零反馈)        │</p>
+<p>│                   │ (U44)    │                                    │</p>
+<p>│                   └──────────┘                                    │</p>
+<p>└─────────────────────────────────────────────────────────────────┘</p>
+<p>│</p>
+<p>▼</p>
+<p>┌─────────────────────────────────────────────────────────────────┐</p>
+<p>│                     信号调理 + ADC                                │</p>
+<p>│  可编程增益放大器(PGA) → 抗混叠滤波器 → Σ-Δ ADC(24-32bit)          │</p>
+<p>│  模拟滤波器(2极13Hz) + 数字滤波器(CIC/Sinc + 移动平均)             │</p>
+<p>└─────────────────────────────────────────────────────────────────┘</p>
+<p>│</p>
+<p>▼</p>
+<p>┌─────────────────────────────────────────────────────────────────┐</p>
+<p>│               数字处理 + 控制                                     │</p>
+<p>│  MCU/FPGA → NPLC同步 → Delta模式 → 热电偶线性化 → 通信接口         │</p>
+<p>└─────────────────────────────────────────────────────────────────┘</p>
+</code>`<code>
+
+<h3>3.2 核心技术决策点</h3>
+
+<h4>决策 1：斩波频率选择</h4>
+
+<table><thead><tr><th>频率选择</th><th>优点</th><th>缺点</th><th>适用场景</th></tr></thead><tbody><tr><td><strong><100Hz（低频斩波）</strong></td><td>电荷注入小、开关噪声低</td><td>1/f 噪声抑制不完全</td><td>极限低噪声应用</td></tr><tr><td><strong>~1kHz（中频斩波）</strong></td><td>综合性能好、远离工频</td><td>需要处理开关瞬态</td><td><strong>推荐起点</strong></td></tr><tr><td><strong>>10kHz（高频斩波）</strong></td><td>1/f 噪声抑制彻底</td><td>电荷注入大、EMI 问题</td><td>高速应用</td></tr></tbody></table>
+
+<p>2182A 的斩波频率未公开（<strong>以下为基于公开技术分析的推测，非官方确认数据</strong>），基于其 60ms 响应时间推算，有效测量窗口约为几十 ms 量级，斩波频率可能在几百 Hz 范围。开源项目 curtisseizert 使用的是低频斩波（可通过关断自动归零实现），以降低电荷注入。</p>
+
+<strong>建议</strong>：第一版选择 ~500Hz-1kHz，避开 50/60Hz 工频及其谐波。
+
+<h4>决策 2：JFET 选型 — 最关键的前端决策</h4>
+
+<p>纳伏表前端的电压噪声密度直接决定系统噪声底限。pA 计关注的是电流噪声（fA/√Hz），纳伏表关注的是电压噪声（nV/√Hz）。</p>
+
+<table><thead><tr><th>器件</th><th>电压噪声</th><th>输入电容</th><th>跨导</th><th>匹配难度</th><th>价格</th><th>评价</th></tr></thead><tbody><tr><td><strong>IF3602</strong> (InterFET)</td><td>~0.3 nV/√Hz</td><td>~300pF</td><td>极高</td><td>极大（参数离散性大）</td><td>~$50</td><td>理论上最优，但匹配极其困难</td></tr><tr><td><strong>JFE2140</strong> (TI)</td><td>~1.5 nV/√Hz</td><td>~75pF</td><td>中</td><td>内置匹配对</td><td>~$8</td><td><strong>强烈推荐</strong>，专为差分设计</td></tr><tr><td><strong>LSK389</strong> (Linear Systems)</td><td>~1.0 nV/√Hz</td><td>~25pF</td><td>中</td><td>较好</td><td>~$15</td><td>经典方案，低电容优势</td></tr><tr><td><strong>2SK209</strong> (Toshiba)</td><td>~1.5 nV/√Hz</td><td>~15pF</td><td>低</td><td>需手动匹配</td><td>~$1</td><td>低成本选项，多片并联可降噪</td></tr><tr><td><strong>BF862</strong> (NXP, 已停产)</td><td>~0.8 nV/√Hz</td><td>~10pF</td><td>高</td><td>已停产</td><td>—</td><td>曾是优选，不可用于新产品</td></tr></tbody></table>
+
+<strong>推荐</strong>：TI JFE2140。内置匹配对减少配对工作量，噪声参数可接受，供货稳定。
+
+<strong>噪声并联降噪公式</strong>：N 个相同 JFET 并联，电压噪声降低 √N 倍，但输入电容增加 N 倍。开源项目 okokfun 用了 35 片 MCP6V51 并联达到 210nV 噪声（初始单片）/ √35 ≈ 35nV（等效推算），但这是用集成斩波运放的做法，不是最优路线。
+
+<h4>决策 3：斩波调制拓扑选择</h4>
+
+<table><thead><tr><th>拓扑</th><th>描述</th><th>优点</th><th>缺点</th></tr></thead><tbody><tr><td><strong>分立 JFET + 斩波调制解调</strong></td><td>输入信号经调制开关交替接入 JFET 差分放大器，输出经同步解调</td><td>噪声最低、可与任意运放组合</td><td>复杂度高、需要精确时钟、电荷注入</td></tr><tr><td><strong>集成斩波放大器（如 ADA4528）</strong></td><td>使用厂商集成的斩波运放</td><td>开发简单、失调极低</td><td><strong>噪声密度 >50 nV/√Hz</strong>，不适合纳伏表</td></tr><tr><td><strong>交流耦合斩波 FET</strong> (ADI AN)</td><td>LTC6241 + 分立 JFET + LTC1799</td><td>40nVpp，失调极低</td><td>带宽受限、需 AC 耦合</td></tr><tr><td><strong>35 片 MCP6V51 并联</strong> (okokfun)</td><td>多片集成斩波运放并联</td><td>可工程实现</td><td>功耗大、体积大、噪声收益边际递减</td></tr></tbody></table>
+
+<strong>强烈推荐</strong>：分立 JFET + 斩波调制解调（curtisseizert 开源方案），已经被验证可以做到 <1.2 nV/√Hz。
+
+<blockquote><p><strong>⚠️ curtisseizert 方案的已知问题</strong>（来自项目作者公开描述）：</p>
+<p>- 原型机存在 <strong>约 3nA 的偏置电流</strong>（源于输入调制开关的电荷注入），改进设计宣称可降至 <5pA，但尚未全面验证</p>
+<p>- 使用的 <strong>PE4140 四 MOSFET 阵列</strong> 和 <strong>AD4030-24 ADC</strong> 均为非常规器件，需要专门采购渠道</p>
+<p>- 电源设计采用 <strong>LT8608S buck + Cuk converter</strong> 组合，复杂度极高</p>
+<p>- <strong>建议 Phase 0 先用更简单的离散元件验证核心原理</strong>（如低电荷注入模拟开关 MAX4644 替代 PE4140），确认斩波调制解调架构的可行性后，再过渡到定制元件方案</p></blockquote>
+
+<strong>核心原理</strong>（给从 pA 计转过来的工程师）：
+
+</code>`<code>
+<p>pA 计思路：</p>
+<p>输入电流 → TIA (反馈电阻 Rf) → 输出电压 = I_in × Rf</p>
+<p>噪声源 = Rf 热噪声 + 运放输入电流噪声</p>
+
+<p>纳伏表思路：</p>
+<p>输入电压 → 斩波调制到 AC → JFET 放大（增益~3500）→ 同步解调回 DC → ADC</p>
+<p>斩波的作用：将 DC/低频信号搬到斩波频率，绕过运放的 1/f 噪声</p>
+<p>3500 倍增益后，后级运放的失调被衰减 3500 倍（等效~4nV/3500 = ~1pV）</p>
+</code>`<code>
+
+<h4>决策 4：ADC 选型</h4>
+
+<table><thead><tr><th>ADC</th><th>分辨率</th><th>采样率</th><th>噪声 @G=1</th><th>接口</th><th>价格</th><th>评价</th></tr></thead><tbody><tr><td><strong>AD4030-24</strong></td><td>24 bit</td><td>2 MSPS</td><td>~30 nVrms</td><td>SPI</td><td>~$25</td><td>开源项目选用，LSB=0.24nV，极其优秀</td></tr><tr><td><strong>AD7177-2</strong></td><td>32 bit</td><td>10 kSPS</td><td>~35 nVrms @10SPS</td><td>SPI</td><td>~$30</td><td>32bit 精度，带 PGA，内建基准</td></tr><tr><td><strong>AD7190</strong></td><td>24 bit</td><td>4.8 kSPS</td><td>8.5 nVrms @4.7Hz (G=128)</td><td>SPI</td><td>~$12</td><td>集成 PGA，低速噪声极低</td></tr><tr><td><strong>ADS1256</strong></td><td>24 bit</td><td>30 kSPS</td><td>~70 nVrms @10SPS</td><td>SPI</td><td>~$10</td><td>工业级，供货稳定，生态好</td></tr><tr><td><strong>ADS1262</strong></td><td>32 bit</td><td>38.4 kSPS</td><td>~30 nVrms @2.5SPS</td><td>SPI</td><td>~$15</td><td>内置 PGA(1-128)，低噪声</td></tr><tr><td><strong>LTC2440</strong></td><td>24 bit</td><td>~880 SPS</td><td>200 nVrms</td><td>SPI</td><td>~$10</td><td>速度较慢，不太适合</td></tr></tbody></table>
+
+<strong>推荐</strong>：
+<ul>
+<li><strong>第一版首选</strong>：AD7177-2 或 ADS1262（内置 PGA，32bit 精度，噪声足够低，开发友好）</li>
+<li><strong>极限性能版</strong>：AD4030-24（SAR 型，需要外部 PGA，噪声最低，但开发难度大，开源项目已验证）</li>
+</ul>
+
+<h4>决策 5：电压基准选型</h4>
+
+<table><thead><tr><th>基准</th><th>噪声 (0.1-10Hz)</th><th>温漂</th><th>功耗</th><th>价格</th><th>评价</th></tr></thead><tbody><tr><td><strong>ADR1399</strong></td><td>~0.14 ppm p-p</td><td>0.05 ppm/°C</td><td><strong>高（发热大）</strong></td><td>~$40</td><td>噪声最低，但发热会影响热电势</td></tr><tr><td><strong>LTC6655</strong></td><td>~0.25 ppm p-p</td><td>2 ppm/°C</td><td>低</td><td>~$15</td><td>低功耗、噪声可接受</td></tr><tr><td><strong>ADR4525</strong></td><td>~1 ppm p-p</td><td>2 ppm/°C</td><td>低</td><td>~$8</td><td>性价比高</td></tr><tr><td><strong>MAX6325</strong></td><td>~1.5 ppm p-p</td><td>1 ppm/°C</td><td>低</td><td>~$12</td><td>工业常见</td></tr></tbody></table>
+
+<strong>推荐 LTC6655</strong>。ADR1399 噪声最低但发热量大，额外热源会加剧热电势问题。开源项目 curtisseizert 作者实测对比后认为 LTC6655 在短路噪声方面优于 ADR1399（基于该开源项目作者的实测结论，非公开官方数据）。
+
+<hr>
+
+<h3>3.3 低热电势设计（纳伏表最大的工程挑战）</h3>
+
+<strong>这是 pA 计工程师最需要理解的新领域。</strong>
+
+<h4>热电势根本问题</h4>
+
+</code>`<code>
+<p>异种金属结 + 温度差 → 热电势（Seebeck 效应）</p>
+<p>典型值：铜-氧化铜 = 1 mV/°C，铜-金 = 0.3 µV/°C</p>
+</code>`<code>
+
+<p>在 nV 级测量中，<strong>1 µV/°C 的结温差意味着 0.001°C 的温度差就能产生 1nV 误差。</strong></p>
+
+<h4>全链路热结地图</h4>
+
+</code>`<code>
+<p>输入端子 ──▶ 继电器触点 ──▶ PCB 焊点 ──▶ JFET 引脚</p>
+<p>│              │               │</p>
+<p>└─ Cu-Au结     └─ Cu-NiFe结    └─ Cu-SnPb结</p>
+</code>`<code>
+
+<h4>低热设计的三个原则（实战可操作）</h4>
+
+<li><strong>减少异种结数量</strong>：Force/Sense 路径中每减少一个金属过渡，就消除一个误差源</li>
+<li><strong>强制热对称</strong>：正负极性通道上的结数量和材料必须镜像，使热电势共模化从而互相抵消</li>
+<li><strong>隔热源</strong>：继电器线圈、基准源、电源芯片、MCU 等发热器件远离 Sense 节点</li>
+
+<h4>器件选型</h4>
+
+<table><thead><tr><th>类别</th><th>推荐器件</th><th>热电势</th><th>备注</th></tr></thead><tbody><tr><td><strong>输入接线柱</strong></td><td>Low Thermal 2758 系列</td><td><strong><0.1 µV</strong></td><td>碲铜 + 直接镀金（无镍底层）</td></tr><tr><td><strong>输入电缆</strong></td><td>Keithley 2107-4 或 Pomona 低热系列</td><td>—</td><td>低热铜材 + 金铲形片</td></tr><tr><td><strong>输入继电器</strong></td><td>Pickering 100/101 系列</td><td><strong>~1 µV（单刀）</strong></td><td>双刀差分切换时两开关热电势极性相反，可相互抵消得到更低有效热电势</td></tr><tr><td><strong>PCB 焊料</strong></td><td>Sn63Pb37 或纯锡</td><td>—</td><td>保持焊接一致性</td></tr><tr><td><strong>线缆</strong></td><td>纯铜线（非镀锡铜）</td><td>—</td><td>镀锡铜线与铜形成 Sn-Cu 结</td></tr></tbody></table>
+
+<h4>热稳定时间</h4>
+
+<p>连接或切换后，不仅需要电气稳定，还需要<strong>热稳定</strong>。热电势是缓慢漂移（秒-分钟级），过早采样会把漂移"烤进"读数。经验法则：<strong>接线后等待至少 30 秒-2 分钟</strong>，视温差大小。</p>
+
+<h4>Delta 模式（消除残余热电势的终极手段）</h4>
+
+</code>`<code>
+<p>Delta 模式原理：</p>
+<p>+I 电流 → 测量 V1 = I×R + V_thermal</p>
+<p>-I 电流 → 测量 V2 = -I×R + V_thermal</p>
+<p>R = (V1 - V2) / (2I)</p>
+
+<p>热电势 V_thermal 被数学消除（前提：它在 +/-I 之间保持恒定）</p>
+</code>`<code>
+
+<strong>这是 2182A 与 6220/6221 电流源配合的核心功能</strong>，也是我们产品必须具备的能力。
+
+<hr>
+
+</div>
+<section class="chapter" id="ch5">
+<h2>四、推荐技术方案</h2>
+
+<h3>4.1 分阶段目标</h3>
+
+<table><thead><tr><th>阶段</th><th>目标噪声 (p-p @1s)</th><th>对标</th><th>时间估算</th></tr></thead><tbody><tr><td><strong>Phase 1 — MVP</strong></td><td><70 nV</td><td>填补国内空白（假设前述 70nV 产品未量产）</td><td>6-9 个月</td></tr><tr><td><strong>Phase 2 — 优化</strong></td><td><30 nV</td><td>接近 2182A 的 15nV</td><td>+3-6 个月</td></tr><tr><td><strong>Phase 3 — 旗舰</strong></td><td><15 nV</td><td>完全对标 2182A</td><td>+6-12 个月</td></tr></tbody></table>
+
+<h3>4.2 Phase 1 技术方案（BOM 草案）</h3>
+
+<h4>前端斩波放大器</h4>
+
+</code>`<code>
+<p>拓扑：分立 JFET 差分对 + 斩波调制解调 + 自动归零 DAC</p>
+<p>JFET：TI JFE2140 ×2（差分对，匹配内置）</p>
+<p>调制/解调开关：TMUX7234 或 TS5A22362（低电荷注入 SPDT）</p>
+<p>运放：ADA4625-1（解调后输出级）</p>
+<p>Vos DAC：DAC80501（16bit） 或 AD5693</p>
+<p>跨导控制运放：OPA2192</p>
+<p>漏极电阻：133Ω（折中噪声/增益/稳定性，参考开源设计）</p>
+<p>差分增益：~3500</p>
+</code>`<code>
+
+<h4>ADC 链路</h4>
+
+</code>`<code>
+<p>ADC：AD7177-2（32bit Σ-Δ，内置 PGA 1-128，10kSPS）</p>
+<p>或：ADS1262（32bit，38.4kSPS）</p>
+<p>基准：LTC6655-2.5V</p>
+<p>抗混叠滤波器：RC 低通 @ 斩波频率/10</p>
+<p>数字滤波器：CIC (Sinc³) + 移动平均</p>
+</code>`<code>
+
+<h4>低热电势输入链路</h4>
+
+</code>`<code>
+<p>接线柱：Low Thermal 2758（碲铜+金）</p>
+<p>输入继电器：Pickering 100 系列</p>
+<p>输入保护：GDT（气体放电管）+ 限流电阻（10mA 典型）</p>
+<p>PCB 布局：Sense 区域无发热器件，热对称布线</p>
+</code>`<code>
+
+<h4>控制与数字</h4>
+
+</code>`<code>
+<p>MCU：STM32H743（内置 FPU + DSP）</p>
+<p>或：Zynq-7000（如需 FPGA 级实时处理）</p>
+<p>NPLC 同步：通过过零检测电路提取 50/60Hz 线周期</p>
+<p>Delta 模式：MCU 触发外部电流源（预留同步 I/O）</p>
+<p>通信：USB 2.0 + LAN（以太网，预留 GPIB 接口）</p>
+</code>`<code>
+
+<h3>4.3 关键技术指标（Phase 1 目标）</h3>
+
+<table><thead><tr><th>指标</th><th>Phase 1 目标</th><th>Phase 3 目标（2182A）</th></tr></thead><tbody><tr><td>电压量程</td><td>10mV, 100mV, 1V, 10V, 100V</td><td>同左</td></tr><tr><td>分辨率</td><td>1 nV (10mV 量程)</td><td>1 nV</td></tr><tr><td>噪声 @1s p-p</td><td><strong><70 nV</strong></td><td><15 nV</td></tr><tr><td>噪声 @60ms p-p</td><td><200 nV</td><td><50 nV</td></tr><tr><td>噪声密度</td><td><10 nV/√Hz</td><td><3 nV/√Hz</td></tr><tr><td>DC 精度 @24h (100mV)</td><td>±(0.005%R + 0.001%FS)</td><td>±(0.001%R + 0.0003%FS)</td></tr><tr><td>输入阻抗</td><td>>10GΩ (≤10V), 10MΩ (100V)</td><td>同左</td></tr><tr><td>NMRR @50/60Hz</td><td>>80 dB</td><td>>110 dB</td></tr><tr><td>通道数</td><td>2（差分/比值）</td><td>2</td></tr><tr><td>温度测量</td><td>外接热电偶（B/E/J/K/N/R/S/T）</td><td>内建线性化</td></tr><tr><td>Delta 模式</td><td>预留接口</td><td>硬件同步</td></tr><tr><td>通信</td><td>USB + LAN</td><td>USB + LAN + GPIB</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch6">
+<h2>五、开发路线图建议</h2>
+
+<h3>Phase 0：预研（2-3 个月）</h3>
+
+<li><strong>搭建评估板</strong>：参考开源 curtisseizert 设计，用 JFE2140 + ADA4625-1 搭建低噪声前端</li>
+<li><strong>噪声特性实测</strong>：用 Keysight 34420A 或 2182A（建议租用一台）作为参考，测量前端噪声谱密度</li>
+<li><strong>热电势评估</strong>：测试不同连接器/继电器组合下的热电势漂移量</li>
+<li><strong>ADC 评估</strong>：对比 AD7177-2 vs ADS1262 实际噪声表现</li>
+
+<h3>Phase 1：MVP 开发（4-6 个月）</h3>
+
+<li>完整原理图 + PCB layout（6 层板最低，分离模拟数字地）</li>
+<li>固件开发（NPLC 同步、数字滤波器、Delta 模式控制框架）</li>
+<li>外壳机械设计（屏蔽 + 热设计）</li>
+<li>第一轮验证测试</li>
+
+<h3>Phase 2：优化迭代（3-6 个月）</h3>
+
+<li>噪声逐级排查（从 ADC 反推至前端）</li>
+<li>热电势对称性优化</li>
+<li>Delta 模式完整实现</li>
+<li>温度测量功能集成</li>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch7">
+<h2>六、风险与注意事项</h2>
+
+<table><thead><tr><th>风险</th><th>等级</th><th>缓解措施</th></tr></thead><tbody><tr><td>JFET 参数离散性导致噪声不可控</td><td>高</td><td>选用 JFE2140 内置匹配对，多批次测试筛选</td></tr><tr><td>热电势远超预期（>1µV 漂移）</td><td>高</td><td>从 Phase 0 开始就实测热电势，尽早暴露</td></tr><tr><td>热电势主导导致"看起来有 1nV 分辨率、但不可复现"</td><td>高</td><td>噪声验收必须包含长期漂移测试（nV/h）</td></tr><tr><td>斩波纹波/EMI 导致低频噪声异常</td><td>中</td><td>斩波频率避开工频谐波 + 屏蔽</td></tr><tr><td>输入保护/板面清洁导致漏电与吸附效应</td><td>中</td><td>PCB 清洗 + 三防漆 + Guard 环</td></tr><tr><td>量程继电器批次差异导致温漂与热电势不可控</td><td>中</td><td>继电器来料热电势筛选</td></tr><tr><td>curtisseizert 方案偏置电流问题（~3nA）</td><td>中</td><td>Phase 0 先用 MAX4644 等常见器件验证核心原理</td></tr><tr><td>斩波频率选择不当导致噪声反而恶化</td><td>中</td><td>预留多频率切换能力</td></tr><tr><td>ADC 噪声贡献过大</td><td>中</td><td>前端增益必须足够（>1000），使 ADC 噪声被衰减</td></tr><tr><td>与电流源同步困难（Delta 模式）</td><td>中</td><td>Phase 1 用软件触发，Phase 2 升级为硬件同步</td></tr><tr><td>PE4140/AD4030-24 等非常规器件采购风险</td><td>低</td><td>Phase 1 选用 ADS1262/AD7177-2 等主流器件</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch8">
+<h2>七、竞品分层方法论（来自前期调研沉淀）</h2>
+
+<h3>7.1 分层判定标准</h3>
+
+<strong>第一梯队（真·纳伏表）</strong>：
+<ul>
+<li>公开给出并可复现的"噪声-时间"指标（至少包含 1s/100ms 两点）</li>
+<li>输入结构明确面向低热电势/低漏电</li>
+<li>典型门槛：短路输入噪声 ≤20 nV p‑p @ 1s，或给出等价 nV/√Hz + 1/f 拐点</li>
+<li>支持 NPLC 同步积分（50/60 Hz 抑制）</li>
+<li>有系统级校准与不确定度口径（24h/90d/1y）</li>
+</ul>
+
+<strong>第二梯队（微伏表/高分辨率 DMM"接近纳伏用法"）</strong>：
+<ul>
+<li>能做到 µV 级很强，但对 nV 测量依赖长时间平均/外接前置</li>
+<li>宣传"1 nV 分辨率/8.5 位显示"，但公开资料缺少完整噪声曲线或热电势/漏电约束</li>
+</ul>
+
+<strong>第三梯队（通用台表/数据采集）</strong>：
+<ul>
+<li>不主打低热电势与 nV 噪声</li>
+<li>作为替代方案只能靠系统方案（放大+隔离+滤波+算法）</li>
+</ul>
+
+<h3>7.2 各梯队技术路线</h3>
+
+<table><thead><tr><th>梯队</th><th>典型技术路线</th></tr></thead><tbody><tr><td><strong>第一梯队</strong></td><td>低热电势输入 + 继电器量程网络 + 斩波/自零前端 + 低噪声 ΔΣ ADC + NPLC 同步积分 + 数字滤波；极性翻转/Delta 协同测量抑制热电势与 1/f 漂移</td></tr><tr><td><strong>第二梯队</strong></td><td>高分辨率 ADC 与数字平均为主，前端低噪声放大但未必满足纳伏级热电势控制；nV 场景需更长积分时间 + 更严格端子/线材/温差控制</td></tr><tr><td><strong>第三梯队</strong></td><td>锁相放大器（AC 调制）把 DC 微弱信号调制到较高频段测量，避开 1/f；或前置低噪声放大器 + 高精度 DMM/DAQ 系统替代</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch9">
+<h2>八、校准与量产测试方案</h2>
+
+<h3>8.1 校准链设计</h3>
+
+<table><thead><tr><th>校准项</th><th>方法</th><th>工具</th></tr></thead><tbody><tr><td><strong>零点</strong></td><td>短路输入（低热短路块），各量程零点校准</td><td>低热铜短路块</td></tr><tr><td><strong>增益</strong></td><td>标准电压源注入，各量程增益校准</td><td>高精度电压标准源</td></tr><tr><td><strong>线性度</strong></td><td>多点电压扫描，拟合残差</td><td>可编程电压标准</td></tr><tr><td><strong>温漂</strong></td><td>恒温箱内多点温度测试</td><td>环境试验箱</td></tr></tbody></table>
+
+<h3>8.2 纳伏表校准装置参考</h3>
+
+<strong>TUNKIA TH1200 纳伏表校准装置</strong>（来源：tunkia.cn/TH1200-Nanovoltmeters-Calibration-Device-pd543173798.html）可作为校准链参考，但需评估不确定度闭环。
+
+<h3>8.3 产测噪声验收规范</h3>
+
+<ul>
+<li><strong>环境要求</strong>：屏蔽箱 + 指定线材 + 低热短路块 + 温差规范（ΔT < 0.1°C）</li>
+<li><strong>预热</strong>：至少 2.5 小时</li>
+<li><strong>测试点</strong>：NPLC=1/5/10 各测 10 分钟，记录 p-p 噪声与 RMS 噪声</li>
+<li><strong>判定</strong>：短路输入噪声 ≤ 目标值（如 Phase 1: ≤70 nV p‑p @ 1s）</li>
+</ul>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch10">
+<h2>九、误差与噪声预算（工程参考）</h2>
+
+<table><thead><tr><th>误差源</th><th>典型贡献</th><th>控制措施</th></tr></thead><tbody><tr><td><strong>输入热电势</strong></td><td>0.1–10 µV（取决于材料与温差）</td><td>低热端子 + 热对称 + 温差控制</td></tr><tr><td><strong>前端 1/f 噪声</strong></td><td>1–10 nV p‑p（取决于 JFET 与斩波频率）</td><td>斩波调制 + JFET 选型</td></tr><tr><td><strong>前端白噪声</strong></td><td>~2 nV/√Hz × √ENBW</td><td>限制带宽（积分时间）</td></tr><tr><td><strong>ADC 等效输入噪声</strong></td><td>30–200 nVrms（取决于 ADC 型号与采样率）</td><td>前端增益 >1000 衰减其贡献</td></tr><tr><td><strong>参考源漂移</strong></td><td>0.25–2 ppm/°C</td><td>LTC6655 + 温控</td></tr><tr><td><strong>继电器/电阻网络 TCR</strong></td><td>1–10 ppm/°C</td><td>低 TCR 电阻 + 热对称布局</td></tr><tr><td><strong>漏电流 × 源阻</strong></td><td>i_leak × R_source（pA × kΩ = nV）</td><td>Guard 环 + 清洁 PCB</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch11">
+<h2>十、风险清单（扩展版）</h2>
+
+<table><thead><tr><th>风险</th><th>等级</th><th>缓解措施</th></tr></thead><tbody><tr><td>JFET 参数离散性导致噪声不可控</td><td>高</td><td>选用 JFE2140 内置匹配对，多批次测试筛选</td></tr><tr><td>热电势远超预期（>1µV 漂移）</td><td>高</td><td>从 Phase 0 开始就实测热电势，尽早暴露</td></tr><tr><td>热电势主导导致"看起来有 1nV 分辨率、但不可复现"</td><td>高</td><td>噪声验收必须包含长期漂移测试（nV/h）</td></tr><tr><td>输入保护/板面清洁导致漏电与吸附效应</td><td>中</td><td>PCB 清洗 + 三防漆 + Guard 环</td></tr><tr><td>斩波纹波/EMI 导致低频噪声异常</td><td>中</td><td>斩波频率避开工频谐波 + 屏蔽</td></tr><tr><td>量程继电器批次差异导致温漂与热电势不可控</td><td>中</td><td>继电器来料热电势筛选</td></tr><tr><td>PCB 漏电流影响（pA 计工程师习惯关注但此处次要）</td><td>低</td><td>纳伏表输入是高阻电压测量，漏电流影响远小于 pA 计，但仍需 Guard 环</td></tr><tr><td>斩波频率选择不当导致噪声反而恶化</td><td>中</td><td>预留多频率切换能力</td></tr><tr><td>ADC 噪声贡献过大</td><td>中</td><td>前端增益必须足够（>1000），使 ADC 噪声被衰减</td></tr><tr><td>与电流源同步困难（Delta 模式）</td><td>中</td><td>Phase 1 先用软件触发，Phase 2 升级为硬件同步</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch12">
+<h2>十一、参考资源</h2>
+
+<table><thead><tr><th>资源</th><th>链接/出处</th></tr></thead><tbody><tr><td>Keithley 2182A 官方页面</td><td>tek.com/keithley-nanovoltmeter-model-2182a</td></tr><tr><td>Keithley 2182 Service Manual（噪声性能表格）</td><td>Page 93（70nV 等数据来源）</td></tr><tr><td>Keysight 34420A 产品页</td><td>keysight.com</td></tr><tr><td>2182A 分销页（精度参数）</td><td>rs-online.com</td></tr><tr><td>2182A 公开复述页（噪声参数）</td><td>m.sensorexpert.com.cn/article/215002.html、transcat.com</td></tr><tr><td>TUNKIA TH1200 纳伏表校准装置</td><td>tunkia.cn/TH1200-Nanovoltmeters-Calibration-Device-pd543173798.html</td></tr><tr><td>开源纳伏表设计（curtisseizert）</td><td>github.com/curtisseizert/Nanovoltmeter</td></tr><tr><td>开源纳伏表设计（okokfun）</td><td>github.com/okokfun/nvm</td></tr><tr><td>ADI 斩波 FET 放大器 AN</td><td>analog.com — "40nV P-P Noise Chopped FET Amplifier"</td></tr><tr><td>纳伏表前端设计指南</td><td>icnavigator.com — "Nanovoltmeter & Micro-Ohmmeter Front-End Design Guide"</td></tr><tr><td>TI JFE2140 应用笔记</td><td>ti.com — SBOA589</td></tr><tr><td>Low Thermal 低热器件</td><td>lowthermal.com</td></tr><tr><td>Pickering 低热继电器</td><td>pickeringrelay.com</td></tr><tr><td>方瞳 FT3570</td><td>finetooling.com</td></tr></tbody></table>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch13">
+<h2>十二、配套电流源竞品分析（622x + 2182A 系统视角）</h2>
+
+<blockquote><p><strong>来源</strong>：Keithley 622x-900-01 用户手册（2008年10月版）及对话文档中的逆向工程分析。</p></blockquote>
+
+<h3>12.1 为什么要分析电流源</h3>
+
+<p>2182A 纳伏表的核心应用场景（低电阻测量、I-V 特性表征、Delta 模式热电抵消）<strong>必须配合精密电流源</strong>才能实现。开发纳伏表的同时，必须考虑电流源的协同设计。</p>
+
+<h3>12.2 Keithley 6220/6221 核心规格</h3>
+
+<table><thead><tr><th>参数</th><th>6220</th><th>6221</th></tr></thead><tbody><tr><td>输出类型</td><td>纯直流</td><td>直流 + 交流波形</td></tr><tr><td>源量程</td><td>9 档：2nA ~ 100mA（+5% 过量程）</td><td>同 6220</td></tr><tr><td>编程分辨率</td><td>100fA（2nA 档）~ 10μA（100mA 档）</td><td>同 6220</td></tr><tr><td>最大输出功率</td><td>11W，四象限（源/汇）</td><td>同 6220</td></tr><tr><td>电压合规</td><td>0.1V ~ 105V，10mV 步进</td><td>同 6220</td></tr><tr><td>输出电阻</td><td>>10^14Ω（2nA/20nA 量程）</td><td>同 6220</td></tr><tr><td>建立时间</td><td>100μs（所有量程）</td><td>快速模式：2μs（2mA 以上）/ 慢速模式：100μs</td></tr><tr><td>输出带宽</td><td>—</td><td>快速模式：1MHz（2μA 以上）/ 10kHz（2nA/20nA）</td></tr><tr><td>程控存储</td><td>64K 位置</td><td>同 6220</td></tr><tr><td>最高触发速率</td><td>1000 次/秒</td><td>同 6220</td></tr><tr><td>远程接口</td><td>GPIB + RS-232</td><td>GPIB + RS-232 + 以太网</td></tr></tbody></table>
+
+<h3>12.3 各量程精度与噪声（1年，23°C±5°C）</h3>
+
+<table><thead><tr><th>量程</th><th>精度</th><th>温度系数/°C</th><th>噪声 p-p (0.1-10Hz)</th><th>建立时间</th></tr></thead><tbody><tr><td>2nA</td><td>0.4% + 2pA</td><td>0.02% + 200fA</td><td>400fA</td><td>100μs</td></tr><tr><td>20nA</td><td>0.3% + 10pA</td><td>0.02% + 200fA</td><td>4pA</td><td>100μs</td></tr><tr><td>200nA</td><td>0.3% + 100pA</td><td>0.02% + 2pA</td><td>20pA</td><td>100μs</td></tr><tr><td>2μA</td><td>0.1% + 1nA</td><td>0.01% + 20pA</td><td>200pA</td><td>100μs</td></tr><tr><td>20μA</td><td>0.05% + 10nA</td><td>0.005% + 200pA</td><td>2nA</td><td>100μs</td></tr><tr><td>200μA</td><td>0.05% + 100nA</td><td>0.005% + 2nA</td><td>20nA</td><td>100μs</td></tr><tr><td>2mA</td><td>0.05% + 1μA</td><td>0.005% + 20nA</td><td>200nA</td><td>100μs</td></tr><tr><td>20mA</td><td>0.05% + 10μA</td><td>0.005% + 200nA</td><td>2μA</td><td>100μs</td></tr><tr><td>100mA</td><td>0.1% + 50μA</td><td>0.01% + 2μA</td><td>10μA</td><td>100μs</td></tr></tbody></table>
+
+<h3>12.4 622x + 2182A 系统架构（三条物理链路）</h3>
+
+</code>`<code>
+<p>┌─────────────────┐</p>
+<p>PC ──GPIB/以太网─┤     622x 电流源  │</p>
+<p>│                 │</p>
+<p>│ RS-232（零Modem）├─── 2182A 纳伏表</p>
+<p>│  主控+接收读数   │</p>
+<p>│                 │</p>
+<p>│ 触发链路 ───────├─── 2182A（8针 mini-DIN）</p>
+<p>│  （同步源-测量） │</p>
+<p>└─────────────────┘</p>
+</code>`<code>
+
+<ul>
+<li><strong>RS-232</strong>：622x 主控 2182A，发送配置命令并接收电压读数（19.2k 波特率、无流控）</li>
+<li><strong>触发链路</strong>：同步源-测量时序（8 针 mini-DIN，Model 8501 电缆），延迟 <1μs</li>
+<li><strong>GPIB/以太网</strong>：PC 远程控制 622x</li>
+<li><strong>输出连接</strong>：三轴电缆，含 Guard/屏蔽/安全隔离</li>
+</ul>
+
+<h3>12.5 Delta 模式精确算法（逆向工程核心公式）</h3>
+
+</code>`<code>
+<p>时序：</p>
+<p>2182A A/D:     A       B       C       D       E       F</p>
+<p>622x 输出:    +I      -I      +I      -I      +I      -I</p>
+
+<p>算法（三点移动平均）：</p>
+<p>Delta_1 = (A - 2B + C) / 4 × (-1)^1</p>
+<p>Delta_2 = (B - 2C + D) / 4 × (-1)^2</p>
+<p>...</p>
+
+<p>通式：Delta_n = (X - 2Y + Z) / 4 × (-1)^n</p>
+
+<p>其中 (-1)^n 使所有 Delta 读数保持同极性</p>
+</code>``
+
+<strong>关键参数</strong>：I-High（0~+105mA）、I-Low（0~-105mA）、延迟（1ms~9999s，默认 2ms）、计数（1~65536 或无限）。2182A 反转速率最高 <strong>24Hz</strong>（老款 2182 为 12Hz）。Delta 模式下 NPLC 被强制为 1。
+
+<h3>12.6 脉冲 Delta 模式（仅 6221 + 2182A）</h3>
+
+<p>适用于温度敏感器件。电流以脉冲形式输出，与电源线频率锁定同步。</p>
+
+<table><thead><tr><th>参数</th><th>范围</th><th>默认值</th></tr></thead><tbody><tr><td>脉冲宽度</td><td>50μs ~ 12ms</td><td>110μs</td></tr><tr><td>源延迟</td><td>16μs ~ 11.966ms</td><td>16μs</td></tr><tr><td>测量间隔（PLC）</td><td>5 ~ 999999</td><td>5</td></tr><tr><td>低测量次数</td><td>1（两点）或 2（三点）</td><td>2</td></tr></tbody></table>
+
+<p>两点公式：Pulse Delta = (2Y - 2X) / 2</p>
+
+<h3>12.7 差分电导模式</h3>
+
+<p>622x 输出差分电流扫描 dI，2182A 同步测量差分电压 dV：</p>
+<ul>
+<li>dG = dI / dV，dR = dV / dI</li>
+<li>步进 0~105mA，延迟 1ms~9999s</li>
+</ul>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch14">
+<h2>十三、全球市场概况</h2>
+
+<blockquote><p><strong>来源</strong>：对话文档中的市场调研章节。</p></blockquote>
+
+<table><thead><tr><th>指标</th><th>数据</th></tr></thead><tbody><tr><td>全球精密电子测量仪器市场（2025）</td><td>~120 亿美元，CAGR 约 5%</td></tr><tr><td>精密电流源与纳伏表细分市场</td><td>约占 8%-10%，约 9.6-12 亿美元</td></tr><tr><td>预计 2030 年细分市场</td><td>20-26 亿美元，CAGR 7.2%</td></tr><tr><td>中国市场（2025）</td><td>高精度电子测量仪器 422.88 亿元，纳伏/电流源细分约 33.8-42.3 亿元</td></tr><tr><td>中国市场增速</td><td>8%-9%，高于全球平均水平</td></tr></tbody></table>
+
+<h3>竞争格局补充</h3>
+
+<table><thead><tr><th>梯队</th><th>代表</th><th>核心优势</th><th>市场份额</th></tr></thead><tbody><tr><td>第一梯队</td><td>Keithley、Keysight、Tektronix</td><td>技术壁垒、全产品线、品牌</td><td>全球 >60%，中国高端 >70%</td></tr><tr><td>第二梯队</td><td>普源精电、鼎阳、<strong>智测云</strong></td><td>性价比、本土服务、兼容国际指令</td><td>中国 20%-25%</td></tr><tr><td>第三梯队</td><td>优利德及专精特新企业</td><td>低价、单一场景</td><td>中国 10%-15%</td></tr></tbody></table>
+
+<blockquote><p><strong>新增关注</strong>：智测云 iTESTCLOUD 6220 自研电流源（4pA-210mA，10MHz 更新速率）+ 自研纳伏表（5nV 分辨率、30nV p-p），价格仅为国际品牌的 50%-60%，兼容 Keithley 指令集。</p></blockquote>
+
+<hr>
+
+</div>
+<section class="chapter" id="ch15">
+<h2>十四、低热电势连接器规格（2182-KIT 参考）</h2>
+
+<blockquote><p><strong>来源</strong>：PA-567B 2182-KIT 低热输入连接器套件安装指南（2022年7月版）。</p></blockquote>
+
+<table><thead><tr><th>参数</th><th>规格</th></tr></thead><tbody><tr><td>触点材料</td><td>铜</td></tr><tr><td>触点数量</td><td>4</td></tr><tr><td>触点直径</td><td>0.035 英寸</td></tr><tr><td>最大线径</td><td>0.8mm（22AWG）</td></tr><tr><td>工作电压</td><td>40Vac</td></tr><tr><td>额定电流</td><td>0A（信号级别，非功率）</td></tr><tr><td>外壳材质</td><td>镀铬黄铜</td></tr><tr><td>焊接要求</td><td>SN/AG4 银焊料（非普通锡焊）</td></tr><tr><td>安装扭矩</td><td>7 英寸-磅</td></tr><tr><td>剥线长度</td><td>3mm</td></tr><tr><td>组件</td><td>LEMO 低热连接器 + 夹头 + 螺母 + 应力消除装置</td></tr></tbody></table>
+
+<blockquote><p><strong>工程提醒</strong>：2182A 的低热连接器使用银焊料而非普通锡铅焊料，目的是降低焊点本身的热电势。自主设计时必须考虑焊料选择。</p></blockquote>
+</div>
+  </div>
+</div>
+<script>
+(function() {
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const chapters = document.querySelectorAll('.chapter');
+  if (!chapters.length) return;
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(function(a) {
+          a.classList.remove('active');
+          if (a.getAttribute('href') === '#' + id) a.classList.add('active');
+        });
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  chapters.forEach(function(ch) { observer.observe(ch); });
+})();
+</script>
+</body>
+</html>
