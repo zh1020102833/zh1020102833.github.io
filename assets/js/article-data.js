@@ -59,6 +59,20 @@ var siteData = {
           file: 'articles/nanovoltmeter-market-research.html'
         },
         {
+          id: 'nanovoltmeter-review',
+          title: '纳伏表全链路选型与噪声分析 — 技术方案评估与优化报告',
+          date: '2026-05-26',
+          summary: '纳伏表全链路选型与噪声分析 — 技术方案评估与优化报告',
+          file: 'articles/nanovoltmeter-review.html'
+        },
+        {
+          id: 'nanovoltmeter-schematic',
+          title: '纳伏表原理图设计方案 — 器件参数评估与应对策略',
+          date: '2026-05-26',
+          summary: '纳伏表原理图设计方案 — 器件参数评估与应对策略',
+          file: 'articles/nanovoltmeter-schematic.html'
+        },
+        {
           id: 'passive-highpass-filter',
           title: '无源高通滤波器的传递函数',
           date: '2026-05-24',
