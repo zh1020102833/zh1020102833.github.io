@@ -45,11 +45,11 @@ var siteData = {
           file: 'articles/highpass-filter_20260524_151223_322.html'
         },
         {
-          id: 'passive-highpass-filter',
-          title: '无源高通滤波器的传递函数',
-          date: '2026-05-24',
-          summary: '以一阶RC与二阶LC高通滤波器为研究对象，推导复频域传递函数，系统分析极点/零点与伯德图特性，涵盖品质因数Q对频率响应的影响及工程选型考量。',
-          file: 'articles/passive-highpass-filter.html'
+          id: 'precision-halfwave-rectifier',
+          title: '精密半波整流器 - 运放电路技术笔记',
+          date: '2026-05-31',
+          summary: '从运放基本原理出发，系统阐述精密半波整流器的工作原理、设计演进过程及工程应用要点，涵盖虚短虚断法则、二极管压降补偿、双二极管钳位拓扑、频率响应限制等核心知识点。',
+          file: 'articles/precision-halfwave-rectifier.html'
         },
         {
           id: 'signal-conditioning',
