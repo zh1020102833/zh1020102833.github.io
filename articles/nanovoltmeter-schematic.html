@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纳伏表原理图设计方案 — 器件参数评估与应对策略</title>
+<meta name="category" content="硬件">
+<meta name="date" content="2026-05-26">
+<meta name="description" content="纳伏表原理图设计方案 — 器件参数评估与应对策略">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg: #f5f4f1; --surface: #ffffff; --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.15);
+  --text: #1c1b19; --text-sec: #555350; --text-hint: #8c8883;
+  --accent: #16599e; --accent-light: #e3eef9;
+  --teal: #0d6751; --teal-light: #dff3ec;
+  --coral: #913719; --coral-light: #f9e9e2;
+  --amber: #7d4908; --amber-light: #f9ecd6;
+  --purple: #4e44b0; --purple-light: #eceafc;
+  --green: #36650f; --green-light: #e9f2db;
+  --radius: 8px; --radius-lg: 12px;
+  --sidebar-w: 260px; --sidebar-bg: #111827; --sidebar-text: #9ca3af;
+  --sidebar-active: #2dd4bf; --sidebar-hover: #1f2937; --sidebar-heading: #6b7280;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.75;
+  display: flex; min-height: 100vh;
+}
+.sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+  background: var(--sidebar-bg); overflow-y: auto; z-index: 100; padding: 28px 0 40px;
+}
+.sidebar-title { font-size: 13px; font-weight: 500; color: var(--sidebar-heading); letter-spacing: 0.06em; padding: 0 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
+.sidebar-nav { list-style: none; padding: 0; }
+.sidebar-nav a { display: block; padding: 7px 24px; font-size: 13px; color: var(--sidebar-text); text-decoration: none; border-left: 3px solid transparent; line-height: 1.5; }
+.sidebar-nav a:hover { color: #e5e7eb; background: var(--sidebar-hover); }
+.sidebar-nav a.active { color: var(--sidebar-active); border-left-color: var(--sidebar-active); background: rgba(45,212,191,0.06); }
+.sidebar-home { display: block; padding: 8px 24px; margin-top: 24px; font-size: 13px; color: var(--sidebar-text); text-decoration: none; border-top: 1px solid rgba(255,255,255,0.08); }
+.sidebar-home:hover { color: var(--sidebar-active); background: var(--sidebar-hover); }
+.main-wrap { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+.page-header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 40px 0 32px; text-align: center; }
+.page-header h1 { font-size: 24px; font-weight: 500; color: var(--text); }
+.page-header p { margin-top: 8px; color: var(--text-sec); font-size: 13px; }
+.content { max-width: 900px; margin: 0 auto; padding: 32px 28px 80px; }
+.chapter {
+  background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg);
+  padding: 36px 40px; margin-bottom: 28px; scroll-margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+h2.chapter-title { font-size: 19px; font-weight: 500; color: var(--text); margin-bottom: 22px; padding-bottom: 14px; border-bottom: 0.5px solid var(--border); }
+h3 { font-size: 15px; font-weight: 500; color: var(--text); margin: 22px 0 10px; }
+h4 { font-size: 14px; font-weight: 500; color: var(--text-sec); margin: 16px 0 8px; }
+p { margin-bottom: 12px; color: var(--text); font-size: 14px; }
+ul, ol { padding-left: 22px; margin-bottom: 14px; }
+li { margin: 6px 0; color: var(--text); font-size: 14px; }
+strong { font-weight: 500; color: var(--text); }
+blockquote { border-left: 3px solid var(--border-med); padding: 8px 16px; margin: 14px 0; color: var(--text-sec); font-size: 13px; background: #fafaf8; border-radius: 0 6px 6px 0; }
+blockquote p { color: var(--text-sec); font-size: 13px; margin-bottom: 6px; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 16px 0; font-size: 13px; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+thead th { background: #f0f0f0; font-weight: 500; padding: 10px 14px; text-align: left; font-size: 12px; border-bottom: 0.5px solid var(--border); }
+tbody td { padding: 9px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: top; }
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:last-child td { border-bottom: none; }
+code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: "SF Mono","Consolas",monospace; font-size: 12px; }
+pre { background: #f0f0f0; border-radius: var(--radius); padding: 14px 18px; overflow-x: auto; margin: 14px 0; font-size: 12px; line-height: 1.6; }
+pre code { background: none; padding: 0; }
+hr { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
+@media (max-width: 768px) { .sidebar { display: none; } .main-wrap { margin-left: 0; } .content { padding: 20px 16px; } .chapter { padding: 24px 20px; } }
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#ch1">一、系统原理图总览</a></li>
+    <li><a href="#ch2">二、输入衰减器与量程切换</a></li>
+    <li><a href="#ch3">三、斩波调制开关 SW1</a></li>
+    <li><a href="#ch4">四、JFET 差分对（JFE2140）</a></li>
+    <li><a href="#ch5">五、斩波解调开关 SW2</a></li>
+    <li><a href="#ch6">六、输出缓冲运放 U1（ADA4625-1）</a></li>
+    <li><a href="#ch7">七、跨导控制运放 U2（OPA2192）与 Vos DAC U3（DAC80501）</a></li>
+    <li><a href="#ch8">八、抗混叠滤波器</a></li>
+    <li><a href="#ch9">九、ADC 驱动运放 U5/U6（ADA4625-1）</a></li>
+    <li><a href="#ch10">十、Σ-Δ ADC U4（ADS1262）</a></li>
+    <li><a href="#ch11">十一、电压基准 U7（LTC6655-2.5）</a></li>
+    <li><a href="#ch12">十二、电源与接地策略</a></li>
+    <li><a href="#ch13">十三、PCB 关键布局规则</a></li>
+    <li><a href="#ch14">附录 A：全器件参数汇总表</a></li>
+    <li><a href="#ch15">附录 B：斩波时钟时序图</a></li>
+
+  </ul>
+  <a class="sidebar-home" href="../index.html">← 返回首页</a>
+</nav>
+<div class="main-wrap">
+  <header class="page-header">
+    <h1>纳伏表原理图设计方案 — 器件参数评估与应对策略</h1>
+    <p>2026-05-26</p>
+  </header>
+  <div class="content">
+
+<section class="chapter" id="ch1">
+  <h2 class="chapter-title">一、系统原理图总览</h2>
+<h3>1.1 信号链架构</h3>
+
+<p>``<code></p>
+<p>输入端子 → 输入衰减器 → 量程继电器 → 斩波调制(SW1) → JFET差分对(JFE2140)</p>
+<p>→ 斩波解调(SW2) → 输出缓冲(U1) → 抗混叠滤波器 → ADC驱动(U5/U6)</p>
+<p>→ Σ-Δ ADC(ADS1262)</p>
+
+<p>辅助环路：ADC → MCU → DAC80501(U3) → OPA2192(U2) → JFE2140源极电流控制</p>
+<p></code>``</p>
+
+<h3>1.2 原理图分页规划</h3>
+
+<table><thead><tr><th>页码</th><th>名称</th><th>核心器件</th></tr></thead><tbody><tr><td>Sheet 1</td><td>输入保护与衰减器</td><td>继电器、精密电阻网络</td></tr><tr><td>Sheet 2</td><td>斩波前端</td><td>ADG633/TMUX1133, JFE2140, TS5A22362</td></tr><tr><td>Sheet 3</td><td>自动归零环路</td><td>ADA4625-1, OPA2192, DAC80501</td></tr><tr><td>Sheet 4</td><td>ADC 链路</td><td>ADA4625-1×2, ADS1262</td></tr><tr><td>Sheet 5</td><td>基准与电源</td><td>LTC6655-2.5, LDO</td></tr><tr><td>Sheet 6</td><td>数字控制</td><td>MCU, 斩波时钟, 隔离</td></tr></tbody></table>
+
+<hr>
+</section>
+<section class="chapter" id="ch2">
+  <h2 class="chapter-title">二、输入衰减器与量程切换</h2>
+<h3>2.1 精密电阻网络</h3>
+
+<p><strong>器件选型</strong>：VPG VHP202Z 系列或同等级精密箔电阻，0.01% 容差，2 ppm/°C 温漂。</p>
+
+<h4>关键参数评估</h4>
+
+<table><thead><tr><th>参数</th><th>典型值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>阻值容差</td><td>0.01%</td><td>衰减比精度直接决定量程精度；10mV量程÷1无衰减，影响为零；100V量程÷10000，0.01%容差产生1LSB级误差</td><td>每量程单独校准，将衰减比系数存入EEPROM；生产时6位半DMM实测标定</td></tr><tr><td>温度系数 TC</td><td>2 ppm/°C</td><td>10°C变化导致20ppm偏移；100V量程下，20ppm × 100V = 2mV误差，远超纳伏级要求</td><td>使用跟踪电阻网络（同一基板上4个电阻），温度系数相互抵消；关键电阻置于恒温区</td></tr><tr><td>长期稳定性</td><td>5 ppm/年</td><td>年校准周期内累积漂移可接受</td><td>每12个月校准一次；使用VPG箔电阻优于厚膜电阻</td></tr><tr><td>热电势 EMF</td><td>0.05–0.1 μV/°C</td><td>跨越1°C温差产生50–100nV热电势，与70nV目标噪声相当</td><td>使用同质材料连接（铜-铜）；焊接后24h老化；避免不同金属接触</td></tr><tr><td>电压系数 VCR</td><td><0.1 ppm/V</td><td>高压量程下阻值随电压微变，100V下偏移<10ppm</td><td>选箔电阻（VCR极低），避免使用厚膜电阻（VCR可达1–5 ppm/V）</td></tr></tbody></table>
+
+<h4>原理图设计要点</h4>
+
+<ol>
+<li>每个量程的衰减器采用 T 型或 π 型网络，对称差分结构</li>
+<li>电阻网络与继电器触点之间使用开尔文连接（4线制）</li>
+<li>高压量程（10V、100V）的衰减器输入端增加 TVS 保护管</li>
+<li>衰减器输出端设置 RC 预滤波（100Ω + 100nF C0G），抑制继电器切换时的高频弹跳</li>
+</ol>
+
+<h3>2.2 量程切换继电器</h3>
+
+<p><strong>器件选型</strong>：Pickering 100 系列（方案已选型），热电势约 1μV。</p>
+
+<h4>关键参数评估</h4>
+
+<table><thead><tr><th>参数</th><th>典型值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>接触热电势</td><td>~1 μV</td><td>继电器触点热电势是量程切换后偏移的主要来源；1μV = 1000nV，远超测量噪声</td><td>选用低热电势型号（Pickering 100系列或更优的 102系列）；继电器安装于等温块上；切换后等待热平衡（>2s）再测量</td></tr><tr><td>接触电阻</td><td><100 mΩ</td><td>串联在信号路径上，随温度和时间漂移；100mΩ对10mV量程贡献10ppm</td><td>使用4线制开尔文连接消除接触电阻影响</td></tr><tr><td>线圈驱动电流</td><td>~15 mA @5V</td><td>线圈发热导致局部温升，加剧热电势</td><td>脉冲驱动后保持低功耗维持电流；线圈远离信号触点；线圈电源独立供电</td></tr><tr><td>切换时间</td><td><5 ms</td><td>切换瞬间产生毫伏级弹跳电压</td><td>切换后软件延时100ms再采样；ADC在切换期间停止转换</td></tr><tr><td>绝缘电阻</td><td>>10^12 Ω</td><td>足够高，漏电流对纳伏信号影响可忽略</td><td>PCB走线保持足够爬电距离</td></tr></tbody></table>
+
+<h4>原理图设计要点</h4>
+
+<ol>
+<li>每个继电器配备续流二极管（1N4148）和RC吸收网络（100Ω + 100nF）</li>
+<li>继电器线圈驱动使用独立 MOSFET（如 BSS138），MCU GPIO 不直接驱动</li>
+<li>信号路径上所有继电器触点使用对称差分连接</li>
+<li>继电器下方 PCB 禁止布线，保持地平面完整性</li>
+</ol>
+
+<hr>
+</section>
+<section class="chapter" id="ch3">
+  <h2 class="chapter-title">三、斩波调制开关 SW1</h2>
+<p><strong>候选器件</strong>：ADG633（方案选定）/ TMUX1133（优化建议替换）</p>
+
+<h3>3.1 ADG633 参数评估</h3>
+
+<table><thead><tr><th>参数</th><th>典型值</th><th>最大值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>导通电阻 R_ON</td><td>52 Ω</td><td>75 Ω</td><td>串联在JFET栅极输入端，与JFET输入电容(75pF)形成低通滤波器，f_-3dB = 1/(2π×52×75p) ≈ 41MHz，远高于信号频率，影响可忽略；但R_ON的热噪声 = √(4kTR_ON) = 0.93 nV/√Hz，直接叠加到输入等效噪声</td><td>R_ON热噪声与JFE2140噪声RSS合计；R_ON随温度变化（约0.5%/°C），不影响直流精度（斩波消除）</td></tr><tr><td>电荷注入 Q_inj</td><td>2 pC</td><td>—</td><td><strong>核心问题</strong>：电荷注入产生等效偏置电流 I_bias = Q_inj × f_chop；f_chop=4kHz时，I_bias = 2pC × 4kHz = 8nA；流过源电阻R_s产生电压误差 V_err = 8nA × R_s；R_s=10Ω时V_err = 80nV，已达目标噪声量级</td><td>1. 采用互补补偿开关（见下文3.3节）；2. 死区时间采样，丢弃切换后10-20μs数据；3. 评估替换为TMUX1133（Q_inj=0.17pC）</td></tr><tr><td>关断隔离度</td><td>72 dB @1MHz</td><td>—</td><td>斩波半周期关断通道泄漏4kHz方波信号约-72dB，即约0.25μV（对于1V信号），除以3500增益=71pV输入等效，可忽略</td><td>无需特殊处理</td></tr><tr><td>漏电流 I_OFF</td><td><0.2 nA</td><td>—</td><td>关断通道漏电流通过源阻抗产生偏移；R_s=100Ω时V_off=20nV，可忽略</td><td>低源阻应用影响小</td></tr><tr><td>寄生电容 C_OFF</td><td>2 pF</td><td>—</td><td>与R_ON形成关断通道RC时间常数，影响开关速度；τ = 52Ω × 2pF = 0.1ns，远快于切换速度</td><td>无需特殊处理</td></tr><tr><td>带宽</td><td>200 MHz</td><td>—</td><td>远高于斩波频率4kHz，信号无衰减</td><td>无需特殊处理</td></tr><tr><td>Break-before-make 延迟</td><td>8 ns</td><td>—</td><td>切换瞬间两通道均断开8ns，输入浮空；对4kHz斩波周期(250μs)而言占比极小(0.003%)</td><td>无需特殊处理，但需确认JFET输入端无充电积累</td></tr></tbody></table>
+
+<h3>3.2 TMUX1133 替代评估（推荐）</h3>
+
+<table><thead><tr><th>参数</th><th>ADG633</th><th>TMUX1133</th><th>对比分析</th></tr></thead><tbody><tr><td>电荷注入 Q_inj</td><td>2 pC</td><td><strong>0.17 pC</strong></td><td>TMUX1133 优越约12倍，是纳伏表斩波输入的更佳选择</td></tr><tr><td>导通电阻 R_ON</td><td>52 Ω</td><td>1.8 Ω</td><td>TMUX1133 R_ON更低，热噪声更低(0.17 nV/√Hz vs 0.93 nV/√Hz)</td></tr><tr><td>漏电流</td><td>0.2 nA</td><td>1 pA</td><td>TMUX1133 漏电流更低2个数量级</td></tr><tr><td>供电范围</td><td>±5V / +5V / +3V</td><td>1.08V–5.5V 单电源</td><td>ADG633 支持双电源，TMUX1133 仅单电源；斩波前端需要负信号摆幅 → TMUX1133 需电平转换或负电源</td></tr><tr><td>封装</td><td>TSSOP-16</td><td>VSSOP-10</td><td>TMUX1133 更紧凑</td></tr><tr><td>价格</td><td>~$5</td><td>~$1</td><td>TMUX1133 更便宜</td></tr></tbody></table>
+
+<p><strong>结论</strong>：TMUX1133 在电荷注入和导通电阻上远优于 ADG633，但仅支持单电源。斩波前端需要处理正负极性信号，因此需要为 TMUX1133 提供虚拟地（VDD/2 偏置）或使用 ±2.5V 双电源供电。<strong>建议方案：使用 TMUX1133，供电为 +5V 单电源，输入信号通过电阻分网络偏置到 VDD/2 = 2.5V。</strong></p>
+
+<h3>3.3 电荷注入补偿电路设计</h3>
+
+<p>这是纳伏表设计中最关键的电路之一。原理图需包含以下补偿网络：</p>
+
+<p>``<code></p>
+<p>补偿开关</p>
+<p>┌────────┐</p>
+<p>SW1主开关 ──→ │ ADG633 │──→ JFET栅极</p>
+<p>(工作时钟)    │  CH1   │</p>
+<p>└────────┘</p>
+<p>┌────────┐</p>
+<p>补偿开关 ──→  │ ADG633 │──→ 补偿电容 C_comp</p>
+<p>(反相时钟)    │  CH2   │</p>
+<p>└────────┘</p>
+<p></code>``</p>
+
+<p><strong>工作原理</strong>：主开关和补偿开关使用互补时钟驱动，补偿开关连接一个与JFET输入电容等值的补偿电容 C_comp ≈ 75pF。每次切换时，主开关向信号节点注入 Q_inj，补偿开关同时从信号节点抽取等量电荷，实现一阶抵消。</p>
+
+<p><strong>补偿效果</strong>：理论可降低电荷注入5–10倍，残余电荷注入约0.2–0.4 pC，等效 I_bias = 0.3pC × 4kHz = 1.2nA，在 R_s=10Ω 时仅 12nV。</p>
+
+<p><strong>C_comp 选型</strong>：使用 C0G/NP0 陶瓷电容（75pF），温漂 ±30 ppm/°C，确保全温范围内补偿效果稳定。</p>
+
+<hr>
+</section>
+<section class="chapter" id="ch4">
+  <h2 class="chapter-title">四、JFET 差分对（JFE2140）</h2>
+<h3>4.1 关键参数详细评估</h3>
+
+<table><thead><tr><th>参数</th><th>条件</th><th>典型值</th><th>最大值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>电压噪声 e_n</td><td>I_DS=5mA, 1kHz</td><td>0.9 nV/√Hz</td><td>—</td><td><strong>核心噪声源</strong>，直接决定系统噪声底限</td><td>将 I_DS 从1mA提升至2-3mA，噪声可降至1.0-1.1 nV/√Hz；但需权衡功耗和温升</td></tr><tr><td>电压噪声 e_n</td><td>I_DS=2mA, 1kHz</td><td>1.1 nV/√Hz</td><td>—</td><td>方案当前偏置点(Id=1mA)的噪声约1.5 nV/√Hz</td><td>推荐工作点：I_DS=2mA，R_D=2.5kΩ×2</td></tr><tr><td>电流噪声 i_n</td><td>1kHz</td><td>1.6 fA/√Hz</td><td>—</td><td>极低，在R_s<1MΩ时可忽略</td><td>无需特殊处理</td></tr><tr><td>1/f 噪声拐点</td><td>I_DS=2mA</td><td>~500Hz–1kHz</td><td>—</td><td>斩波频率必须高于此拐点；500Hz斩波时信号仍在1/f区域</td><td>斩波频率提升至4kHz+，确保信号在白噪声区域</td></tr><tr><td>V_GS 失配</td><td>—</td><td>4 mV</td><td>max</td><td>差分对失调，经斩波后表现为调制到f_chop的纹波</td><td>自动归零环路消除；DAC80501 分辨率0.05μV/step，除以3500增益=0.014nV/step，足够</td></tr><tr><td>V_GS 温漂</td><td>—</td><td>~2 μV/°C</td><td>—</td><td>温度变化导致差分对失调漂移；10°C变化→20μV漂移，经3500倍增益放大后70mV</td><td>自动归零环路带宽0.5Hz可跟踪此漂移；等温块设计减少温差</td></tr><tr><td>跨导 g_m</td><td>I_DS=2mA</td><td>~30 mS</td><td>—</td><td>决定差分对电压增益；A_v = g_m × R_D = 30mS × 2.5kΩ = 75（单侧）；差分增益约150</td><td>增益足够将nV级信号放大到μV级供后级处理</td></tr><tr><td>输入电容 C_iss</td><td>V_DS=5V</td><td>13 pF</td><td>—</td><td>与源阻抗R_s形成低通滤波器；R_s=1kΩ时f_-3dB = 1/(2π×1k×13p) = 12MHz</td><td>低源阻纳伏表应用中影响可忽略</td></tr><tr><td>C_iss（差分模式）</td><td>—</td><td>~75 pF</td><td>—</td><td>两只JFET差分连接时的等效差分输入电容</td><td>与R_s形成高频滤波；在斩波方波上升沿，C_iss需要充放电，产生尖峰电流</td></tr><tr><td>栅极漏电流 I_G</td><td>25°C</td><td>10 pA</td><td>max</td><td>流过源电阻产生偏移；R_s=10kΩ时V_off=0.1μV</td><td>低源阻纳伏表应用影响小；但高温时I_G指数增加，125°C可达nA级</td></tr><tr><td>漏源击穿电压 V_(BR)DSS</td><td>—</td><td>40 V</td><td>—</td><td>工作电压裕量充足</td><td>V_DS设计为5V，远低于击穿电压</td></tr><tr><td>V_GS(th)</td><td>I_DS=1mA</td><td>-1.2 V</td><td>typ</td><td>阈值电压，决定偏置设置</td><td>源极自偏置电阻设置工作点</td></tr></tbody></table>
+
+<h3>4.2 偏置电路设计</h3>
+
+<p><strong>优化后的偏置方案</strong>：</p>
+
+<p>``<code></p>
+<p>+10V</p>
+<p>│</p>
+<p>R_D1 = 2.5kΩ (0.01%, 2ppm/°C)</p>
+<p>│</p>
+<p>D1 ──┤────→ 解调开关SW2</p>
+<p>│</p>
+<p>G1 ──┤    JFE2140 CH1</p>
+<p>│</p>
+<p>S1 ──┤──── R_S1 = 560Ω → 自动归零控制点</p>
+<p>│</p>
+<p>GND</p>
+
+<p>+10V</p>
+<p>│</p>
+<p>R_D2 = 2.5kΩ (0.01%, 2ppm/°C)</p>
+<p>│</p>
+<p>D2 ──┤────→ 解调开关SW2</p>
+<p>│</p>
+<p>G2 ──┤    JFE2140 CH2</p>
+<p>│</p>
+<p>S2 ──┤──── R_S2 = 560Ω → 自动归零控制点</p>
+<p>│</p>
+<p>GND</p>
+<p></code>``</p>
+
+<p><strong>工作点计算</strong>：</p>
+
+<table><thead><tr><th>参数</th><th>计算</th><th>结果</th></tr></thead><tbody><tr><td>I_DS</td><td>(10V - 5V - 1.2V) / (2.5kΩ + 560Ω)</td><td>≈ 1.08 mA/侧，建议降至R_D=2kΩ → I_DS≈1.3mA/侧</td></tr><tr><td>V_DS</td><td>10V - I_DS × R_D</td><td>≈ 7.4V (R_D=2kΩ时)</td></tr><tr><td>单侧增益</td><td>g_m × R_D = 30mS × 2kΩ</td><td>≈ 60</td></tr><tr><td>差分增益</td><td>2 × g_m × R_D</td><td>≈ 120</td></tr><tr><td>总增益（含斩波开关后级）</td><td>120 × 后级增益</td><td>需后级增益≈30达到总增益3500</td></tr></tbody></table>
+
+<p><strong>注意</strong>：方案原文声称差分增益约3500倍，但按上述计算单级差分增益仅约120。需要确认是否存在第二级放大。若JFE2140仅提供约120倍增益，则后级（ADA4625-1 U1）需提供约30倍增益，U1的噪声（3.3 nV/√Hz）除以120仅0.028 nV/√Hz（输入等效），仍可忽略。</p>
+
+<h3>4.3 噪声优化偏置策略</h3>
+
+<p><strong>R_D 热噪声</strong>：R_D = 2kΩ 时，e_n = √(4kTR) = 1.83 nV/√Hz，两只R_D合计 RSS = 2.59 nV/√Hz（差分模式）。除以差分增益120，输入等效 0.022 nV/√Hz，可忽略。</p>
+
+<p><strong>R_D 选型</strong>：使用 VPG VFR 系列箔电阻或 Susumu RG 系列薄膜电阻，0.01% 容差，2 ppm/°C。避免使用厚膜电阻（电流噪声1/f显著）。</p>
+
+<p><strong>I_DS 与噪声的关系</strong>：JFET 电压噪声近似 e_n ∝ 1/√I_DS，将 I_DS 从 1mA 提升至 2mA 可降低噪声 √2 ≈ 1.41 倍。但功耗从 10mW 增至 20mW，需考虑温升对热电势的影响。</p>
+
+<p><strong>推荐工作点</strong>：I_DS = 1.5–2 mA/侧（折中方案），R_D = 2kΩ，V_DS ≈ 6–7V。</p>
+
+<hr>
+</section>
+<section class="chapter" id="ch5">
+  <h2 class="chapter-title">五、斩波解调开关 SW2</h2>
+<p><strong>器件选型</strong>：TS5A22362（方案选定）/ TMUX7234（备选）</p>
+
+<h3>5.1 TS5A22362 参数评估</h3>
+
+<table><thead><tr><th>参数</th><th>典型值</th><th>最大值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>导通电阻 R_ON</td><td>0.65 Ω</td><td>1.0 Ω</td><td>位于JFE2140漏极输出端（高阻抗节点已被U1缓冲），R_ON热噪声0.10 nV/√Hz可忽略</td><td>无需特殊处理</td></tr><tr><td>电荷注入 Q_inj</td><td>10 pC</td><td>—</td><td><strong>较大</strong>，但位于高增益级输出端；电荷注入产生的电压尖峰 V_spike = Q_inj / C_load；C_load≈10pF（U1输入电容+PCB）→ V_spike ≈ 1mV，除以前端增益120→8.3μV输入等效</td><td>解调后的尖峰被后级低通滤波器衰减；死区采样可进一步消除</td></tr><tr><td>带宽</td><td>300 MHz</td><td>—</td><td>远高于信号频率</td><td>无需特殊处理</td></tr><tr><td>供电范围</td><td>1.65V–5.5V</td><td>—</td><td>单电源，需与信号共模匹配</td><td>输出端偏置到VDD/2</td></tr><tr><td>漏电流</td><td>5 nA</td><td>—</td><td>关断通道漏电；但被前端增益衰减</td><td>可忽略</td></tr></tbody></table>
+
+<h3>5.2 解调开关设计要点</h3>
+
+<ol>
+<li>SW2 必须与 SW1 严格同步——使用同一斩波时钟的反相信号驱动</li>
+<li>SW2 切换瞬间产生的尖峰通过 U1 的带宽限制（18MHz GBP，实际闭环带宽约1MHz）自然衰减</li>
+<li>可在 SW2 输出端增加小 RC 缓冲器（100Ω + 1nF）进一步抑制尖峰，截止频率 1.6MHz</li>
+</ol>
+
+<h3>5.3 优化建议：TMUX7234 替代评估</h3>
+
+<p>TMUX7234 为 4 路 SPST 开关，电荷注入 6pC（优于 TS5A22362 的 10pC），支持 ±15V 双电源。若解调端需要处理更大信号摆幅，TMUX7234 更合适。但 TS5A22362 的超低 R_ON（0.65Ω）对信号完整性更有利。<strong>建议保持 TS5A22362 不变</strong>，解调端的电荷注入不是主要矛盾。</p>
+
+<hr>
+</section>
+<section class="chapter" id="ch6">
+  <h2 class="chapter-title">六、输出缓冲运放 U1（ADA4625-1）</h2>
+<h3>6.1 关键参数评估</h3>
+
+<table><thead><tr><th>参数</th><th>条件</th><th>典型值</th><th>最大值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>电压噪声密度 e_n</td><td>1kHz</td><td>3.3 nV/√Hz</td><td>—</td><td>被前端增益120衰减后输入等效0.028 nV/√Hz，可忽略</td><td>不是主要噪声贡献者</td></tr><tr><td>0.1–10Hz 噪声</td><td>—</td><td>0.15 μV p-p</td><td>—</td><td>除以120→1.25 nV p-p输入等效，贡献微小</td><td>无需特殊处理</td></tr><tr><td>1/f 拐点</td><td>—</td><td>~100 Hz</td><td>—</td><td>斩波后信号在4kHz，1/f噪声已降至白噪声水平</td><td>斩波策略已规避1/f</td></tr><tr><td>失调电压 V_OS</td><td>25°C</td><td>±15 μV</td><td>±80 μV</td><td>除以120→125 nV / 667 nV输入等效</td><td>自动归零环路可消除；初始失调在开机时校准</td></tr><tr><td>失调温漂</td><td>-40°C~85°C</td><td>—</td><td>±1.2 μV/°C</td><td>10°C变化→12μV，除以120→100nV输入等效</td><td>自动归零环路跟踪漂移；PCB等温设计</td></tr><tr><td>输入偏置电流 I_B</td><td>25°C</td><td>±15 pA</td><td>—</td><td>流过源阻抗产生偏移；U1输入端阻抗约2kΩ（R_D），V_off = 15pA × 2kΩ = 30pV</td><td>可忽略</td></tr><tr><td>GBP</td><td>—</td><td>18 MHz</td><td>—</td><td>闭环增益30时带宽约600kHz，远超斩波信号需求</td><td>充足裕量</td></tr><tr><td>摆率 SR</td><td>—</td><td>48 V/μs</td><td>—</td><td>解调后方波信号幅度约1V，建立时间<100ns</td><td>远快于斩波半周期(125μs@4kHz)</td></tr><tr><td>CMRR</td><td>DC</td><td>105 dB</td><td>—</td><td>差分信号CMRR影响小</td><td>无需特殊处理</td></tr><tr><td>PSRR</td><td>DC</td><td>110 dB</td><td>—</td><td>电源纹波抑制良好</td><td>仍需低噪声LDO供电</td></tr><tr><td>输入电容 C_IN</td><td>—</td><td>~10 pF</td><td>—</td><td>与SW2的R_ON(0.65Ω)形成时间常数τ=6.5ps</td><td>可忽略</td></tr></tbody></table>
+
+<h3>6.2 U1 闭环增益设计</h3>
+
+<p>方案原文需要U1提供约30倍闭环增益（以实现总增益3500=120×30）。<strong>建议原理图设计</strong>：</p>
+
+<ul>
+<li>反馈电阻 R_F = 29 kΩ（0.01%, 2 ppm/°C）</li>
+<li>增益电阻 R_G = 1 kΩ（0.01%, 2 ppm/°C）</li>
+<li>闭环增益 A_v = 1 + R_F/R_G = 30</li>
+<li>R_G 串联 AC 耦合电容（若需要阻断JFET的DC偏移）</li>
+<li>反馈回路并联小电容 C_F ≈ 3.3 pF，限制带宽至约1.5MHz，抑制高频噪声</li>
+</ul>
+
+<h3>6.3 U1 电源去耦</h3>
+
+<ul>
+<li>每个电源引脚放置 100nF C0G 电容（距离引脚<5mm）</li>
+<li>增加 10μF X7R 电容在100nF之后</li>
+<li>电源走线先经过去耦电容再到引脚</li>
+</ul>
+
+<hr>
+</section>
+<section class="chapter" id="ch7">
+  <h2 class="chapter-title">七、跨导控制运放 U2（OPA2192）与 Vos DAC U3（DAC80501）</h2>
+<h3>7.1 OPA2192 关键参数评估</h3>
+
+<table><thead><tr><th>参数</th><th>典型值</th><th>最大值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>电压噪声密度 e_n</td><td>5.5 nV/√Hz</td><td>—</td><td>不在信号主路径上，噪声通过跨导控制间接影响JFET；等效到输入端极低</td><td>可忽略</td></tr><tr><td>失调电压 V_OS</td><td>±5 μV</td><td>—</td><td>e-trim技术实现超低失调；失调直接影响JFET源极电流设定精度</td><td>±5μV精度足够控制I_DS到0.1%</td></tr><tr><td>失调温漂</td><td>±0.05 μV/°C</td><td>—</td><td>极低温漂，10°C仅0.5μV偏移</td><td>优于普通精密运放1–2个数量级</td></tr><tr><td>GBP</td><td>10 MHz</td><td>—</td><td>跨导控制环路带宽远低于此</td><td>充足裕量</td></tr><tr><td>输出电流</td><td>±30 mA</td><td>—</td><td>驱动JFET源极电阻（560Ω×2），最大需约10mA</td><td>裕量充足</td></tr><tr><td>CMRR</td><td>114 dB</td><td>—</td><td>高CMRR确保差分控制的对称性</td><td>无需特殊处理</td></tr><tr><td>供电范围</td><td>±2.25V–±18V</td><td>—</td><td>±10V供电满足要求</td><td>—</td></tr></tbody></table>
+
+<h3>7.2 DAC80501 关键参数评估</h3>
+
+<table><thead><tr><th>参数</th><th>典型值</th><th>最大值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>分辨率</td><td>16 bit</td><td>—</td><td>2.5V基准下LSB = 2.5/65536 = 38μV；经OPA2192跨导转换→JFET源极电流微调步进约 38μV/560Ω = 68nA/step</td><td>68nA改变→g_m变化→增益变化；输入等效失调步进 = 68nA/(g_m) ≈ 68nA/30mS = 2.3μV/step，除以总增益3500→0.65nV/step</td></tr><tr><td>INL</td><td>±1 LSB</td><td>—</td><td>积分非线性影响自动归零环路的线性度</td><td>±1LSB在65536步中可忽略</td></tr><tr><td>输出毛刺</td><td>5 nV·s</td><td>—</td><td>DAC 切换时产生瞬态毛刺，可能耦合到JFET</td><td>OPA2192 的带宽限制自然滤除毛刺；DAC更新速率限制在1Hz以下（自动归零环路带宽0.5Hz）</td></tr><tr><td>供电电流</td><td>0.5 mA</td><td>—</td><td>低功耗，不产生显著热量</td><td>—</td></tr><tr><td>基准输入阻抗</td><td>~50 kΩ</td><td>—</td><td>使用内部基准或外部基准</td><td>使用内部2.5V基准（精度0.05%），足够用于失调调整</td></tr></tbody></table>
+
+<h3>7.3 自动归零环路原理图设计</h3>
+
+<p>``<code></p>
+<p>ADC (ADS1262) → MCU → SPI → DAC80501 (U3)</p>
+<p>│</p>
+<p>V_DAC (0–2.5V)</p>
+<p>│</p>
+<p>OPA2192 (U2) ──→ 差分电流驱动</p>
+<p>├── IN+ ← V_DAC/2 (基准)</p>
+<p>├── IN- ← 反馈 (JFET源极电压采样)</p>
+<p>└── OUT → JFET CH1 源极 (通过R_S1)</p>
+<p>└──→ JFET CH2 源极 (通过R_S2, 反相)</p>
+<p></code>``</p>
+
+<p><strong>环路参数设计</strong>：</p>
+
+<table><thead><tr><th>参数</th><th>设计值</th><th>计算/理由</th></tr></thead><tbody><tr><td>环路带宽</td><td>0.5 Hz</td><td>远低于斩波频率4kHz，避免调制噪声折叠；远高于热漂移速率(~0.01Hz)，能跟踪漂移</td></tr><tr><td>积分时间常数</td><td>τ = 0.32s (1/(2π×0.5))</td><td>MCU软件PI控制器实现</td></tr><tr><td>DAC 更新率</td><td>1 Hz</td><td>足够跟踪0.5Hz带宽的失调变化</td></tr><tr><td>死区</td><td>±5 nV (输入等效)</td><td>避免环路抖动；对应DAC步进约8步</td></tr></tbody></table>
+
+<hr>
+</section>
+<section class="chapter" id="ch8">
+  <h2 class="chapter-title">八、抗混叠滤波器</h2>
+<h3>8.1 滤波器参数设计</h3>
+
+<p>方案原文采用二阶差分RC滤波器，-3dB@80Hz。优化后调整如下：</p>
+
+<table><thead><tr><th>参数</th><th>原方案</th><th>优化方案</th><th>理由</th></tr></thead><tbody><tr><td>R (差分)</td><td>1kΩ×2</td><td><strong>470Ω×2</strong></td><td>降低热噪声：1.35 nV/√Hz → 0.93 nV/√Hz（每只）</td></tr><tr><td>C (差分)</td><td>1μF</td><td><strong>2.2μF</strong></td><td>维持截止频率：f_c = 1/(2π×2R×C) = 1/(2π×940×2.2μ) ≈ 77Hz</td></tr><tr><td>C (共模)</td><td>100nF×2</td><td><strong>220nF×2</strong></td><td>共模截止：f_cm = 1/(2π×470×220n) ≈ 1.5kHz</td></tr><tr><td>拓扑</td><td>二阶RC</td><td>二阶RC</td><td>保持不变</td></tr></tbody></table>
+
+<h3>8.2 关键参数评估</h3>
+
+<table><thead><tr><th>参数</th><th>值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>截止频率 f_c</td><td>77 Hz</td><td>4kHz斩波纹波衰减：40log(4000/77) ≈ -34dB（二阶），残余纹波约1mV/50 = 20μV</td><td>足够衰减斩波纹波；残余纹波在ADC数字滤波器中进一步抑制</td></tr><tr><td>建立时间</td><td>~5τ = 5/(2π×77) ≈ 10ms</td><td>60ms快速模式下可能来不及完全建立</td><td>快速模式切换至更高截止频率（继电器旁路部分电容）</td></tr><tr><td>热噪声 (R=470Ω)</td><td>0.93 nV/√Hz×√2 = 1.3 nV/√Hz (差分)</td><td>除以前端总增益100→0.013 nV/√Hz输入等效</td><td>可忽略</td></tr><tr><td>C 介质</td><td>C0G/NP0</td><td>压电效应极低，温漂 ±30ppm/°C</td><td>必须使用C0G/NP0，禁止使用X7R/Y5V（压电效应和DC偏置效应）</td></tr><tr><td>R 精度</td><td>0.1%</td><td>影响差分对称性和共模抑制</td><td>使用0.1%精密薄膜电阻，差分路径对称匹配</td></tr></tbody></table>
+
+<hr>
+</section>
+<section class="chapter" id="ch9">
+  <h2 class="chapter-title">九、ADC 驱动运放 U5/U6（ADA4625-1）</h2>
+<h3>9.1 关键参数评估（差分驱动配置）</h3>
+
+<table><thead><tr><th>参数</th><th>典型值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>电压噪声密度 e_n</td><td>3.3 nV/√Hz</td><td>两只运放差分噪声RSS = 3.3×√2 = 4.7 nV/√Hz；除以总增益100→0.047 nV/√Hz输入等效</td><td>可忽略</td></tr><tr><td>GBP</td><td>18 MHz</td><td>ADS1262 采样率38.4kSPS，开关电容输入需运放建立时间<1μs；闭环增益2时带宽9MHz，建立时间<200ns</td><td>裕量充足</td></tr><tr><td>摆率 SR</td><td>48 V/μs</td><td>ADC输入阶跃约2V，建立时间<50ns</td><td>充足</td></tr><tr><td>输出电流</td><td>±46 mA</td><td>驱动ADC开关电容输入（约10pF+20pF/采样），充电电流峰值约I = C×dV/dt ≈ 30pF×2V/1μs = 60μA</td><td>远低于运放输出能力</td></tr><tr><td>失调电压 V_OS</td><td>±15 μV</td><td>差分失调经ADC校准消除</td><td>开机校准+定期自动校准</td></tr><tr><td>输入偏置电流 I_B</td><td>±15 pA</td><td>流过滤波器电阻470Ω→7pV偏移</td><td>可忽略</td></tr></tbody></table>
+
+<h3>9.2 差分驱动原理图设计</h3>
+
+<p>``<code></p>
+<p>抗混叠滤波器输出+</p>
+<p>│</p>
+<p>├── R_IN1 = 470Ω ──→ U5(ADA4625-1) IN+</p>
+<p>│                      ├── R_F1 = 470Ω (反馈)</p>
+<p>│                      └── OUT → ADS1262 AINP</p>
+<p>│</p>
+<p>抗混叠滤波器输出-</p>
+<p>│</p>
+<p>├── R_IN2 = 470Ω ──→ U6(ADA4625-1) IN+</p>
+<p>│                      ├── R_F2 = 470Ω (反馈)</p>
+<p>│                      └── OUT → ADS1262 AINN</p>
+<p></code>``</p>
+
+<ul>
+<li>每只运放闭环增益 = 1 + R_F/R_G = 1 + 470/470 = 2</li>
+<li>差分增益 = 2 × 2 = 4（但实际ADS1262内部PGA×2也提供增益）</li>
+<li>U5/U6 的 IN- 连接到 VREF/2 = 1.25V（共模偏置）</li>
+<li>反馈电阻并联 C_F ≈ 100pF，限制带宽至约3.4MHz</li>
+</ul>
+
+<h3>9.3 ADC 驱动关键注意事项</h3>
+
+<ol>
+<li><strong>R_F / R_IN 匹配</strong>：差分路径的电阻必须匹配到0.01%以内，否则产生共模转差模误差</li>
+<li><strong>ADC 输入 RC 网络</strong>：ADS1262 每个输入端需要 1nF C0G 电容到地（数据手册要求），用于吸收开关电容瞬态电流</li>
+<li><strong>禁止在 ADC 转换期间切换增益/多路复用器</strong>：切换瞬间的大电流会耦合到模拟输入</li>
+</ol>
+
+<hr>
+</section>
+<section class="chapter" id="ch10">
+  <h2 class="chapter-title">十、Σ-Δ ADC U4（ADS1262）</h2>
+<h3>10.1 关键参数详细评估</h3>
+
+<table><thead><tr><th>参数</th><th>条件</th><th>典型值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>分辨率</td><td>—</td><td>32 bit</td><td>理论1LSB = 2.5V/2^32 = 0.58nV；实际有效位数约24–27 bit取决于配置</td><td>足够纳伏级分辨率</td></tr><tr><td>噪声 (RMS)</td><td>PGA=2, 2.5SPS</td><td>30 nV</td><td>除以总增益100→0.3 nV输入等效，占RSS噪声约1%</td><td>ADC不构成噪声瓶颈</td></tr><tr><td>噪声 (RMS)</td><td>PGA=2, 10SPS</td><td>150 nV</td><td>除以100→1.5 nV输入等效</td><td>快速模式噪声增加，需更长积分</td></tr><tr><td>噪声 (RMS)</td><td>PGA=2, 50SPS</td><td>~500 nV</td><td>除以100→5 nV输入等效</td><td>60ms模式需权衡噪声与速度</td></tr><tr><td>INL</td><td>—</td><td>±3 ppm</td><td>满量程2.5V下INL = ±7.5μV，除以100→±75nV输入等效</td><td>100mV量程下影响较大；需多点校准</td></tr><tr><td>PGA 增益误差</td><td>PGA=2</td><td>±0.1%</td><td>可通过校准消除</td><td>开机校准+温度补偿</td></tr><tr><td>PGA 增益温漂</td><td>PGA=2</td><td>2 ppm/°C</td><td>10°C→20ppm→100mV量程下2μV误差</td><td>定期校准</td></tr><tr><td>输入漏电流</td><td>—</td><td>~1 nA</td><td>流过ADC驱动运放输出阻抗（<1Ω）→偏移可忽略</td><td>无需特殊处理</td></tr><tr><td>参考输入电流</td><td>—</td><td>~8 μA</td><td>流过基准去耦电阻（如10Ω RC滤波）→80μV压降</td><td>使用开尔文连接，参考电压直接到ADC引脚</td></tr><tr><td>Sinc³ 滤波器建立</td><td>—</td><td>3×(1/SPS)</td><td>2.5SPS下建立时间1.2s</td><td>方案已考虑：5SPS + 5点移动平均</td></tr><tr><td>内部基准噪声</td><td>0.1–10Hz</td><td>~8 ppm p-p</td><td>约20μV p-p，远差于LTC6655的0.625μV</td><td>不使用内部基准，选用LTC6655外部基准</td></tr><tr><td>数字滤波器延迟</td><td>Sinc³, 2.5SPS</td><td>1.2s</td><td>影响响应速度</td><td>快速模式切换至高SPS</td></tr><tr><td>供电电流 (模拟)</td><td>—</td><td>5.5 mA</td><td>低功耗，PCB热影响小</td><td>仍需注意散热</td></tr></tbody></table>
+
+<h3>10.2 ADC 配置与斩波同步设计</h3>
+
+<p><strong>核心设计原则</strong>：ADC 采样必须与斩波时钟同步。</p>
+
+<p>``<code></p>
+<p>斩波时钟 (4kHz)</p>
+<p>│</p>
+<p>├── SW1 调制（上升沿切换）</p>
+<p>├── SW2 解调（与SW1同步）</p>
+<p>│</p>
+<p>└── ADC START 信号</p>
+<p>├── 半周期 T/2 = 125μs</p>
+<p>├── 建立/等待区: 0–15μs (丢弃)</p>
+<p>├── 采样窗口: 15–110μs (有效)</p>
+<p>└── 缓冲区: 110–125μs (丢弃)</p>
+<p></code>``</p>
+
+<p><strong>实现方案</strong>：</p>
+
+<ol>
+<li>MCU 的定时器模块生成斩波时钟（4kHz方波）</li>
+<li>同一定时器生成 ADC START 脉冲，延迟 15μs 后触发</li>
+<li>ADS1262 配置为脉冲模式（PULSE mode），每次 START 触发一次转换</li>
+<li>ADC 采样率由斩波时钟决定，非自由运行</li>
+</ol>
+
+<p><strong>ADS1262 寄存器配置建议</strong>：</p>
+
+<table><thead><tr><th>寄存器</th><th>值</th><th>说明</th></tr></thead><tbody><tr><td>MODE0</td><td>0x02</td><td>PULSE 模式</td></tr><tr><td>MODE1</td><td>PGA=2, SPS=20</td><td>快速采样以覆盖采样窗口</td></tr><tr><td>MODE2</td><td>Sinc³ 滤波器</td><td>低噪声优选</td></tr><tr><td>REF</td><td>外部基准, REFP0/REFN0</td><td>使用 LTC6655</td></tr><tr><td>OFCAL</td><td>校准后写入</td><td>失调校准</td></tr><tr><td>FSCAL</td><td>校准后写入</td><td>增益校准</td></tr></tbody></table>
+
+<h3>10.3 ADC 数字接口隔离</h3>
+
+<p><strong>问题</strong>：EEVblog 社区已证实 ADC 数字信号（SCLK, DOUT 等）可通过 PCB 寄生电容耦合到模拟输入端，恶化噪声。</p>
+
+<p><strong>应对策略</strong>：</p>
+
+<ol>
+<li>使用磁隔离器（如 ISO7731）隔离 ADC 的 SPI 接口</li>
+<li>ADC 转换期间（DRDY 低电平），禁止 SPI 通信</li>
+<li>SPI 时钟频率限制在 1MHz 以下（ADS1262 最高支持 8MHz，但高速时钟边沿辐射更大）</li>
+<li>数字信号走线远离模拟输入，中间用地平面隔离</li>
+</ol>
+
+<hr>
+</section>
+<section class="chapter" id="ch11">
+  <h2 class="chapter-title">十一、电压基准 U7（LTC6655-2.5）</h2>
+<h3>11.1 关键参数详细评估</h3>
+
+<table><thead><tr><th>参数</th><th>条件</th><th>典型值</th><th>最大值</th><th>影响分析</th><th>应对策略</th></tr></thead><tbody><tr><td>输出电压</td><td>25°C</td><td>2.500 V</td><td>±0.025%</td><td>初始精度±625μV；ADC参考电压直接决定增益精度</td><td>开机校准消除初始误差</td></tr><tr><td>输出噪声 (0.1–10Hz)</td><td>—</td><td>0.25 ppm p-p</td><td>—</td><td>0.625 μV p-p；ADC参考噪声经PGA放大后到输入端：0.625μV/100=6.25nV输入等效</td><td>RC低通滤波进一步降低噪声</td></tr><tr><td>噪声密度</td><td>1kHz</td><td>50 nV/√Hz</td><td>—</td><td>在ADC参考端，带宽由ADC数字滤波器限制</td><td>10Ω+10μF RC滤波→截止1.6Hz</td></tr><tr><td>温漂 TC</td><td>0°C~70°C</td><td>2 ppm/°C</td><td>—</td><td>10°C→20ppm→50μV变化；除以100→500nV输入等效</td><td>定期校准+等温块设计</td></tr><tr><td>长期稳定性</td><td>—</td><td>20 ppm/√khr</td><td>—</td><td>1000h→20ppm→50μV；除以100→500nV</td><td>每90天校准一次</td></tr><tr><td>负载调整率</td><td>I_out: 0–10mA</td><td>0.5 ppm/mA</td><td>—</td><td>ADC参考输入电流~8μA→偏移0.004ppm=0.1nV</td><td>可忽略</td></tr><tr><td>电源调整率</td><td>V_s: ±10%</td><td>5 ppm/V</td><td>—</td><td>LDO输出纹波<1mV→0.005ppm偏移</td><td>可忽略</td></tr><tr><td>输出电流</td><td>—</td><td>—</td><td>±5 mA</td><td>驱动ADC参考输入(8μA)+RC滤波电阻(10Ω→250μA)</td><td>总电流<1mA，裕量充足</td></tr><tr><td>功耗</td><td>—</td><td>5.6 mW</td><td>—</td><td><strong>关键优势</strong>：低功耗意味着低温升→低热电势</td><td>PCB热隔离设计确保功耗不成为热源</td></tr></tbody></table>
+
+<h3>11.2 基准滤波与去耦设计</h3>
+
+<p>``<code></p>
+<p>LTC6655-2.5 OUT ──→ 10Ω ──→ 10μF C0G ──→ ADS1262 REFP0</p>
+<p>│</p>
+<p>100nF C0G ──→ ADS1262 REFP0 (近引脚)</p>
+<p>│</p>
+<p>GND</p>
+<p></code>``</p>
+
+<ul>
+<li>10Ω + 10μF 截止频率 f_c = 1/(2π×10×10μ) = 1.6Hz</li>
+<li>此滤波器将 0.1–10Hz 噪声进一步降低约 6dB</li>
+<li>10Ω 电阻的温漂不影响精度（ADC参考端为高阻抗输入，电流仅 8μA → 压降 80μV，通过校准消除）</li>
+</ul>
+
+<h3>11.3 基准 PCB 布局要点</h3>
+
+<ol>
+<li>LTC6655 远离热源（LDO、ADS1262、继电器），距离 >15mm</li>
+<li>基准输出走线使用开尔文连接（force-sense），直接到 ADC REFP0 引脚</li>
+<li>基准地（GND）使用星形接地，与功率地隔离</li>
+<li>LTC6655 下方 PCB 内层敷铜散热，但不与其他发热器件共享铜皮</li>
+</ol>
+
+<hr>
+</section>
+<section class="chapter" id="ch12">
+  <h2 class="chapter-title">十二、电源与接地策略</h2>
+<h3>12.1 电源架构</h3>
+
+<p>``<code></p>
+<p>电池/外部电源 → LDO1 (±12V→±10V, 模拟电源)</p>
+<p>→ LDO2 (+12V→+5V, 数字电源)</p>
+<p>→ LDO3 (+5V→+3.3V, MCU电源)</p>
+<p>→ LDO4 (+5V→+2.5V, 基准供电，超低噪声)</p>
+<p></code>``</p>
+
+<h3>12.2 LDO 选型与参数评估</h3>
+
+<table><thead><tr><th>位置</th><th>器件推荐</th><th>关键参数</th><th>评估</th></tr></thead><tbody><tr><td>LDO1 (±10V模拟)</td><td>TPS7A4700</td><td>噪声 3.8μVrms(0.1–10Hz), PSRR 72dB@1kHz</td><td>模拟电源低噪声要求满足</td></tr><tr><td>LDO2 (5V数字)</td><td>TPS7B6933</td><td>噪声 30μVrms, 输出 150mA</td><td>数字电源噪声不耦合到模拟端</td></tr><tr><td>LDO3 (3.3V MCU)</td><td>内置于MCU开发板</td><td>—</td><td>通过磁隔离与模拟端隔离</td></tr><tr><td>LDO4 (2.5V基准)</td><td>LTC6655 自身</td><td>—</td><td>基准芯片自带供电，无需额外LDO</td></tr></tbody></table>
+
+<h3>12.3 接地策略</h3>
+
+<table><thead><tr><th>策略</th><th>实施方法</th><th>理由</th></tr></thead><tbody><tr><td>模拟地与数字地分离</td><td>PCB 分区，磁珠/0Ω电阻单点连接</td><td>防止数字开关电流污染模拟地</td></tr><tr><td>星形接地</td><td>所有模拟地汇聚到一个参考点</td><td>避免地线环路电流产生偏移</td></tr><tr><td>地平面完整性</td><td>模拟区域下方完整地平面，无分割</td><td>降低阻抗，提供屏蔽</td></tr><tr><td>保护驱动地</td><td>输入保护驱动使用独立走线到星形地</td><td>防止漏电流流过信号路径</td></tr></tbody></table>
+
+<h3>12.4 电池供电 vs 外部供电</h3>
+
+<table><thead><tr><th>方案</th><th>优点</th><th>缺点</th><th>建议</th></tr></thead><tbody><tr><td>内置锂电池</td><td>零工频干扰，完全浮地</td><td>容量有限，需定期充电；电池放电导致热环境变化</td><td>斩波前端使用电池供电，消除最敏感部分的工频干扰</td></tr><tr><td>外部适配器</td><td>不限使用时间</td><td>工频泄漏风险</td><td>ADC和数字部分使用外部供电</td></tr></tbody></table>
+
+<p><strong>建议</strong>：斩波前端（Sheet 2+3）使用内置锂电池供电，ADC和数字部分（Sheet 4+5+6）使用外部适配器。两者通过磁隔离器连接。</p>
+
+<hr>
+</section>
+<section class="chapter" id="ch13">
+  <h2 class="chapter-title">十三、PCB 关键布局规则</h2>
+<h3>13.1 分区布局</h3>
+
+<p>``<code></p>
+<p>┌─────────────────────────────────────────────────────────┐</p>
+<p>│  [等温块区域]                                            │</p>
+<p>│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐   │</p>
+<p>│  │ 输入端子     │  │ Pickering    │  │ JFE2140      │   │</p>
+<p>│  │ (三同轴)     │──│ 继电器阵列   │──│ + SW1/SW2    │   │</p>
+<p>│  └─────────────┘  └──────────────┘  └──────────────┘   │</p>
+<p>│  ─ ─ ─ ─ ─ ─ 热隔离沟槽 ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─    │</p>
+<p>│  ┌─────────────────────────┐  ┌───────────────────────┐ │</p>
+<p>│  │ U1(ADA4625) + 滤波器    │  │ U2(OPA2192)+U3(DAC)  │ │</p>
+<p>│  └─────────────────────────┘  └───────────────────────┘ │</p>
+<p>│  ─ ─ ─ ─ ─ ─ 热隔离沟槽 ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─    │</p>
+<p>│  ┌────────────────────────────────────────────────────┐ │</p>
+<p>│  │ U5/U6(ADA4625) + ADS1262 + LTC6655               │ │</p>
+<p>│  └────────────────────────────────────────────────────┘ │</p>
+<p>│  ─ ─ ─ ─ ─ ─ 磁隔离屏障 ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─    │</p>
+<p>│  ┌────────────────────────────────────────────────────┐ │</p>
+<p>│  │ MCU + 数字接口 + 电源LDO                           │ │</p>
+<p>│  └────────────────────────────────────────────────────┘ │</p>
+<p>└─────────────────────────────────────────────────────────┘</p>
+<p></code>``</p>
+
+<h3>13.2 关键走线规则</h3>
+
+<table><thead><tr><th>走线</th><th>规则</th><th>理由</th></tr></thead><tbody><tr><td>输入信号（端子→SW1→JFET栅极）</td><td>宽度≥0.3mm，最短路径，差分对称，下方完整地平面</td><td>降低寄生电感/电容，维持对称性</td></tr><tr><td>斩波时钟</td><td>差分走线，远离模拟信号>3mm，两侧地屏蔽</td><td>防止时钟耦合到信号路径</td></tr><tr><td>ADC 输入（U5/U6→ADS1262）</td><td>差分对称，等长，宽度0.2mm，每条对地1nF C0G</td><td>ADS1262 数据手册要求</td></tr><tr><td>基准输出（LTC6655→ADS1262）</td><td>开尔文连接，远离数字走线</td><td>避免噪声耦合</td></tr><tr><td>电源走线</td><td>0.5mm+ 宽度，星形分配</td><td>降低阻抗</td></tr><tr><td>继电器线圈驱动</td><td>远离信号走线，独立地回路</td><td>防止线圈驱动电流干扰信号</td></tr></tbody></table>
+
+<h3>13.3 屏蔽策略</h3>
+
+<table><thead><tr><th>屏蔽对象</th><th>方法</th><th>材料</th></tr></thead><tbody><tr><td>整体屏蔽</td><td>金属外壳接地</td><td>铝合金外壳，内壁镀铜</td></tr><tr><td>输入端屏蔽</td><td>三同轴连接器，中间层保护驱动</td><td>铜</td></tr><tr><td>斩波前端屏蔽</td><td>PCB 内层地平面 + 法拉第笼铜箔</td><td>铜箔胶带</td></tr><tr><td>ADC 屏蔽</td><td>独立铜箔罩</td><td>铜</td></tr><tr><td>继电器屏蔽</td><td>磁屏蔽罩（坡莫合金）</td><td>坡莫合金，防止线圈磁场泄漏</td></tr></tbody></table>
+
+<hr>
+</section>
+<section class="chapter" id="ch14">
+  <h2 class="chapter-title">附录 A：全器件参数汇总表</h2>
+<table><thead><tr><th>位号</th><th>器件</th><th>核心参数</th><th>关键风险</th><th>优化状态</th></tr></thead><tbody><tr><td>Q1/Q2</td><td>JFE2140</td><td>e_n=0.9–1.5nV/√Hz, g_m=30mS, V_GS mismatch=4mV</td><td>1/f拐点偏高，Id偏低</td><td>✅ 建议Id提升至1.5–2mA</td></tr><tr><td>SW1</td><td>ADG633/TMUX1133</td><td>Q_inj=0.17–2pC, R_ON=0.65–52Ω</td><td>电荷注入产生偏置电流</td><td>✅ 建议换TMUX1133+补偿</td></tr><tr><td>SW2</td><td>TS5A22362</td><td>Q_inj=10pC, R_ON=0.65Ω</td><td>解调端电荷注入影响小</td><td>⬜ 保持原选型</td></tr><tr><td>U1</td><td>ADA4625-1</td><td>e_n=3.3nV/√Hz, GBP=18MHz, V_OS=±15μV</td><td>失调温漂需自动归零消除</td><td>⬜ 保持原选型</td></tr><tr><td>U2</td><td>OPA2192</td><td>V_OS=±5μV, TCV_OS=±0.05μV/°C</td><td>不在信号主路径</td><td>⬜ 保持原选型</td></tr><tr><td>U3</td><td>DAC80501</td><td>16bit, LSB=38μV, INL=±1LSB</td><td>毛刺耦合</td><td>⬜ 保持原选型</td></tr><tr><td>U4</td><td>ADS1262</td><td>32bit, 30nVrms@2.5SPS, INL=±3ppm</td><td>需斩波同步采样</td><td>✅ 需增加同步逻辑</td></tr><tr><td>U5/U6</td><td>ADA4625-1</td><td>同U1</td><td>差分匹配</td><td>⬜ 保持原选型</td></tr><tr><td>U7</td><td>LTC6655-2.5</td><td>0.25ppm噪声, 2ppm/°C, 5.6mW</td><td>长期漂移</td><td>⬜ 保持原选型</td></tr><tr><td>—</td><td>Pickering 100</td><td>热电势~1μV, 接触电阻<100mΩ</td><td>热电势</td><td>✅ 等温块设计</td></tr><tr><td>—</td><td>VPG VHP202Z</td><td>0.01%, 2ppm/°C, VCR<0.1ppm/V</td><td>热电势</td><td>✅ 全铜连接</td></tr></tbody></table>
+
+<hr>
+</section>
+<section class="chapter" id="ch15">
+  <h2 class="chapter-title">附录 B：斩波时钟时序图</h2>
+<p>``<code></p>
+<p>┌───┐   ┌───┐   ┌───┐   ┌───┐   ┌───┐   ┌───┐</p>
+<p>SW1_CLK  ┘   └───┘   └───┘   └───┘   └───┘   └───┘   └──</p>
+<p>T=250μs (4kHz)</p>
+
+<p>┌───┐   ┌───┐   ┌───┐   ┌───┐   ┌───┐   ┌───┐</p>
+<p>SW2_CLK  ┘   └───┘   └───┘   └───┘   └───┘   └───┘   └──</p>
+<p>(与SW1同相)</p>
+
+<p>┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐</p>
+<p>ADC_START ┘ └─┘ └─┘ └─┘ └─┘ └─┘ └─┘ └─┘ └─┘ └─┘ └─┘ └──</p>
+<p>↑15μs延迟后开始，每半周期多次采样</p>
+
+<p>半周期放大:</p>
+<p>─────────────────────────────────────────────────</p>
+<p>SW1切换    │死区│  有效采样窗口    │死区│SW1切换</p>
+<p>─────────┘↑   ↑──────────────↑   ↑──────────────</p>
+<p>15μs 110μs          125μs</p>
+<p></code>``</p>
+
+<ul>
+<li>死区时间：15μs（切换后10μs + 缓冲5μs）</li>
+<li>有效采样窗口：95μs（125μs - 2×15μs）</li>
+<li>每半周期 ADC 可完成约 1 次转换（ADS1262 @20SPS → 50ms/转换，需要多个半周期积分）</li>
+</ul>
+
+<p><strong>实际操作</strong>：ADS1262 配置为连续采样模式（20SPS），MCU 读取数据后根据斩波时钟相位分组，同相数据取平均为 V_phase1，反相数据取平均为 V_phase2，输出 = (V_phase1 - V_phase2) / 2。</p>
+
+<hr>
+
+<p>*文档版本：V1.0 | 编写日期：2026-05-26 | 编写人：硬件工程部*</p>
+</section>
+  </div>
+</div>
+<script>
+(function() {
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const chapters = document.querySelectorAll('.chapter');
+  if (!chapters.length) return;
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(function(a) {
+          a.classList.remove('active');
+          if (a.getAttribute('href') === '#' + id) a.classList.add('active');
+        });
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  chapters.forEach(function(ch) { observer.observe(ch); });
+})();
+</script>
+</body>
+</html>

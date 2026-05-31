@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="category" content="硬件">
+<meta name="date" content="2026-05-31">
+<meta name="description" content="从运放基本原理出发，系统阐述精密半波整流器的工作原理、设计演进过程及工程应用要点，涵盖虚短虚断法则、二极管压降补偿、双二极管钳位拓扑、频率响应限制等核心知识点。">
+<title>精密半波整流器 - 运放电路技术笔记</title>
+<style>
+:root {
+  --bg:        #f5f4f1;
+  --surface:   #ffffff;
+  --text:      #1a1a1a;
+  --text-sec:  #555555;
+  --teal:      #2dd4bf;
+  --sidebar:   #111827;
+  --sidebar-text: #9ca3af;
+  --border:    #e5e5e5;
+  --canvas-bg: #ececec;
+  --code-bg:   #f0f0f0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== 侧边栏 ===== */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0;
+  width: 260px;
+  height: 100vh;
+  background: var(--sidebar);
+  overflow-y: auto;
+  z-index: 100;
+  padding-bottom: 40px;
+}
+
+.sidebar-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 28px 24px 12px;
+  letter-spacing: 2px;
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 8px 0;
+}
+
+.sidebar-nav li a {
+  display: block;
+  padding: 9px 24px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: color 0.15s, background 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav li a:hover {
+  color: var(--teal);
+  background: rgba(45,212,191,0.1);
+}
+
+.sidebar-nav li a.active {
+  color: var(--teal);
+  border-left-color: var(--teal);
+  background: rgba(45,212,191,0.1);
+}
+
+.sidebar-nav li.sub a {
+  padding-left: 44px;
+  font-size: 12.5px;
+}
+
+.sidebar-home {
+  display: block;
+  padding: 8px 24px;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-home:hover { color: var(--teal); background: rgba(45,212,191,0.1); }
+
+/* ===== 主内容区 ===== */
+.main-wrap {
+  margin-left: 260px;
+  max-width: 900px;
+  width: calc(100% - 260px);
+  padding: 32px 40px 80px;
+  margin-right: auto;
+}
+
+.chapter {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 32px 36px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* ===== 标题 ===== */
+h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--teal);
+}
+
+h3 {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 28px 0 14px;
+  padding-left: 12px;
+  border-left: 4px solid var(--teal);
+}
+
+h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-sec);
+  margin: 20px 0 10px;
+}
+
+/* ===== 正文 ===== */
+p {
+  margin-bottom: 12px;
+  text-align: justify;
+}
+
+strong { color: #0f766e; }
+
+ul, ol {
+  margin: 10px 0 14px 24px;
+}
+
+li {
+  margin-bottom: 6px;
+}
+
+/* ===== 信息提示框 ===== */
+.info-box, .warn-box, .tip-box, .key-box {
+  padding: 14px 18px 14px 22px;
+  margin: 16px 0;
+  border-radius: 6px;
+  border-left: 4px solid;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.info-box {
+  background: #eff6ff;
+  border-left-color: #3b82f6;
+  color: #1e40af;
+}
+
+.warn-box {
+  background: #fff7ed;
+  border-left-color: #f97316;
+  color: #9a3412;
+}
+
+.tip-box {
+  background: #f0fdf4;
+  border-left-color: #22c55e;
+  color: #166534;
+}
+
+.key-box {
+  background: #fef3c7;
+  border-left-color: #eab308;
+  color: #854d0e;
+}
+
+/* ===== 表格 ===== */
+.table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+th {
+  background: #f0f0f0;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  color: var(--text);
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+tr:nth-child(even) td { background: #fafafa; }
+
+tr:last-child td { border-bottom: none; }
+
+/* ===== Canvas 图形区 ===== */
+.canvas-wrap {
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.canvas-wrap canvas,
+.canvas-wrap img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 4px;
+  max-width: 100%;
+  height: auto;
+}
+
+.figure-caption {
+  font-size: 13px;
+  color: var(--text-sec);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* ===== 交互控件 ===== */
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text-sec);
+}
+
+.ctrl-row label { min-width: 80px; text-align: right; }
+.ctrl-row input[type="range"] { flex: 1; max-width: 200px; }
+.ctrl-row .val { min-width: 60px; font-family: monospace; font-weight: 600; color: var(--text); }
+
+/* ===== 公式 ===== */
+.formula-block {
+  background: var(--code-bg);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin: 14px 0;
+  text-align: center;
+  font-size: 16px;
+  overflow-x: auto;
+}
+
+/* ===== 引用块 ===== */
+blockquote {
+  border-left: 4px solid var(--teal);
+  background: #f0fdfa;
+  padding: 12px 18px;
+  margin: 14px 0;
+  border-radius: 4px;
+  font-style: italic;
+  color: #115e59;
+}
+
+/* ===== 步骤条 ===== */
+.step-list {
+  counter-reset: step;
+  list-style: none;
+  padding-left: 0;
+}
+
+.step-list li {
+  counter-increment: step;
+  position: relative;
+  padding: 10px 14px 10px 48px;
+  margin-bottom: 8px;
+  background: #f8fffe;
+  border-radius: 6px;
+  border: 1px solid #d1fae5;
+}
+
+.step-list li::before {
+  content: counter(step);
+  position: absolute;
+  left: 10px; top: 10px;
+  width: 28px; height: 28px;
+  background: var(--teal);
+  color: #fff;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 28px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* ===== 对比框 ===== */
+.compare-box {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+}
+.compare-box > div {
+  flex: 1;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.compare-box > div:first-child { border-top: 3px solid #3b82f6; }
+.compare-box > div:last-child  { border-top: 3px solid #ef4444; }
+.compare-box h4 { margin-top: 0; }
+
+/* ===== 自测题 ===== */
+.quiz-item {
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 14px 0;
+}
+.quiz-item .q-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.quiz-item .q-answer {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f0fdf4;
+  border-radius: 6px;
+  border-left: 3px solid #22c55e;
+  font-size: 14px;
+}
+.quiz-item .q-toggle {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 14px;
+  font-size: 12px;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* ===== 难度星 ===== */
+.stars { color: #f59e0b; letter-spacing: 2px; }
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main-wrap { margin-left: 0; width: 100%; padding: 20px; }
+}
+
+/* MathJax */
+mjx-container { overflow-x: auto; }
+</style>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ===== 侧边栏 ===== -->
+<nav class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#c1">第一章 运放基础回顾</a></li>
+    <li class="sub"><a href="#c1-1">1.1 理想运放两大黄金法则</a></li>
+    <li class="sub"><a href="#c1-2">1.2 反相与同相放大器结构</a></li>
+    <li class="sub"><a href="#c1-3">1.3 参考点转换分析法</a></li>
+    <li><a href="#c2">第二章 半波整流基础</a></li>
+    <li class="sub"><a href="#c2-1">2.1 交流信号与直流信号</a></li>
+    <li class="sub"><a href="#c2-2">2.2 整流的概念与物理本质</a></li>
+    <li class="sub"><a href="#c2-3">2.3 二极管半波整流器</a></li>
+    <li class="sub"><a href="#c2-4">2.4 二极管正向压降详解</a></li>
+    <li class="sub"><a href="#c2-5">2.5 半波整流器的局限性</a></li>
+    <li><a href="#c3">第三章 精密半波整流器</a></li>
+    <li class="sub"><a href="#c3-1">3.1 弱信号整流困境</a></li>
+    <li class="sub"><a href="#c3-2">3.2 朴素方案及其问题</a></li>
+    <li class="sub"><a href="#c3-3">3.3 辅助二极管改进方案</a></li>
+    <li class="sub"><a href="#c3-4">3.4 完整精密半波整流器</a></li>
+    <li class="sub"><a href="#c3-5">3.5 同相结构为何不可行</a></li>
+    <li><a href="#c4">第四章 深入分析与拓展</a></li>
+    <li class="sub"><a href="#c4-1">4.1 传递函数与工作区域</a></li>
+    <li class="sub"><a href="#c4-2">4.2 频率响应与带宽限制</a></li>
+    <li class="sub"><a href="#c4-3">4.3 实际误差来源分析</a></li>
+    <li class="sub"><a href="#c4-4">4.4 精密全波整流前瞻</a></li>
+    <li class="sub"><a href="#c4-5">4.5 典型应用场景</a></li>
+    <li><a href="#c5">第五章 知识总结与自测</a></li>
+    <li class="sub"><a href="#c5-1">5.1 核心知识点速查</a></li>
+    <li class="sub"><a href="#c5-2">5.2 常见误区辨析</a></li>
+    <li class="sub"><a href="#c5-3">5.3 自测题</a></li>
+  </ul>
+  <a class="sidebar-home" href="../index.html" title="返回首页">&larr; 返回首页</a>
+</nav>
+
+<!-- ===== 主内容区 ===== -->
+<main class="main-wrap">
+
+<!-- ============================================================ -->
+<div class="chapter" id="c1">
+<h2>第一章 运放基础回顾</h2>
+
+<p>在深入精密整流器之前，我们必须先夯实运放电路分析的基础。精密整流器的巧妙之处，恰恰建立在运放两条最基本法则之上。本章将系统回顾这些前置知识，并揭示反相放大器与同相放大器之间令人惊叹的统一性。</p>
+
+<!-- 1.1 -->
+<h3 id="c1-1">1.1 理想运放两大黄金法则</h3>
+
+<p>理想运算放大器的分析建立在两条基本法则之上，这两条法则是所有运放电路分析的出发点，也是理解精密整流器工作原理的关键基石。无论电路拓扑如何复杂，只要运放工作在线性区，这两条法则始终成立。</p>
+
+<div class="key-box">
+<strong>法则一：虚短（Virtual Short）</strong> —— 运放两输入端电压相等，即 $V_+ = V_-$。<br>
+<strong>法则二：虚断（Virtual Open）</strong> —— 运放两输入端电流为零，即 $I_+ = I_- = 0$。
+</div>
+
+<p><strong>虚短的物理含义</strong>：运放具有极高的开环增益 $A$（通常 $10^5 \sim 10^7$），输出电压 $V_{out} = A(V_+ - V_-)$。在负反馈条件下，运放会自动调节输出，使得 $V_+ - V_- \approx 0$。换句话说，运放"拼命"让两个输入端电压趋于一致，就像一根无形的导线将它们短接——但并非真正的物理短接，因此称为"虚短"。</p>
+
+<p><strong>虚断的物理含义</strong>：运放输入阻抗极高（理想情况下为无穷大），输入端几乎不取电流。因此，外接电路的信号电流不会流入运放输入端，两个输入端等效于断开——但信号仍可通过反馈网络传递，因此称为"虚断"。</p>
+
+<div class="tip-box">
+<strong>教学提示</strong>：初学者常问"虚短是否意味着可以直接用导线短接两个输入端？"答案是绝对不行！虚短是运放通过负反馈<strong>动态维持</strong>的结果，而非物理连接。一旦断开反馈环路（如运放饱和），虚短即刻失效。
+</div>
+
+<!-- 1.2 -->
+<h3 id="c1-2">1.2 反相与同相放大器结构</h3>
+
+<p>反相放大器和同相放大器是运放最基础的两种负反馈拓扑。表面上看，它们的增益公式不同、输出极性不同，似乎是完全不同的电路。然而，当我们深入审视它们的网络拓扑时，会发现一个惊人的事实：两者的网络结构完全相同，仅仅是电压参考点（即"地"的位置）不同。</p>
+
+<div class="compare-box">
+<div>
+<h4>反相放大器</h4>
+<ul>
+  <li>输入信号加在反相端（经 $R_g$）</li>
+  <li>同相端接地</li>
+  <li>增益：$A_v = -\dfrac{R_f}{R_g}$</li>
+  <li>输出与输入反相</li>
+</ul>
+</div>
+<div>
+<h4>同相放大器</h4>
+<ul>
+  <li>输入信号加在同相端</li>
+  <li>反相端经 $R_g$ 接地</li>
+  <li>增益：$A_v = 1 + \dfrac{R_f}{R_g}$</li>
+  <li>输出与输入同相</li>
+</ul>
+</div>
+</div>
+
+<div class="canvas-wrap">
+<img src="../image/precision-halfwave-rectifier01.jpg" alt="图1-1 反相放大器（左）与同相放大器（右）拓扑对比" style="max-width:100%;height:auto;">
+<div class="figure-caption">图1-1 反相放大器（左）与同相放大器（右）拓扑对比</div>
+</div>
+
+<p>仔细观察上图可以发现：两个电路的元件完全相同——都有运放、反馈电阻 $R_f$、接地电阻 $R_g$，连接方式也一样（$R_f$ 从输出连到反相端，$R_g$ 从反相端连到地或信号源）。唯一的区别在于：信号从哪里输入，地接在哪里。这正是参考点不同的体现。</p>
+
+<!-- 1.3 -->
+<h3 id="c1-3">1.3 参考点转换分析法</h3>
+
+<p>参考点转换分析法是一种强大的电路分析视角：通过改变电压参考点（等效于移动"地"的位置），可以将反相放大器问题转化为同相放大器问题来求解，反之亦然。这种方法不仅提供了新的分析角度，更深刻地揭示了两者的本质统一性。</p>
+
+<h4>转换步骤</h4>
+
+<p>以下分八步完成从反相放大器到同相放大器的参考点转换：</p>
+
+<ol class="step-list">
+  <li><strong>确定原始参考点</strong>：反相放大器中，参考点（地）在同相输入端，输入信号 $u_r$ 从反相端经 $R_g$ 输入。</li>
+  <li><strong>移动参考点</strong>：将地线从同相输入端移至反馈电阻 $R_g$ 处，以 $R_g$ 处为新参考零点。此时原输入信号 $u_r$ 相对于新参考点的极性发生翻转，变为 $-u_r$——因为原电路中 $u_r$ 是从 $R_g$ 指向同相端，而新参考点在 $R_g$ 处。</li>
+  <li><strong>识别等效结构</strong>：移动参考点后，电路变为：输出端经反馈电阻 $R_f$ 接反相输入端，反相输入端经 $R_g$ 接地，信号 $-u_r$ 加在同相输入端——这正是标准同相放大器的拓扑。</li>
+  <li><strong>写出中间结果</strong>：对等效同相放大器应用标准增益公式，得到输出端相对于新参考点（$R_g$ 处）的电压 $u_{C1}$：
+    <div class="formula-block">
+$$u_{C1} = \left(1 + \frac{R_f}{R_g}\right) \times (-u_r)$$
+    </div>
+  </li>
+  <li><strong>建立变量关系</strong>：将步骤 4 的结果赋予明确含义——$u_{C1}$ 是运放输出端相对于新参考点（$R_g$ 处）的电压，记作 $u_{ce}$。而我们真正要求的是反相放大器的输出电压 $U_C$，它定义为输出端相对于原始参考点（同相输入端）的电压。</li>
+  <li><strong>应用基尔霍夫电压定律（KVL）</strong>：以原始参考点（同相输入端）为基准，输出端电压 $U_C$ 等于输出端相对于 $R_g$ 处的电压 $u_{ce}$，再加上 $R_g$ 处相对于同相端的电压。由于 $u_r$ 从 $R_g$ 指向同相端，因此 $R_g$ 处相对于同相端为 $+u_r$，即：
+    <div class="formula-block">
+$$U_C = u_{ce} + u_r$$
+    </div>
+  </li>
+  <li><strong>代数合并</strong>：代入前两步结果：
+    <div class="formula-block">
+\begin{aligned}
+U_C &= u_{ce} + u_r \\
+    &= \left(1 + \frac{R_f}{R_g}\right)(-u_r) + u_r \\
+    &= -u_r - \frac{R_f}{R_g}u_r + u_r \\
+    &= -\frac{R_f}{R_g} \times u_r
+\end{aligned}
+    </div>
+  </li>
+  <li><strong>得出最终结论</strong>：这与直接用反相放大器增益公式 $u_{C} = -\frac{R_f}{R_g} \times u_r$ 得到的结果完全一致！因此，反相放大器和同相放大器<strong>网络结构完全相同</strong>，仅是电压参考点不同——反相放大器的参考点是同相输入端，同相放大器的参考点是 $R_g$ 处。用同相放大器讨论的电路特性，其结论可直接应用于反相放大器上。</li>
+</ol>
+
+<p>这一结论不仅提供了电路分析的便利（可以选择自己更熟悉的角度求解），更深刻地揭示了两者本质上的统一性——它们是同一网络在不同参考系下的两种表现形式。</p>
+
+<div class="info-box">
+<strong>工程意义</strong>：参考点转换法的价值在于，当我们面对一个陌生的运放电路时，可以选择自己更熟悉的角度（反相或同相）来分析。特别是当电路结构复杂时，选择合适的参考点可以大幅简化推导过程。
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<div class="chapter" id="c2">
+<h2>第二章 半波整流基础</h2>
+
+<p>整流是模拟电路中最基本的功能之一，也是交流-直流转换的核心环节。本章从交流与直流的基本概念出发，逐步建立半波整流器的完整知识框架，并深入分析二极管正向压降带来的根本性限制——正是这一限制，推动了精密整流器的诞生。</p>
+
+<!-- 2.1 -->
+<h3 id="c2-1">2.1 交流信号与直流信号</h3>
+
+<p>在电路理论中，电信号按照电流方向的变化特征，可分为交流信号与直流信号两大类。理解两者的本质区别，是掌握整流概念的前提。</p>
+
+<table>
+<tr>
+  <th>特征</th>
+  <th>交流信号（AC）</th>
+  <th>直流信号（DC）</th>
+</tr>
+<tr>
+  <td>电流方向</td>
+  <td>周期性变化，双向交替</td>
+  <td>恒定不变，单向流动</td>
+</tr>
+<tr>
+  <td>典型波形</td>
+  <td>正弦波、方波、三角波等</td>
+  <td>稳恒直线、脉动波形</td>
+</tr>
+<tr>
+  <td>数学表达</td>
+  <td>$u(t) = U_m \sin(\omega t)$</td>
+  <td>$u(t) = U_0$（稳恒）或 $u(t) = U_m|\sin(\omega t)|$（脉动）</td>
+</tr>
+<tr>
+  <td>核心区分</td>
+  <td colspan="2"><strong>方向是否变化</strong>是区分交流与直流的核心特征</td>
+</tr>
+</table>
+
+<div class="info-box">
+<strong>稳恒直流</strong>：需要特别强调一个重要概念——<strong>稳恒直流</strong>。稳恒直流不仅电流方向不变，其数值也恒定不变。从宽泛的角度讲，只要电流方向不变就可以叫直流电；稳恒直流则在此基础上增加了"数值恒定"的更强约束。例如，电池输出为稳恒直流，而半波整流器的输出虽然方向始终单一但幅值波动，属于非稳恒的脉动直流。
+</div>
+
+<div class="warn-box">
+<strong>易混淆点</strong>：脉动直流的方向始终不变，只是幅值波动；而交流的方向是交替变化的。判断一个信号是交流还是直流，<strong>只看方向</strong>，不看幅值是否恒定。例如，全波整流后的输出虽然幅值在波动，但电流方向始终单一，属于直流信号。
+</div>
+
+<!-- 2.2 -->
+<h3 id="c2-2">2.2 整流的概念与物理本质</h3>
+
+<h4>定义</h4>
+<p>整流（Rectification）是将交流信号转换为直流信号的过程。更本质地说，整流是利用电子元件的单向导通特性，限制或改变电流方向，使其保持单一流向。</p>
+
+<h4>分类</h4>
+<ul>
+  <li><strong>半波整流</strong>：仅保留输入信号的一个极性半周期（正半周或负半周），丢弃另一半周期。输出为单极性脉动信号。</li>
+  <li><strong>全波整流</strong>：将输入信号的负半周期"翻转"到正方向，使正负半周期均被利用。输出频率加倍，脉动更小。</li>
+</ul>
+
+<div class="canvas-wrap">
+<canvas id="cvsRectifyConcept" width="760" height="300"></canvas>
+<div class="figure-caption">图2-1 整流概念：交流输入（左）→ 半波整流（中）→ 全波整流（右）</div>
+</div>
+
+<h4>实现原理</h4>
+<p>整流的核心依赖于电子元件的<strong>单向导通特性</strong>。二极管是最常用的整流元件——正向偏置时导通（低阻抗），反向偏置时截止（高阻抗），天然具有"电流单向阀"的功能。正是这种非线性的伏安特性，使二极管成为整流电路的基础构件。</p>
+
+<!-- 2.3 -->
+<h3 id="c2-3">2.3 二极管半波整流器</h3>
+
+<h4>基本结构</h4>
+<p>最简单的半波整流器由一个二极管串联在交流信号源与负载 $R_L$ 之间构成。电路结构极为简洁，但功能明确：只允许一个方向的电流通过负载。</p>
+
+<div class="canvas-wrap">
+<canvas id="cvsHalfWaveBasic" width="500" height="240"></canvas>
+<div class="figure-caption">图2-2 二极管半波整流器基本电路</div>
+</div>
+
+<h4>工作过程</h4>
+
+<ol class="step-list">
+  <li><strong>正半周</strong>（$V_S > 0$）：二极管正向偏置导通，电流经二极管流过负载 $R_L$，输出电压 $V_{out} \approx V_S$。</li>
+  <li><strong>负半周</strong>（$V_S < 0$）：二极管反向偏置截止，负载中无电流，输出电压 $V_{out} = 0$。</li>
+  <li><strong>输出波形</strong>：仅保留正半周的"馒头波"，负半周被完全切除。</li>
+</ol>
+
+<div class="canvas-wrap">
+<canvas id="cvsHalfWaveWaveform" width="760" height="300"></canvas>
+<div class="figure-caption">图2-3 二极管半波整流器波形：输入（上）vs 输出（下）</div>
+</div>
+
+<!-- 2.4 -->
+<h3 id="c2-4">2.4 二极管正向压降详解</h3>
+
+<p>理想二极管模型假设正向导通时压降为零，但实际硅二极管在导通时存在约 0.7V 的固定正向压降（锗管约 0.3V，肖特基二极管约 0.2V~0.4V）。这一压降是半导体 PN 结的物理特性所决定的，与二极管的尺寸、功率额定值无关。</p>
+
+<h4>对整流波形的影响</h4>
+
+<p>由于正向压降的存在，整流后的输出波形并不是简单地将负半周"切零"，而是整个正半周信号<strong>下移了 0.7V</strong>。这意味着：</p>
+
+<ul>
+  <li>输入信号幅值低于 0.7V 的部分，输出为零（二极管未导通）</li>
+  <li>输入信号峰值 $V_m$ 的输出峰值仅为 $V_m - 0.7$</li>
+  <li>输出波形在过零点附近出现 0.7V 的"死区"</li>
+</ul>
+
+<div class="canvas-wrap">
+<canvas id="cvsDiodeDrop" width="760" height="300"></canvas>
+<div class="figure-caption">图2-4 二极管压降影响：理想整流（虚线）vs 实际整流（实线）</div>
+</div>
+
+<div class="warn-box">
+<strong>测量要点</strong>：在示波器上观察压降时，应在波形任意点作垂直线，测量同一时刻输入与输出的电压差。注意这不是波形图上的视觉距离（斜向距离），而是垂直方向的电压差，恒为 0.7V。
+</div>
+
+<h4>温度特性（拓展）</h4>
+<p>二极管正向压降具有负温度系数，约为 $-2\text{mV}/°C$。这意味着温度升高时压降减小，温度降低时压降增大。在精密整流应用中，这一温度漂移会导致输出随环境温度变化，是重要的误差来源之一。精密整流器通过运放反馈消除压降影响，同时也从根本上消除了温度漂移问题。</p>
+
+<!-- 2.5 -->
+<h3 id="c2-5">2.5 半波整流器的局限性</h3>
+
+<p>普通二极管半波整流器虽然结构简单，但存在三个根本性的缺陷，严重限制了其在精密应用中的使用。</p>
+
+<table>
+<tr>
+  <th>缺陷</th>
+  <th>具体表现</th>
+  <th>影响程度</th>
+</tr>
+<tr>
+  <td>效率低下</td>
+  <td>仅利用输入信号的 50% 能量（丢弃整个负半周）</td>
+  <td>理论最大效率仅 40.6%</td>
+</tr>
+<tr>
+  <td>压降误差</td>
+  <td>硅管 0.7V 固定压降造成信号失真，且压降值存在器件离散性</td>
+  <td>对大信号影响小，对小信号致命</td>
+</tr>
+<tr>
+  <td>小信号失效</td>
+  <td>信号幅值 &lt; 0.7V 时完全无法整流</td>
+  <td>100μV 信号 → 输出恒为零</td>
+</tr>
+</table>
+
+<div class="info-box">
+<strong>类比理解</strong>：想象一个水阀，只有水压超过某个阈值才能打开。如果水压很低（微弱信号），阀门根本打不开，水完全无法通过。二极管的 0.7V 压降就是那个"阈值"，将所有低于此阈值的小信号拒之门外。
+</div>
+
+<p>正是小信号失效这一根本性限制，催生了精密整流器的诞生。精密整流器的核心思想是：利用运放的超高增益来"补偿"二极管压降，使得等效压降趋近于零，从而实现对任意微弱信号的整流。</p>
+
+</div>
+
+<!-- ============================================================ -->
+<div class="chapter" id="c3">
+<h2>第三章 精密半波整流器</h2>
+
+<p>本章是整篇笔记的核心。我们将从问题出发，经历"朴素方案→发现问题→改进方案→完善电路"的完整设计思维过程，逐步推导出精密半波整流器的完整电路。这一过程不仅让我们理解电路的"是什么"，更让我们理解"为什么这样设计"——这才是真正的工程设计能力。</p>
+
+<!-- 3.1 -->
+<h3 id="c3-1">3.1 弱信号整流困境</h3>
+
+<p>当输入信号幅值远小于二极管压降（如 100μV 信号面对 0.7V 压降）时，普通二极管整流器完全失效。这不是"精度差"的问题，而是<strong>完全无法工作</strong>——输出恒为零。</p>
+
+<p>解决这一困境的核心思路是利用运放的高增益来补偿二极管压降。具体而言，将二极管置于运放的反馈回路中，运放误差校正的能力取决于环路增益（Loop Gain）——即开环增益 $A_{OL}$ 与闭环增益 $A_{CL}$ 的比值。输出端的等效二极管压降为：</p>
+
+<div class="formula-block">
+$$V_{等效} = V_D \times \frac{A_{CL}}{A_{OL}}$$
+</div>
+
+<p>其中 $V_D$ 为二极管正向压降（约 0.7V），$A_{OL}$ 为运放开环增益（典型值 $10^5 \sim 10^6$），$A_{CL}$ 为电路闭环增益。环路增益 $A_{OL}/A_{CL}$ 越大，等效压降就越小。以 $A_{CL}=1$（电压跟随器）为例，等效压降为 $0.7\text{V} \times \frac{1}{10^5} = 7\mu\text{V}$，几乎为零！这就是"精密"整流器名称的由来——它消除了二极管压降对整流精度的影响。</p>
+
+<div class="tip-box">
+<strong>教学类比</strong>：可以把运放想象成一个极其强大的"助推器"。二极管压降 0.7V 像一个门槛，普通电路跨不过去。但运放就像一个能自动调节高度的升降台，它把信号抬高到恰好能跨过门槛的高度，而且抬高量精确到微伏级别——用户感知到的门槛高度几乎为零。
+</div>
+
+<!-- 3.2 -->
+<h3 id="c3-2">3.2 朴素方案及其问题</h3>
+
+<h4>初始方案</h4>
+<p>最直觉的做法：在反相放大器的输出端串联一个二极管 $D_1$。期望二极管在负输入时导通（构成反相放大），正输入时截止（输出为零）。</p>
+
+<div class="canvas-wrap">
+<img src="../image/precision-halfwave-rectifier02.jpg" alt="图3-1 朴素方案：运放输出端串联二极管">
+<div class="figure-caption">图3-1 朴素方案：运放输出端串联二极管</div>
+</div>
+
+<h4>工作分析</h4>
+
+<p>分析二极管 $D_1$ 的导通与截止时，需要注意负载电阻 $R_L$ 是接地的，因此二极管阴极的初始电位为 0V——这是判断 $D_1$ 能否导通的关键参考。</p>
+
+<p><strong>负输入</strong>（$V_S < 0$）：运放输出正电压，二极管 $D_1$ 正向导通，电路构成标准反相放大器，输出 $V_{out} = -\frac{R_f}{R_g} V_S > 0$。这部分工作正常。</p>
+
+<p><strong>正输入</strong>（$V_S > 0$）：运放输出负电压试图使 $D_1$ 截止。但此时运放处于开环状态（负反馈环路被二极管断开），运放作为比较器工作，输出达到负饱和电压（如 $-13$V）。问题在于：输入信号 $V_S$ 仍然通过电阻网络 $R_g$ 和 $R_L$ 直通负载，输出电压为：</p>
+
+<div class="formula-block">
+$$V_{out} = \frac{R_L}{R_g + R_L} \times V_S \neq 0$$
+</div>
+
+<p>这意味着正半周输出不为零，<strong>不符合整流要求</strong>！整流器要求正半周输出精确为零，但朴素方案中正半周信号经电阻分压后"泄漏"到了输出端。</p>
+
+<div class="warn-box">
+<strong>关键问题</strong>：二极管 $D_1$ 截止时，运放的反相端失去了反馈通路，虚短条件被破坏。此时反相端不再被钳位，信号通过 $R_g$ 直接耦合到输出端，导致正半周输出非零。
+</div>
+
+<!-- 3.3 -->
+<h3 id="c3-3">3.3 辅助二极管改进方案</h3>
+
+<p>朴素方案的根本问题在于：正半周时反相端失去反馈通路，虚短被破坏。解决思路很直接——<strong>增加一条反馈通路</strong>，使得正半周时反相端仍然被"管住"。</p>
+
+<h4>改进方法</h4>
+<p>在运放输出端与反相输入端之间增加一个辅助二极管 $D_2$（方向与 $D_1$ 相反），为正半周提供反馈通路。</p>
+
+<div class="canvas-wrap">
+<img src="../image/precision-halfwave-rectifier03.jpg" alt="图3-2 改进方案：增加辅助二极管 D2">
+<div class="figure-caption">图3-2 改进方案：增加辅助二极管 D2</div>
+</div>
+
+<h4>数学分析</h4>
+
+<p>正半周时，$D_2$ 导通，运放输出经 $D_2$ 连接到反相端，负反馈环路闭合。我们可以写出两个方程：</p>
+
+<ol>
+  <li><strong>输出电压关系</strong>（考虑 $D_2$ 压降）：</li>
+</ol>
+
+<div class="formula-block">
+$$u_{out} = u_- - 0.7$$
+</div>
+
+<ol start="2">
+  <li><strong>运放方程</strong>：</li>
+</ol>
+
+<div class="formula-block">
+$$u_{out} = (u_+ - u_-) \times A$$
+</div>
+
+<p>联立求解：由运放方程得 $u_+ - u_- = u_{out}/A$。由于 $A$ 极大（$10^5$ 以上），$u_{out}/A \approx 0$，因此 $u_+ \approx u_-$。又因同相端接地 $u_+ = 0$，所以 $u_- \approx 0$。代入输出电压关系得 $u_{out} \approx -0.7$V。</p>
+
+<div class="key-box">
+<strong>核心结论</strong>：正半周时 $D_2$ 导通，将反相端钳位至 0V（虚短维持），$D_1$ 截止使负载端输出精确为 0V。负反馈通过 $D_2$ 闭合，反相端被"管住"，信号无法泄漏到输出端。
+</div>
+
+<p>注意：运放输出端电压约为 $-0.7$V（驱动 $D_2$ 导通），但这个电压被 $D_1$ 阻隔，不会出现在负载端。负载端看到的是精确的 0V——这正是精密整流的关键！</p>
+
+<!-- 3.4 -->
+<h3 id="c3-4">3.4 完整精密半波整流器</h3>
+
+<p>将主整流二极管 $D_1$ 和辅助钳位二极管 $D_2$ 结合，就构成了完整的精密半波整流器电路。这个电路巧妙地利用了两个二极管的互补工作，在不同半周分别提供整流通路和钳位通路。</p>
+
+
+
+<h4>完整工作状态</h4>
+
+<div class="table-wrap">
+<table>
+<tr>
+  <th>输入条件</th>
+  <th>$D_1$ 状态</th>
+  <th>$D_2$ 状态</th>
+  <th>运放工作模式</th>
+  <th>输出电压</th>
+</tr>
+<tr>
+  <td>$V_S < 0$（负半周）</td>
+  <td>导通</td>
+  <td>截止</td>
+  <td>反相放大器（负反馈经 $D_1$ 闭合）</td>
+  <td>$V_{out} = -\dfrac{R_f}{R_g} V_S$</td>
+</tr>
+<tr>
+  <td>$V_S \geq 0$（正半周）</td>
+  <td>截止</td>
+  <td>导通</td>
+  <td>负反馈经 $D_2$ 闭合，虚短维持</td>
+  <td>$V_{out} = 0$（精确零输出）</td>
+</tr>
+</table>
+</div>
+
+<h4>性能优势</h4>
+
+<ul>
+  <li><strong>消除压降影响</strong>：二极管 0.7V 压降被环路增益 $A_{OL}/A_{CL}$ "稀释"为 $V_D \cdot A_{CL}/A_{OL} \approx 7\mu\text{V}$，等效压降几乎为零。</li>
+  <li><strong>处理微弱信号</strong>：可整流幅值远小于 0.7V 的信号（低至微伏级），突破普通整流器的死区限制。</li>
+  <li><strong>边缘陡峭</strong>：过渡区极窄（由运放增益和压摆率决定），输出波形接近理想整流。</li>
+  <li><strong>温度稳定性</strong>：消除二极管压降的同时也消除了温度漂移问题。</li>
+</ul>
+
+<h4>交互仿真</h4>
+<p>调整下方滑块，观察不同增益和输入幅值下的整流效果：</p>
+
+<div class="canvas-wrap">
+<canvas id="cvsInteractive" width="760" height="300"></canvas>
+<div class="figure-caption">图3-4 交互仿真：精密半波整流器波形</div>
+<div class="ctrl-row">
+  <label>增益 $R_f/R_g$：</label>
+  <input type="range" id="sliderGain" min="0.5" max="5" step="0.1" value="1">
+  <span class="val" id="valGain">1.0</span>
+</div>
+<div class="ctrl-row">
+  <label>输入幅值(V)：</label>
+  <input type="range" id="sliderAmp" min="0.01" max="2" step="0.01" value="1">
+  <span class="val" id="valAmp">1.00</span>
+</div>
+</div>
+
+<div class="tip-box">
+<strong>动手验证</strong>：将输入幅值调到 0.05V（远低于 0.7V），你会发现精密整流器仍然完美整流！这正是"精密"的含义。如果这是普通二极管整流器，此信号根本无法通过。
+</div>
+
+<!-- 3.5 -->
+<h3 id="c3-5">3.5 同相结构为何不可行</h3>
+
+<p>既然反相放大器和同相放大器本质等效（仅参考点不同），一个自然的问题是：能否用同相放大器结构构建精密整流器？答案是<strong>不可以</strong>，原因在于同相结构在负半周存在根本性缺陷。</p>
+
+<div class="canvas-wrap">
+<img src="../image/precision-halfwave-rectifier04.jpg" alt="图3-5 同相结构的精密整流尝试">
+<div class="figure-caption">图3-5 同相结构的精密整流尝试</div>
+</div>
+
+<h4>工作分析</h4>
+
+<ul>
+  <li><strong>正半周</strong>（$V_S > 0$，上正下负）：$D_1$ 导通，构成标准同相放大器，输出 $V_{out} = (1 + \frac{R_f}{R_g}) V_S$。工作正常，与反相结构对应半周的逻辑一致。</li>
+  <li><strong>负半周</strong>（$V_S < 0$，上负下正）：运放输出负电压，$D_1$ 截止、$D_2$ 导通。$D_2$ 导通后构成反馈回路——运放输出端经 $D_2$ 直接连到反相输入端，此时电路等效为<strong>电压跟随器</strong>。因此 $u_+ = u_- = V_S$。由于 $D_1$ 已截止切断主输出路径，信号只能经 $R_f$ 和 $R_L$ 分压到达负载：</li>
+</ul>
+
+<div class="formula-block">
+$$V_{out} = \frac{R_L}{R_f + R_L} \times V_S \neq 0$$
+</div>
+
+<div class="key-box">
+<strong>根本缺陷</strong>：同相结构中，负半周 $D_1$ 截止后，$D_2$ 导通构成电压跟随器，使 $u_- = u_+ = V_S$，信号经 $R_f$ 与 $R_L$ 分压后泄漏到输出端，无法归零。究其根源，在于同相放大器增益公式中多出的 <strong>"$+1$"项</strong>——这一项来自参考点位置的差异，导致在两个半周的过渡中无法实现完全的信号阻断。因此，<strong>仅反相放大器结构适合构建精密整流电路</strong>。
+</div>
+
+<div class="compare-box">
+<div>
+<h4 style="color:#3b82f6">反相结构（可行）</h4>
+<ul>
+  <li>正半周：$D_2$ 钳位，反相端=0V，输出=0V</li>
+  <li>负半周：$D_1$ 导通，反相放大，输出=$-\frac{R_f}{R_g}V_S$</li>
+  <li>两个半周均可控</li>
+</ul>
+</div>
+<div>
+<h4 style="color:#ef4444">同相结构（不可行）</h4>
+<ul>
+  <li>正半周：同相放大，输出=$(1+\frac{R_f}{R_g})V_S$</li>
+  <li>负半周：分压泄漏，输出=$\frac{R_L}{R_f+R_L}V_S \neq 0$</li>
+  <li>负半周无法归零</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<div class="chapter" id="c4">
+<h2>第四章 深入分析与拓展</h2>
+
+<p>掌握精密半波整流器的基本原理只是起点。作为一个高级硬件工程师，还需要理解其在实际工程中的频率限制、误差来源、以及如何从半波扩展到全波整流。本章将对这些进阶主题进行深入分析。</p>
+
+<!-- 4.1 -->
+<h3 id="c4-1">4.1 传递函数与工作区域</h3>
+
+<p>精密半波整流器的传递函数具有分段线性的特征，可用一个统一表达式描述两个工作区域：</p>
+
+<div class="formula-block">
+$$V_{out} = \begin{cases} -\dfrac{R_f}{R_g} V_S & \text{当 } V_S < 0 \\ 0 & \text{当 } V_S \geq 0 \end{cases}$$
+</div>
+
+<p>这一传递函数清晰地展现了电路的非线性本质：对负输入呈现线性增益，对正输入则完全截止。值得注意的是，虽然电路包含非线性元件（二极管），但在每个工作区域内，输入-输出关系都是线性的——这正是运放反馈的精妙之处。</p>
+
+<div class="canvas-wrap">
+<canvas id="cvsTransferFunc" width="500" height="340"></canvas>
+<div class="figure-caption">图4-1 精密半波整流器传输特性曲线</div>
+</div>
+
+<p>从传输特性曲线可以看出，理想情况下过零点处是锐利的转折。但在实际电路中，转折区域受运放增益和压摆率影响，存在极窄的过渡带（通常在微伏量级），远小于普通整流器的 0.7V 死区。</p>
+
+<!-- 4.2 -->
+<h3 id="c4-2">4.2 频率响应与带宽限制</h3>
+
+<p>精密整流器虽然消除了二极管压降问题，但并非完美无缺。在较高频率下，运放的带宽和压摆率成为新的性能瓶颈。</p>
+
+<h4>运放压摆率限制</h4>
+<p>当输入信号从正半周切换到负半周（或反过来）时，运放需要从一个输出状态快速切换到另一个状态。具体来说，正半周时运放输出约为 $-0.7$V（驱动 $D_2$），切换到负半周时需要跳变到 $+\frac{R_f}{R_g}|V_S| + 0.7$V（驱动 $D_1$ 导通）。这一跳变需要运放输出摆动约 $0.7 + 0.7 + \frac{R_f}{R_g}|V_S|$ 的电压。</p>
+
+<p>运放的压摆率（Slew Rate, SR）限制了这一跳变的速度。跳变所需时间约为：</p>
+
+<div class="formula-block">
+$$t_{switch} \approx \frac{1.4 + \frac{R_f}{R_g}|V_S|}{SR}$$
+</div>
+
+<p>通用运放（如 LM358，SR = 0.5V/μs）在高频信号下会出现明显的切换延迟，导致输出波形在过零点附近出现"毛刺"或畸变。高速运放（如 AD8056，SR = 300V/μs）则可大幅缓解此问题。</p>
+
+<h4>增益带宽积限制</h4>
+<p>运放的增益带宽积（GBW）决定了在给定闭环增益下的可用带宽。对于精密整流器，有效闭环增益为 $1 + R_f/R_g$（同相放大器视角），可用带宽约为：</p>
+
+<div class="formula-block">
+$$f_{3dB} \approx \frac{GBW}{1 + R_f/R_g}$$
+</div>
+
+<div class="warn-box">
+<strong>设计注意</strong>：精密整流器的高频性能受三个因素制约——运放压摆率（限制切换速度）、增益带宽积（限制线性区带宽）、二极管结电容（高频时提供泄漏通路）。在 kHz 以上的应用中，必须选择高速运放和低结电容二极管（如肖特基管或开关二极管 1N4148）。
+</div>
+
+<!-- 4.3 -->
+<h3 id="c4-3">4.3 实际误差来源分析</h3>
+
+<p>尽管理论上精密整流器可以消除二极管压降的影响，但实际电路中仍存在多种误差来源，高级工程师需要对此有全面的认识。</p>
+
+<table>
+<tr>
+  <th>误差来源</th>
+  <th>典型量级</th>
+  <th>影响机制</th>
+  <th>缓解措施</th>
+</tr>
+<tr>
+  <td>运放输入失调电压 $V_{OS}$</td>
+  <td>0.1~5mV</td>
+  <td>使过零点偏移，小信号整流失真</td>
+  <td>选用低失调运放（如 OP07、OPA333）</td>
+</tr>
+<tr>
+  <td>运放输入偏置电流 $I_B$</td>
+  <td>pA~nA</td>
+  <td>在 $R_g$、$R_f$ 上产生额外压降</td>
+  <td>选用 FET 输入运放或匹配电阻</td>
+</tr>
+<tr>
+  <td>运放开环增益有限</td>
+  <td>$A_{OL} \approx 10^5$</td>
+  <td>等效压降 $V_D \cdot A_{CL}/A_{OL} \approx 7\mu$V</td>
+  <td>选用高增益运放</td>
+</tr>
+<tr>
+  <td>二极管反向漏电流 $I_R$</td>
+  <td>nA~μA</td>
+  <td>截止半周信号泄漏</td>
+  <td>选用低漏流二极管</td>
+</tr>
+<tr>
+  <td>二极管结电容 $C_j$</td>
+  <td>1~10pF</td>
+  <td>高频信号耦合泄漏</td>
+  <td>选用低结电容开关二极管</td>
+</tr>
+<tr>
+  <td>电阻精度与温漂</td>
+  <td>1%~0.1%</td>
+  <td>增益误差和温度漂移</td>
+  <td>选用精密金属膜电阻</td>
+</tr>
+</table>
+
+<div class="info-box">
+<strong>系统视角</strong>：精密整流器的总误差是所有误差源的叠加。对于微伏级信号，运放失调电压往往是主导因素；对于高频信号，压摆率和结电容是主要瓶颈。设计时应根据具体应用场景识别主要矛盾，有针对性地优化。
+</div>
+
+<!-- 4.4 -->
+<h3 id="c4-4">4.4 精密全波整流前瞻</h3>
+
+<p>半波整流仅利用了输入信号 50% 的能量，这在许多应用中是不可接受的。全波整流将负半周"翻转"到正方向，使信号能量得到充分利用。下面介绍两种常见的精密全波整流方案。</p>
+
+<h4>方案一：运放加法器组合</h4>
+<p>将精密半波整流器的输出与原始输入信号通过加法器叠加，可实现全波整流。其数学原理为：</p>
+
+<div class="formula-block">
+$$V_{out} = -(V_{half} + V_{in}) = -\left(-\frac{R_f}{R_g}V_S \cdot \text{半波} + V_S\right)$$
+</div>
+
+<p>通过适当选择电阻比例，使得负半周的输出恰好等于正半周的输出，即可实现 $|V_S|$ 的全波整流。这种方案需要两个运放（一个整流、一个求和），电路较复杂但原理清晰。</p>
+
+<h4>方案二：绝对值电路</h4>
+<p>绝对值电路（Absolute Value Circuit）是精密全波整流器的经典实现。它利用两个运放和精密匹配的电阻网络，输出始终等于输入的绝对值 $|V_S|$。该电路对电阻匹配精度要求极高（通常需要 0.1% 精度），否则在过零点附近会出现"尖峰"或"死区"。</p>
+
+<div class="tip-box">
+<strong>学习建议</strong>：全波精密整流器将在后续笔记中详细展开。当前阶段，务必确保对半波精密整流器的每个细节都理解透彻——全波整流器本质上就是半波整流器的扩展与组合。
+</div>
+
+<!-- 4.5 -->
+<h3 id="c4-5">4.5 典型应用场景</h3>
+
+<p>精密整流器在实际工程中有广泛的应用，以下是几个典型场景：</p>
+
+<table>
+<tr>
+  <th>应用领域</th>
+  <th>具体用途</th>
+  <th>为何需要精密整流</th>
+</tr>
+<tr>
+  <td>音频信号处理</td>
+  <td>音频电平检测、VU 表驱动</td>
+  <td>音频信号幅值可低至 mV 级，普通整流器无法处理</td>
+</tr>
+<tr>
+  <td>传感器信号调理</td>
+  <td>热电偶、应变片等微弱交流信号的整流</td>
+  <td>传感器输出常为 μV~mV 级，远低于二极管压降</td>
+</tr>
+<tr>
+  <td>交流电压/电流测量</td>
+  <td>数字万用表中的 AC-DC 转换</td>
+  <td>需要高精度转换，误差需在 0.1% 以内</td>
+</tr>
+<tr>
+  <td>锁相放大器</td>
+  <td>微弱信号的相敏检测</td>
+  <td>信号常淹没在噪声中，需精密整流提取</td>
+</tr>
+<tr>
+  <td>射频功率检测</td>
+  <td>射频信号的包络检波</td>
+  <td>高频小信号需要低失真整流</td>
+</tr>
+</table>
+
+</div>
+
+<!-- ============================================================ -->
+<div class="chapter" id="c5">
+<h2>第五章 知识总结与自测</h2>
+
+<p>本章将前述所有知识进行系统化总结，并通过常见误区辨析和自测题，帮助你检验和巩固对精密半波整流器的理解深度。</p>
+
+<!-- 5.1 -->
+<h3 id="c5-1">5.1 核心知识点速查</h3>
+
+<table>
+<tr>
+  <th>知识点</th>
+  <th>核心内容</th>
+  <th>考试重点/易混淆点</th>
+  <th>难度</th>
+</tr>
+<tr>
+  <td>虚短与虚断</td>
+  <td>运放两输入端电压相等（$V_+ = V_-$），电流为零（$I_+ = I_- = 0$）。仅在负反馈线性区成立。</td>
+  <td>运放饱和时虚短失效；断开反馈时虚短失效</td>
+  <td><span class="stars">&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>反相/同相放大器统一性</td>
+  <td>两者网络结构相同，仅电压参考点不同。通过参考点转换可互推增益公式。</td>
+  <td>参考点选择影响分析方式：反相 $A_v = -R_f/R_g$，同相 $A_v = 1+R_f/R_g$</td>
+  <td><span class="stars">&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>整流基本概念</td>
+  <td>将交流（方向变化）转换为直流（方向恒定）。半波仅保留单极性，效率低且有压降误差。</td>
+  <td>脉动直流方向不变仍属直流；区分标准是方向而非幅值</td>
+  <td><span class="stars">&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>二极管压降问题</td>
+  <td>硅管约 0.7V，造成信号失真、小信号失效、温度漂移。温度系数约 $-2\text{mV}/°C$。</td>
+  <td>压降测量用垂直方向而非视觉距离；死区电压限制了微弱信号处理</td>
+  <td><span class="stars">&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>精密整流核心原理</td>
+  <td>二极管置于运放反馈回路，等效压降降为 $V_D \cdot A_{CL}/A_{OL}$（约 7μV），消除死区和温度漂移。</td>
+  <td>理解"补偿"机制：运放自动调整输出使二极管恰好导通</td>
+  <td><span class="stars">&#9733;&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>$D_1$ 与 $D_2$ 的角色</td>
+  <td>$D_1$ 主整流（负半周导通），$D_2$ 钳位（正半周导通将反相端钳至 0V）。</td>
+  <td>正半周：$D_2$ 导通→反相端=0V→输出=0V；负半周：$D_1$ 导通→反相放大</td>
+  <td><span class="stars">&#9733;&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>同相结构不可行</td>
+  <td>负半周输出 $V_{out} = \frac{R_L}{R_f+R_L}V_S \neq 0$，分压效应使信号无法归零。</td>
+  <td>关键差异：反相结构负半周增益可控，同相结构因分压无法归零</td>
+  <td><span class="stars">&#9733;&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>频率限制</td>
+  <td>压摆率限制切换速度，GBW 限制线性区带宽，二极管结电容导致高频泄漏。</td>
+  <td>高频设计需选高速运放+低结电容二极管</td>
+  <td><span class="stars">&#9733;&#9733;&#9733;&#9733;</span></td>
+</tr>
+<tr>
+  <td>全波整流前瞻</td>
+  <td>加法器组合法或绝对值电路法，需精密匹配电阻。</td>
+  <td>半波是全波的基础；电阻匹配精度决定过零点质量</td>
+  <td><span class="stars">&#9733;&#9733;&#9733;&#9733;</span></td>
+</tr>
+</table>
+
+<!-- 5.2 -->
+<h3 id="c5-2">5.2 常见误区辨析</h3>
+
+<div class="quiz-item">
+  <div class="q-title">误区一："虚短意味着两个输入端可以直接短接"</div>
+  <p>虚短是运放通过负反馈<strong>动态维持</strong>的近似等电位状态，而非物理短接。一旦反馈环路断开（如二极管截止且无辅助通路），虚短即刻失效。在精密整流器中，正半周时 $D_2$ 的作用正是维持反馈通路、保持虚短。</p>
+</div>
+
+<div class="quiz-item">
+  <div class="q-title">误区二："精密整流器消除了二极管压降，所以不需要考虑二极管"</div>
+  <p>虽然等效压降趋近于零，但二极管仍有重要作用：(1) 二极管的反向漏电流会影响截止半周的隔离度；(2) 结电容在高频时提供泄漏通路；(3) 二极管开关速度影响切换过渡时间。选型时仍需关注这些参数。</p>
+</div>
+
+<div class="quiz-item">
+  <div class="q-title">误区三："精密整流器对所有信号都完美整流"</div>
+  <p>精密整流器的"精密"是相对于普通整流器而言的。实际精度受运放失调电压、偏置电流、有限增益等因素限制。对于 μV 级信号，运放失调电压可能成为主导误差源，需要选择低失调运放并考虑调零。</p>
+</div>
+
+<div class="quiz-item">
+  <div class="q-title">误区四："同相放大器增益更大，所以更适合做精密整流"</div>
+  <p>增益大小不是选择标准。同相结构在负半周存在信号泄漏的根本缺陷（输出 $\neq 0$），无法满足整流的基本要求。精密整流器的核心是"一个半周精确放大，另一个半周精确归零"，只有反相结构能同时满足这两个条件。</p>
+</div>
+
+<!-- 5.3 -->
+<h3 id="c5-3">5.3 自测题</h3>
+
+<div class="quiz-item">
+  <div class="q-title">题目1：精密半波整流器中，$D_2$ 的作用是什么？如果去掉 $D_2$ 会发生什么？</div>
+  <button class="q-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">显示答案</button>
+  <div class="q-answer">$D_2$ 的作用是在正半周提供反馈通路，将反相端钳位至 0V，使输出精确为零。如果去掉 $D_2$，正半周时反相端失去反馈通路，虚短被破坏，信号通过 $R_g$ 和 $R_L$ 分压泄漏到输出端，导致正半周输出 $V_{out} = \frac{R_L}{R_g+R_L}V_S \neq 0$，不满足整流要求。</div>
+</div>
+
+<div class="quiz-item">
+  <div class="q-title">题目2：精密整流器的等效二极管压降为 $V_{等效} = V_D \cdot A_{CL}/A_{OL}$。若运放开环增益 $A_{OL} = 2 \times 10^5$，闭环增益 $A_{CL} = 1$，硅二极管 $V_D = 0.7$V，等效压降是多少？这比普通整流器改善了几个数量级？</div>
+  <button class="q-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">显示答案</button>
+  <div class="q-answer">等效压降 $V_{等效} = 0.7 \times 1/(2 \times 10^5) = 3.5\mu$V。普通整流器压降为 0.7V = 700,000μV，改善倍数为 $0.7 / 3.5 \times 10^{-6} = 2 \times 10^5$，即 5 个数量级。</div>
+</div>
+
+<div class="quiz-item">
+  <div class="q-title">题目3：为什么精密整流器在高频下性能下降？请列出至少三个原因。</div>
+  <button class="q-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">显示答案</button>
+  <div class="q-answer">(1) 运放压摆率限制了正负半周切换时的输出跳变速度，导致过零点畸变；(2) 增益带宽积（GBW）限制了闭环带宽，高频信号增益下降；(3) 二极管结电容在高频时提供信号泄漏通路，降低截止半周的隔离度；(4) 运放在两个工作状态间切换需要经过开环状态，恢复时间导致"尖峰"。</div>
+</div>
+
+<div class="quiz-item">
+  <div class="q-title">题目4：设计一个精密半波整流器，要求对 -100mV 峰值的正弦信号整流后输出 +1V 峰值。请确定 $R_f$ 和 $R_g$ 的比值。</div>
+  <button class="q-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">显示答案</button>
+  <div class="q-answer">负半周时，输出 $V_{out} = -\frac{R_f}{R_g}V_S$。输入 $V_S = -100$mV，要求输出 $V_{out} = +1$V，因此 $\frac{R_f}{R_g} = \frac{V_{out}}{-V_S} = \frac{1}{0.1} = 10$。可选 $R_f = 100$kΩ，$R_g = 10$kΩ。</div>
+</div>
+
+<div class="quiz-item">
+  <div class="q-title">题目5：用参考点转换法证明：反相放大器的增益公式可以从同相放大器公式推导得出。</div>
+  <button class="q-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">显示答案</button>
+  <div class="q-answer">将反相放大器的参考点从同相端移至运放输出端，输入信号极性反转为 $-u_r$，电路等效为同相放大器结构。应用同相增益公式：$u_{out} = (1+R_f/R_g)(-u_r)$。但此处的 $u_{out}$ 是输出端相对于新参考点的电压。总输出电压需加上参考点偏移，合并后得到 $U_C = -R_f/R_g \times u_r$，与反相放大器标准公式一致。证明完毕。</div>
+</div>
+
+</div>
+
+</main>
+</div>
+
+<!-- ===== JavaScript ===== -->
+<script>
+// ===== 侧边栏高亮 =====
+const sections = document.querySelectorAll('.chapter');
+const tocLinks = document.querySelectorAll('.sidebar-nav a');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      const id = entry.target.id;
+      tocLinks.forEach(l => {
+        if (l.getAttribute('href') === '#' + id) l.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0.2 });
+
+sections.forEach(s => observer.observe(s));
+
+// ===== Canvas 绘图辅助 =====
+function setupCanvas(id, h) {
+  const c = document.getElementById(id);
+  if (!c) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const w = c.width;
+  c.width = w * dpr;
+  c.height = (h || c.height) * dpr;
+  c.style.width = w + 'px';
+  c.style.height = (h || 280) + 'px';
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w, h: h || 280 };
+}
+
+// ===== 图1-1 放大器对比 =====
+(function(){
+  const s = setupCanvas('cvsAmpCompare', 360);
+  if(!s) return;
+  const {ctx, w, h} = s;
+
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0,0,w,h);
+
+  const GW = w, GH = h;
+  const gndY = 315;           // 公共地线 Y
+  const midY = 170;           // 运放垂直中心
+
+  // ===== 辅助：接地符号（三条横线） =====
+  function drawGround(x, y) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + 10);
+    ctx.stroke();
+    const lw = [14, 9, 5];
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x - lw[i]/2, y + 10 + i*4);
+      ctx.lineTo(x + lw[i]/2, y + 10 + i*4);
+      ctx.stroke();
+    }
+  }
+
+  // ===== 辅助：电阻（矩形块 I E C 风格） =====
+  function drawResistor(x1, y1, x2, y2, lbl) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    if (len < 2) return;
+    const ux = dx/len, uy = dy/len;
+    const nx = -uy, ny = ux;
+    const rw = 9, rh = 22;
+    const mx = (x1+x2)/2, my = (y1+y2)/2;
+
+    ctx.fillStyle = '#ececec';
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(mx - ux*rh/2 + nx*rw/2, my - uy*rh/2 + ny*rw/2);
+    ctx.lineTo(mx - ux*rh/2 - nx*rw/2, my - uy*rh/2 - ny*rw/2);
+    ctx.lineTo(mx + ux*rh/2 - nx*rw/2, my + uy*rh/2 - ny*rw/2);
+    ctx.lineTo(mx + ux*rh/2 + nx*rw/2, my + uy*rh/2 + ny*rw/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 导线
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(mx - ux*rh/2, my - uy*rh/2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(mx + ux*rh/2, my + uy*rh/2);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    if (lbl) {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.font = 'bold 11px sans-serif';
+      const tw = ctx.measureText(lbl).width;
+      ctx.fillText(lbl, mx + nx*18 - tw/2, my + ny*18 + 4);
+    }
+  }
+
+  // ===== 辅助：运放三角形 + 电源引脚 =====
+  function drawOpAmp(cx, cy) {
+    const aw = 48, ah = 66;
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(cx - aw/2, cy - ah/2);
+    ctx.lineTo(cx + aw/2, cy);
+    ctx.lineTo(cx - aw/2, cy + ah/2);
+    ctx.closePath();
+    ctx.stroke();
+
+    // 正负输入端
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillText('\u2212', cx - aw/2 + 6, cy - 16);   // −
+    ctx.fillText('+',    cx - aw/2 + 6, cy + 20);
+
+    // 电源引脚
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - ah/2);
+    ctx.lineTo(cx, cy - ah/2 - 15);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + ah/2);
+    ctx.lineTo(cx, cy + ah/2 + 15);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('Vcc', cx + 5, cy - ah/2 - 5);
+    ctx.fillText('Vee', cx + 5, cy + ah/2 + 14);
+
+    return { cx, cy, aw, ah };
+  }
+
+  // ===========================================
+  // 左侧：反相放大器
+  // ===========================================
+  const Lcx = 190, Lcy = midY;
+  const L = drawOpAmp(Lcx, Lcy);
+
+  // 输入 ui → Rg → − 输入端
+  const iX = 40, iY = Lcy - 20;
+  drawResistor(iX + 55, iY, Lcx - L.aw/2, iY, 'Rg');
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(iX, iY);
+  ctx.lineTo(iX + 55, iY);
+  ctx.stroke();
+
+  // 输入标注 ui（红色强调）
+  ctx.fillStyle = '#c2410c';
+  ctx.font = 'bold italic 14px sans-serif';
+  ctx.fillText('ui', iX + 2, iY - 8);
+  ctx.strokeStyle = '#c2410c';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(iX + 30, iY - 10);
+  ctx.lineTo(iX + 42, iY);
+  ctx.lineTo(iX + 30, iY + 10);
+  ctx.stroke();
+
+  // + 输入端接地
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(Lcx - L.aw/2, Lcy + 20);
+  ctx.lineTo(Lcx - L.aw/2 - 25, Lcy + 20);
+  ctx.lineTo(Lcx - L.aw/2 - 25, gndY);
+  ctx.stroke();
+  drawGround(Lcx - L.aw/2 - 25, gndY);
+
+  // Rf 反馈（虚线，从输出绕回 −）
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,3]);
+  const outX = Lcx + L.aw/2;
+  ctx.beginPath();
+  ctx.moveTo(outX, Lcy);
+  ctx.lineTo(outX + 32, Lcy);
+  ctx.lineTo(outX + 32, Lcy - 72);
+  ctx.lineTo(Lcx - 10, Lcy - 72);
+  ctx.lineTo(Lcx - 10, Lcy - 20);
+  ctx.lineTo(Lcx - L.aw/2, Lcy - 20);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('Rf', outX + 36, Lcy - 44);
+
+  // 输出
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(outX, Lcy);
+  ctx.lineTo(outX + 75, Lcy);
+  ctx.stroke();
+  ctx.fillStyle = '#c2410c';
+  ctx.font = 'bold italic 14px sans-serif';
+  ctx.fillText('uo', outX + 78, Lcy - 6);
+
+  // ===========================================
+  // 右侧：同相放大器
+  // ===========================================
+  const Rcx = 570, Rcy = midY;
+  const R = drawOpAmp(Rcx, Rcy);
+
+  // 输入 −ur → + 输入端
+  const riX = 395, riY = Rcy + 20;
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(riX, riY);
+  ctx.lineTo(Rcx - R.aw/2, riY);
+  ctx.stroke();
+
+  ctx.fillStyle = '#c2410c';
+  ctx.font = 'bold italic 14px sans-serif';
+  ctx.fillText('\u2212u', riX + 2, riY - 8);       // −u
+  ctx.font = 'bold italic 12px sans-serif';
+  ctx.fillText('r', riX + 18, riY + 2);           // r (subscript-like)
+  ctx.strokeStyle = '#c2410c';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(riX + 44, riY - 10);
+  ctx.lineTo(riX + 56, riY);
+  ctx.lineTo(riX + 44, riY + 10);
+  ctx.stroke();
+
+  // Rg 从 − 输入端到地
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(Rcx - R.aw/2, Rcy - 20);
+  ctx.lineTo(Rcx - R.aw/2 - 28, Rcy - 20);
+  ctx.lineTo(Rcx - R.aw/2 - 28, gndY);
+  ctx.stroke();
+  drawGround(Rcx - R.aw/2 - 28, gndY);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('Rg', Rcx - R.aw/2 - 34, Rcy - 42);
+
+  // Rf 反馈
+  const routX = Rcx + R.aw/2;
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  ctx.moveTo(routX, Rcy);
+  ctx.lineTo(routX + 30, Rcy);
+  ctx.lineTo(routX + 30, Rcy - 62);
+  ctx.lineTo(Rcx - 10, Rcy - 62);
+  ctx.lineTo(Rcx - 10, Rcy - 20);
+  ctx.lineTo(Rcx - R.aw/2, Rcy - 20);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('Rf', routX + 34, Rcy - 38);
+
+  // 输出 uo1
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(routX, Rcy);
+  ctx.lineTo(routX + 75, Rcy);
+  ctx.stroke();
+  ctx.fillStyle = '#c2410c';
+  ctx.font = 'bold italic 14px sans-serif';
+  ctx.fillText('uo1', routX + 78, Rcy - 6);
+
+  // 红色注解：「如果 U+ 为参考点」
+  ctx.fillStyle = '#dc2626';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('\u5982\u679c U\u207a \u4e3a\u53c2\u8003\u70b9', Rcx - 38, Rcy - 90);
+
+  // 红色公式
+  ctx.fillStyle = '#dc2626';
+  ctx.font = 'italic 11px sans-serif';
+  ctx.fillText('uo1 = (1 + Rf/Rg)\u00b7(\u2212ur)', Rcx - 50, Rcy + 108);
+  ctx.fillText('uo  = uo1 + \u2026', Rcx - 30, Rcy + 126);
+
+  // ===== 公共地线 =====
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, gndY + 20);
+  ctx.lineTo(GW, gndY + 20);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('\u516c\u5171\u5730', GW - 55, gndY + 35);
+})();
+
+// ===== 图2-1 整流概念 =====
+(function(){
+  const s = setupCanvas('cvsRectifyConcept', 300);
+  if(!s) return;
+  const {ctx, w, h} = s;
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0,0,w,h);
+
+  function drawSine(x0, y0, pw, ph, label, transform) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for(let i=0; i<=100; i++){
+      const t = i/100;
+      let v = Math.sin(t * 2 * Math.PI);
+      if(transform) v = transform(v);
+      const x = x0 + t * pw;
+      const y = y0 - v * ph;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // Zero line
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x0 + pw, y0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Label
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(label, x0 + pw/2 - 20, y0 + ph + 20);
+  }
+
+  drawSine(20, 140, 210, 50, 'AC 输入', null);
+  drawSine(270, 140, 210, 50, '半波整流', v => v > 0 ? v : 0);
+  drawSine(520, 140, 210, 50, '全波整流', v => Math.abs(v));
+})();
+
+// ===== 图2-2 基本半波整流器 =====
+(function(){
+  const s = setupCanvas('cvsHalfWaveBasic', 240);
+  if(!s) return;
+  const {ctx, w, h} = s;
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0,0,w,h);
+
+  // ---- key coordinates ----
+  const topY  = 80;          // top horizontal wire Y
+  const botY  = 176;        // bottom return wire Y
+  const leftX = 28;         // left edge X
+  const cy    = (topY+botY)/2; // ~128, vertical center
+
+  const srcX  = 70,  srcR = 16;   // AC source circle
+  const dioX  = 132;                // diode center X
+  const rlX   = 190, rlW = 14, rlH = 36; // RL rectangle
+  const rlMidX = rlX + rlW/2;      // RL center X (197)
+  const rlCenter = (topY+botY)/2;  // 128, vertical center
+  const rlTop   = rlCenter - rlH/2;  // 110
+  const rlBot   = rlTop + rlH;        // 146
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 2;
+
+  // ---- top horizontal wire ----
+  // left edge -> source left
+  ctx.beginPath(); ctx.moveTo(leftX, topY); ctx.lineTo(srcX - srcR, topY); ctx.stroke();
+  // source right -> diode left
+  ctx.beginPath(); ctx.moveTo(srcX + srcR, topY); ctx.lineTo(dioX - 10, topY); ctx.stroke();
+  // diode right -> RL top-lead junction (rlMidX, topY)
+  ctx.beginPath(); ctx.moveTo(dioX + 10, topY); ctx.lineTo(rlMidX, topY); ctx.stroke();
+
+  // ---- AC source (circle + sine) ----
+  ctx.beginPath(); ctx.arc(srcX, topY, srcR, 0, Math.PI*2); ctx.stroke();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for(let i=0;i<=24;i++){
+    const t=i/24, sx=srcX-9+t*18, sy=topY-5*Math.sin(t*Math.PI*2);
+    if(i===0)ctx.moveTo(sx,sy); else ctx.lineTo(sx,sy);
+  }
+  ctx.stroke();
+  ctx.lineWidth = 2;
+  ctx.font='bold 12px sans-serif'; ctx.fillStyle='#1a1a1a';
+  ctx.fillText('VS', srcX-8, topY+28);
+
+  // ---- Diode ----
+  ctx.beginPath(); ctx.moveTo(dioX-10,topY-12); ctx.lineTo(dioX+10,topY); ctx.lineTo(dioX-10,topY+12); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(dioX+10,topY-12); ctx.lineTo(dioX+10,topY+12); ctx.stroke();
+  ctx.font='bold 13px sans-serif'; ctx.fillStyle='#dc2626';
+  ctx.fillText('0.7V', dioX-14, topY-18);
+
+  // ---- RL top lead (short vertical: topY -> rlTop) ----
+  ctx.beginPath(); ctx.moveTo(rlMidX, topY); ctx.lineTo(rlMidX, rlTop); ctx.stroke();
+
+  // ---- RL rectangle ----
+  ctx.fillStyle='#f9a8d4';
+  ctx.fillRect(rlX, rlTop, rlW, rlH);
+  ctx.strokeStyle='rgba(0,0,0,0.85)'; ctx.lineWidth=2;
+  ctx.strokeRect(rlX, rlTop, rlW, rlH);
+  // RL label
+  ctx.font='bold 12px sans-serif'; ctx.fillStyle='#1a1a1a';
+  ctx.fillText('RL', rlX+rlW+5, rlTop+rlH/2+4);
+
+  // ---- RL bottom lead (short vertical: rlBot -> botY) ----
+  ctx.beginPath(); ctx.moveTo(rlMidX, rlBot); ctx.lineTo(rlMidX, botY); ctx.stroke();
+
+  // ---- bottom return wire (horizontal) ----
+  ctx.beginPath(); ctx.moveTo(leftX, botY); ctx.lineTo(rlMidX, botY); ctx.stroke();
+
+  // ---- left vertical wire (topY -> botY) ----
+  ctx.beginPath(); ctx.moveTo(leftX, topY); ctx.lineTo(leftX, botY); ctx.stroke();
+
+  // ---- Vout arrow (across RL) ----
+  const arrX = rlX + rlW + 22;
+  ctx.strokeStyle='rgba(0,0,0,0.7)'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(arrX, rlTop+2); ctx.lineTo(arrX, rlBot-2); ctx.stroke();
+  // top arrowhead
+  ctx.beginPath(); ctx.moveTo(arrX-3,rlTop+6); ctx.lineTo(arrX,rlTop+2); ctx.lineTo(arrX+3,rlTop+6); ctx.stroke();
+  // bottom arrowhead
+  ctx.beginPath(); ctx.moveTo(arrX-3,rlBot-6); ctx.lineTo(arrX,rlBot-2); ctx.lineTo(arrX+3,rlBot-6); ctx.stroke();
+  ctx.font='italic 14px serif'; ctx.fillStyle='#1a1a1a';
+  ctx.fillText('uC', arrX+6, rlTop+rlH/2+4);
+
+  // ---- junction dots ----
+  ctx.fillStyle='#1a1a1a';
+  ctx.beginPath(); ctx.arc(rlMidX, botY, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(rlMidX, topY, 2.5, 0, Math.PI*2); ctx.fill();
+})();
+
+// ===== 图2-3 半波整流波形 =====
+(function(){
+  const s = setupCanvas('cvsHalfWaveWaveform', 300);
+  if(!s) return;
+  const {ctx, w, h} = s;
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0,0,w,h);
+
+  const pw = 680, x0 = 40;
+
+  // Input
+  const y1 = 75;
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0+pw,y1); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for(let i=0;i<=200;i++){
+    const t=i/200;
+    const x=x0+t*pw;
+    const y=y1-Math.sin(t*4*Math.PI)*45;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#3b82f6';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('输入 Vin', x0, y1 - 52);
+
+  // Output
+  const y2 = 210;
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x0,y2); ctx.lineTo(x0+pw,y2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle = '#ef4444';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for(let i=0;i<=200;i++){
+    const t=i/200;
+    const v=Math.sin(t*4*Math.PI);
+    const x=x0+t*pw;
+    const y=y2-(v>0?v:0)*45;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#ef4444';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('输出 Vout', x0, y2 - 52);
+})();
+
+// ===== 图2-4 二极管压降 =====
+(function(){
+  const s = setupCanvas('cvsDiodeDrop', 300);
+  if(!s) return;
+  const {ctx, w, h} = s;
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0,0,w,h);
+
+  const pw=680, x0=40, cy=160;
+  const Vp=5.0;   // peak voltage 5V
+  const drop=0.7;  // diode drop 0.7V
+  const scale=25;  // 5V → 125px, 0.7V → 17.5px — curves stay close
+
+  // ---- Y-axis ----
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x0-10, cy-Vp*scale); ctx.lineTo(x0-10, cy+10); ctx.stroke();
+  ctx.font = '10px sans-serif'; ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.textAlign = 'right';
+  const yTicks = [0,1,2,3,4,5];
+  yTicks.forEach(v => {
+    const yy = cy - v*scale;
+    ctx.fillText(v+'V', x0-14, yy+3);
+    ctx.beginPath(); ctx.moveTo(x0-11,yy); ctx.lineTo(x0-7,yy); ctx.stroke();
+  });
+  ctx.textAlign = 'left';
+
+  // Zero line
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x0,cy); ctx.lineTo(x0+pw,cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Ideal (dashed) — positive half-wave, no drop
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+  ctx.setLineDash([7,5]);
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  for(let i=0;i<=400;i++){
+    const t=i/400;
+    const v=Math.sin(t*4*Math.PI);
+    const x=x0+t*pw;
+    const y=cy-(v>0?v*Vp:0)*scale;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Actual (solid) — minus 0.7V when conducting
+  ctx.strokeStyle = '#ef4444';
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  for(let i=0;i<=400;i++){
+    const t=i/400;
+    const v=Math.sin(t*4*Math.PI);
+    const x=x0+t*pw;
+    const vIn = v>0 ? v*Vp : 0;
+    const vOut = vIn > drop ? vIn - drop : 0;
+    const y=cy-vOut*scale;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Labels
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillText('理想（虚线）', x0+pw-130, 30);
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText('实际（实线）', x0+pw-130, 48);
+
+  // ---- 0.7V gap annotations ----
+  ctx.strokeStyle = '#0f766e';
+  ctx.fillStyle = '#0f766e';
+  ctx.lineWidth = 1.2;
+  ctx.font = 'bold 10px sans-serif';
+
+  function drawGap(t){
+    const v=Math.sin(t*4*Math.PI);
+    const vIn=v>0?v*Vp:0;
+    if(vIn<=drop) return;
+    const x=x0+t*pw;
+    const yI=cy-(v>0?v*Vp:0)*scale;
+    const yA=cy-(vIn>drop?vIn-drop:0)*scale;
+    ctx.beginPath(); ctx.moveTo(x,yI); ctx.lineTo(x,yA); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x-3,yI+3); ctx.lineTo(x,yI); ctx.lineTo(x+3,yI+3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x-3,yA-3); ctx.lineTo(x,yA); ctx.lineTo(x+3,yA-3); ctx.stroke();
+    ctx.fillText('0.7V',x+5,(yI+yA)/2+3);
+  }
+  drawGap(0.06); drawGap(0.125); drawGap(0.19); drawGap(0.31);
+})();
+
+// ===== 图3-4 交互仿真 =====
+let interactiveDrawn = false;
+function drawInteractive() {
+  const c = document.getElementById('cvsInteractive');
+  if(!c) return;
+  const dpr = window.devicePixelRatio || 1;
+  const cw = 760, ch = 300;
+  c.width = cw * dpr;
+  c.height = ch * dpr;
+  c.style.width = cw + 'px';
+  c.style.height = ch + 'px';
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const gain = parseFloat(document.getElementById('sliderGain').value);
+  const amp = parseFloat(document.getElementById('sliderAmp').value);
+
+  document.getElementById('valGain').textContent = gain.toFixed(1);
+  document.getElementById('valAmp').textContent = amp.toFixed(2);
+
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0,0,cw,ch);
+
+  const pw=680, x0=40;
+
+  // Input sine
+  const y1 = 75;
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0+pw,y1); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for(let i=0;i<=300;i++){
+    const t=i/300;
+    const x=x0+t*pw;
+    const y=y1-Math.sin(t*4*Math.PI)*35*amp;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#3b82f6';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('Vin (幅值='+amp.toFixed(2)+'V)', x0, y1-48);
+
+  // Precision rectified output
+  const y2 = 210;
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x0,y2); ctx.lineTo(x0+pw,y2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle = '#0f766e';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for(let i=0;i<=300;i++){
+    const t=i/300;
+    const v=Math.sin(t*4*Math.PI);
+    const vr = v < 0 ? -v * gain : 0;  // negative half flipped
+    const x=x0+t*pw;
+    const y=y2-vr*35*amp;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#0f766e';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('Vout (增益='+gain.toFixed(1)+')', x0, y2-48);
+
+  // Comparison: what a normal diode would do
+  if(amp < 0.7) {
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '11px sans-serif';
+    ctx.fillText('⚠ 普通二极管整流器：输出恒为0（信号<0.7V）', x0, y2+45);
+  }
+}
+
+document.getElementById('sliderGain').addEventListener('input', drawInteractive);
+document.getElementById('sliderAmp').addEventListener('input', drawInteractive);
+drawInteractive();
+
+// ===== 图4-1 传输特性 =====
+(function(){
+  const s = setupCanvas('cvsTransferFunc', 340);
+  if(!s) return;
+  const {ctx, w, h} = s;
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0,0,w,h);
+
+  const ox = w * 0.45, oy = h / 2;
+  const scaleX = 130, scaleY = 100;
+  const vMax = 1.5;
+
+  // Axes
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(40, oy); ctx.lineTo(w - 20, oy); ctx.stroke(); // x
+  ctx.beginPath(); ctx.moveTo(ox, 25); ctx.lineTo(ox, h - 25); ctx.stroke(); // y
+
+  // Arrow heads
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.beginPath(); ctx.moveTo(w - 20, oy); ctx.lineTo(w - 30, oy - 5); ctx.lineTo(w - 30, oy + 5); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(ox, 25); ctx.lineTo(ox - 5, 35); ctx.lineTo(ox + 5, 35); ctx.closePath(); ctx.fill();
+
+  // Axis labels
+  ctx.font = '12px sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillText('Vin', w - 45, oy + 18);
+  ctx.fillText('Vout', ox + 8, 35);
+
+  // Transfer function: Vin<0 → Vout = -Vin, Vin>=0 → Vout = 0
+  ctx.strokeStyle = '#0f766e';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let i = 0; i <= 60; i++) {
+    const vin = -vMax + i * vMax / 60;
+    const vout = vin < 0 ? -vin : 0;
+    const x = ox + vin * scaleX;
+    const y = oy - vout * scaleY;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Dashed ideal diode comparison (Vout=0 for all Vin<0, Vout=Vin-0.7 for Vin>0.7)
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.setLineDash([4, 4]);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(ox - vMax * scaleX, oy);
+  ctx.lineTo(ox, oy);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Region annotations
+  ctx.fillStyle = '#0f766e';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('斜率 = -Rf/Rg', ox - scaleX * vMax / 2, oy - scaleY * vMax * 0.55);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillText('(负输入 → 正输出)', ox - scaleX * vMax / 2, oy - scaleY * vMax * 0.55 + 16);
+
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.textAlign = 'left';
+  ctx.fillText('Vout = 0', ox + 30, oy - 8);
+  ctx.font = '11px sans-serif';
+  ctx.fillText('(正输入区)', ox + 30, oy + 8);
+
+  // Origin dot
+  ctx.fillStyle = '#0f766e';
+  ctx.beginPath(); ctx.arc(ox, oy, 4, 0, 2 * Math.PI); ctx.fill();
+
+  // Tick marks
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  for (let v = -1; v <= 1; v += 0.5) {
+    if (v === 0) continue;
+    const x = ox + v * scaleX;
+    ctx.beginPath(); ctx.moveTo(x, oy - 3); ctx.lineTo(x, oy + 3); ctx.stroke();
+    ctx.fillText(v.toFixed(1), x, oy + 16);
+  }
+  for (let v = -1; v <= 1; v += 0.5) {
+    if (v === 0) continue;
+    const y = oy - v * scaleY;
+    ctx.beginPath(); ctx.moveTo(ox - 3, y); ctx.lineTo(ox + 3, y); ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText(v.toFixed(1), ox - 8, y + 4);
+  }
+  ctx.textAlign = 'start';
+})();
+
+</script>
+
+</body>
+</html>
