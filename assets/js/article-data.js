@@ -17,6 +17,13 @@ var siteData = {
       name: '硬件',
       articles: [
         {
+          id: 'allpass-filter-phase-shifter',
+          title: '全通滤波器（移相器） - 运放电路技术笔记',
+          date: '2026-05-31',
+          summary: '全通滤波器（All-Pass Filter）作为移相器的原理、电路实现与仿真分析，覆盖一阶/二阶APF的传递函数、相位响应及运放选型要点。',
+          file: 'articles/allpass-filter-phase-shifter.html'
+        },
+        {
           id: 'differential-amplifier-comprehensive-notes',
           title: '差分放大器与共模/差模信号完整知识笔记',
           date: '2026-06-07',
@@ -172,18 +179,6 @@ var siteData = {
           date: '2026-05-22',
           summary: '分享技术写作的经验与技巧。',
           file: 'articles/writing-tips.html'
-        }
-      ]
-    },
-    {
-      name: '未分类',
-      articles: [
-        {
-          id: 'allpass-filter-phase-shifter',
-          title: '全通滤波器（移相器） - 运放电路技术笔记',
-          date: '2026-05-31',
-          summary: '',
-          file: 'articles/allpass-filter-phase-shifter.html'
         }
       ]
     }
