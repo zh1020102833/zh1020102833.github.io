@@ -17,6 +17,13 @@ var siteData = {
       name: '硬件',
       articles: [
         {
+          id: 'differential-amplifier-comprehensive-notes',
+          title: '差分放大器与共模/差模信号完整知识笔记',
+          date: '2026-06-07',
+          summary: '系统整合差分放大器、共模/差模信号、CMRR 频率特性、仿真验证等完整知识体系。',
+          file: 'articles/differential-amplifier-comprehensive-notes.html'
+        },
+        {
           id: 'eeg-signal-chain',
           title: 'EEG 硬件信号链设计笔记',
           date: '2026-05-22',
@@ -57,6 +64,20 @@ var siteData = {
           date: '2026-05-22',
           summary: '深入讲解信号调理的核心原理，包括放大、滤波、隔离与线性化等关键技术。',
           file: 'articles/signal-conditioning.html'
+        },
+        {
+          id: '从欧拉公式到传递函数',
+          title: '从欧拉公式到传递函数：信号处理的数学链路',
+          date: '2026-06-19',
+          summary: '从欧拉公式出发，串联复数阻抗、拉普拉斯变换、传递函数到Bode图，结合全通相移器实例，建立完整的信号处理数学链路。',
+          file: 'articles/从欧拉公式到传递函数.html'
+        },
+        {
+          id: '脑机原理篇-电极与放大器',
+          title: '脑机原理篇 — 电极与放大器',
+          date: '2026-06-10',
+          summary: '基于脑机接口硬件专家课原理篇，梳理半电池电位、极化电位、接触阻抗、三电极系统、增益限制推导、1/f噪声计算，结合纳米孔测序工程经验进行类比理解。',
+          file: 'articles/脑机原理篇-电极与放大器.html'
         }
       ]
     },
@@ -151,6 +172,18 @@ var siteData = {
           date: '2026-05-22',
           summary: '分享技术写作的经验与技巧。',
           file: 'articles/writing-tips.html'
+        }
+      ]
+    },
+    {
+      name: '未分类',
+      articles: [
+        {
+          id: 'allpass-filter-phase-shifter',
+          title: '全通滤波器（移相器） - 运放电路技术笔记',
+          date: '2026-05-31',
+          summary: '',
+          file: 'articles/allpass-filter-phase-shifter.html'
         }
       ]
     }
