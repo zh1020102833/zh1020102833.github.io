@@ -2418,30 +2418,37 @@ function setupCanvas(c, w, h) {
   var dpr=window.devicePixelRatio||1; var cw=680,ch=380;
   c.width=cw*dpr;c.height=ch*dpr; c.style.width=cw+'px';c.style.height=ch+'px';
   var ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
-  var cx=cw/2,cy=ch/2+10,R=130,phase=0;
+  var cx=cw/2,cy=ch/2+10,R=130,phase=0,running=false,animId=null;
   var C={A:'#3b82f6',B:'#22c55e',C:'#ef4444',S:'#1a1a2e'};
   function draw(){
     ctx.fillStyle='#f5f4f1';ctx.fillRect(0,0,cw,ch);
+    // 坐标轴
     ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(40,cy);ctx.lineTo(cw-40,cy);ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx,30);ctx.lineTo(cx,ch-50);ctx.stroke();
-    ctx.strokeStyle='rgba(0,0,0,0.08)';ctx.setLineDash([4,4]);
-    ctx.beginPath();ctx.arc(cx,cy,R*1.5,0,Math.PI*2);ctx.stroke();
+    // 参考圆（合成矢量轨迹）
+    ctx.strokeStyle='rgba(26,26,46,0.2)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.arc(cx,cy,1.5*R,0,Math.PI*2);ctx.stroke();
     ctx.setLineDash([]);
-    [{a:0,l:'A相'},{a:120,l:'B相'},{a:240,l:'C相'}].forEach(function(x){
+    // 三相轴线与标签
+    [{a:0,l:'A相(0°)'},{a:120,l:'B相(120°)'},{a:240,l:'C相(240°)'}].forEach(function(x){
       var r=x.a*Math.PI/180;
       ctx.strokeStyle='rgba(0,0,0,0.15)';
       ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*1.7*Math.cos(r),cy-R*1.7*Math.sin(r));ctx.stroke();
       ctx.fillStyle='rgba(0,0,0,0.35)';ctx.font='12px sans-serif';
       var tx=cx+(R*1.8+20)*Math.cos(r),ty=cy-(R*1.8+20)*Math.sin(r);
-      ctx.fillText(x.l,tx-12,ty+4);
+      ctx.fillText(x.l,tx-14,ty+4);
     });
-    var ph=[0,-2.0944,-4.1888],pc=[C.A,C.B,C.C],vs=[];
+    // 三相脉振矢量（用位移法，避免坐标偏移bug）
+    var ph=[0,-2.0944,-4.1888],pc=[C.A,C.B,C.C];
+    var sdx=0,sdy=0; // 合成位移累加器
     for(var i=0;i<3;i++){
       var cur=Math.cos(phase+ph[i]),aa=i*2.0944,mag=cur*R;
-      var ex=cx+mag*Math.cos(aa),ey=cy-mag*Math.sin(aa);
-      vs.push({x:ex,y:ey});
-      ctx.strokeStyle=pc[i];ctx.lineWidth=cur>=0?3:2;if(cur<0)ctx.globalAlpha=0.5;
+      var dxi=mag*Math.cos(aa),dyi=-mag*Math.sin(aa);
+      sdx+=dxi; sdy+=dyi; // 累加位移
+      var ex=cx+dxi,ey=cy+dyi;
+      ctx.strokeStyle=pc[i];ctx.lineWidth=Math.abs(cur)>=0.3?3:2;
+      if(cur<0)ctx.globalAlpha=0.5;
       ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();ctx.globalAlpha=1;
       if(Math.abs(mag)>5){
         var al=8,an=Math.atan2(cy-ey,ex-cx);
@@ -2451,27 +2458,41 @@ function setupCanvas(c, w, h) {
       }
       ctx.fillStyle=pc[i];ctx.font='bold 11px sans-serif';ctx.fillText('ABC'[i],ex+6,ey-4);
     }
-    var sx=vs[0].x+vs[1].x+vs[2].x-cx*2,sy=vs[0].y+vs[1].y+vs[2].y-cy*2;
-    ctx.strokeStyle=C.S;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+sx,cy+sy);ctx.stroke();
-    var sm=Math.sqrt(sx*sx+sy*sy);
-    if(sm>5){var sa=Math.atan2(-sy,sx);ctx.fillStyle=C.S;ctx.beginPath();ctx.moveTo(cx+sx,cy+sy);
-      ctx.lineTo(cx+sx-10*Math.cos(sa-0.35),cy+sy+10*Math.sin(sa-0.35));
-      ctx.lineTo(cx+sx-10*Math.cos(sa+0.35),cy+sy+10*Math.sin(sa+0.35));ctx.closePath();ctx.fill();}
-    ctx.fillStyle=C.S;ctx.font='bold 12px sans-serif';ctx.fillText('\u03A3F',cx+sx+8,cy+sy-4);
+    // 合成矢量：中心 + 位移之和
+    var rx=cx+sdx,ry=cy+sdy;
+    var sm=Math.sqrt(sdx*sdx+sdy*sdy);
+    ctx.strokeStyle=C.S;ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(rx,ry);ctx.stroke();
+    if(sm>5){
+      var sa=Math.atan2(cy-ry,rx-cx);
+      ctx.fillStyle=C.S;ctx.beginPath();ctx.moveTo(rx,ry);
+      ctx.lineTo(rx-10*Math.cos(sa-0.35),ry+10*Math.sin(sa-0.35));
+      ctx.lineTo(rx-10*Math.cos(sa+0.35),ry+10*Math.sin(sa+0.35));
+      ctx.closePath();ctx.fill();
+    }
+    ctx.fillStyle=C.S;ctx.font='bold 12px sans-serif';ctx.fillText('\u03A3F',rx+8,ry-4);
+    // 信息面板
     ctx.fillStyle='rgba(255,255,255,0.92)';ctx.strokeStyle='rgba(0,0,0,0.1)';
-    ctx.fillRect(cw-170,16,158,70);ctx.strokeRect(cw-170,16,158,70);
+    ctx.fillRect(cw-175,16,165,90);ctx.strokeRect(cw-175,16,165,90);
     ctx.fillStyle='#333';ctx.font='12px sans-serif';
     var dp=(phase*180/Math.PI)%360;if(dp<0)dp+=360;
-    ctx.fillText('\u7535\u89d2\u5EA6 \u03B8e:'+dp.toFixed(0)+'\u00B0',cw-162,36);
-    ctx.fillText('|\u03A3F|='+((sm/R)*1.5).toFixed(2)+' Fm',cw-162,54);
+    ctx.fillText('\u7535\u89d2\u5EA6 \u03B8e: '+dp.toFixed(0)+'\u00B0',cw-168,36);
+    ctx.fillText('|ΣF| = 1.50 Fm (\u6052\u5B9A)',cw-168,54);
     ctx.font='11px sans-serif';
     ['A\u76F8(\u84DD)','B\u76F8(\u7EFF)','C\u76F8(\u7EA2)','\u5408\u6210(\u9ED1)'].forEach(function(l,i){
       ctx.fillStyle=['#3b82f6','#22c55e','#ef4444','#1a1a2e'][i];
-      ctx.fillRect(cw-168,96+i*16,10,10);ctx.fillStyle='#555';ctx.fillText(l,cw-152,105+i*16);
+      ctx.fillRect(cw-173,96+i*16,10,10);ctx.fillStyle='#555';ctx.fillText(l,cw-157,105+i*16);
     });
   }
   draw();
-  c.addEventListener('mouseenter',function(){requestAnimationFrame(function lp(){phase+=0.02;draw();requestAnimationFrame(lp);});});
+  c.addEventListener('mouseenter',function(){
+    if(running)return; running=true;
+    function lp(){phase+=0.02;draw();animId=requestAnimationFrame(lp);}
+    animId=requestAnimationFrame(lp);
+  });
+  c.addEventListener('mouseleave',function(){
+    running=false; if(animId){cancelAnimationFrame(animId);animId=null;}
+  });
 })();
 </script>
 
