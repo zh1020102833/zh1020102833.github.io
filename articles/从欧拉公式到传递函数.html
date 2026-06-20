@@ -357,7 +357,10 @@ details.deriv-detail>div{padding:16px}
     <li class="sub"><a href="#ch1-s1">1.1 交流信号的本质</a></li>
     <li class="sub"><a href="#ch1-s2">1.2 欧拉公式的含义</a></li>
     <li class="sub"><a href="#ch1-s3">1.3 复数的两种表示</a></li>
+    <li class="sub"><a href="#ch1-s3b">1.3b arctan象限修正法则</a></li>
     <li class="sub"><a href="#ch1-s4">1.4 正弦波→复指数的完整变换过程</a></li>
+    <li class="sub"><a href="#ch1-s5">1.5 三角函数积化和差与和差化积</a></li>
+    <li class="sub"><a href="#ch1-s6">1.6 极坐标的工程实例化</a></li>
     <li><a href="#ch2">第二章 阻抗：电容与电感的复数化</a></li>
     <li class="sub"><a href="#ch2-s1">2.1 电阻：实数阻抗</a></li>
     <li class="sub"><a href="#ch2-s2">2.2 电容：虚数阻抗（逐步推导）</a></li>
@@ -571,6 +574,213 @@ $H(s) = V_{out}(s) / V_{in}(s)$，零点与极点
       </table>
 
       <p><span class="tag green">技巧</span>工程计算口诀：<strong>加减用直角坐标，乘除用极坐标</strong>。传递函数是除法，所以天然适合极坐标。</p>
+
+      <h4 id="ch1-s3b">复数辐角的 arctan 象限修正法则</h4>
+
+      <p>上面写 $\theta = \arctan(b/a)$ 是简化写法。<strong>实际上 arctan 函数的值域只有 $(-90°, +90°)$</strong>，而复数辐角的范围是 $(-180°, +180°)$。如果实部 $a$ 为负（二、三象限），直接用 arctan 会得到错误结果，必须用 $\pi$ 修正：</p>
+
+      <table>
+        <thead>
+          <tr><th>象限</th><th>实部 $a$</th><th>虚部 $b$</th><th>辐角公式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>一象限</td><td>$a > 0$</td><td>$b > 0$</td><td>$\theta = \arctan\dfrac{b}{a}$ &nbsp;（直接）</td></tr>
+          <tr><td>二象限</td><td>$a < 0$</td><td>$b > 0$</td><td>$\theta = \pi - \arctan\dfrac{b}{|a|}$ &nbsp;（$\pi$ 修正）</td></tr>
+          <tr><td>三象限</td><td>$a < 0$</td><td>$b < 0$</td><td>$\theta = -\pi + \arctan\dfrac{|b|}{|a|}$ &nbsp;（$-\pi$ 修正）</td></tr>
+          <tr><td>四象限</td><td>$a > 0$</td><td>$b < 0$</td><td>$\theta = \arctan\dfrac{b}{a}$ &nbsp;（直接）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box warn">
+        <strong>经典反例</strong>：复数 $-1 + j$ 的真实辐角是 $135°$（第二象限）。但 $\arctan(1/{-1}) = -45°$，差了 $180°$！正确做法：先算 $\arctan(1/1) = 45°$，再用 $\pi - 45° = 135°$。这个修正在推导传递函数相频特性时<strong>几乎每次都会用到</strong>。
+      </div>
+
+      <p><strong>记忆口诀</strong>：实部为正直接算，实部为负要转弯——正虚部用 $\pi-$ 减，负虚部用 $-\pi+$ 加。</p>
+
+      <!-- ═══ 三角函数积化和差 / 和差化积 ═══ -->
+      <h3 id="ch1-s5">1.5 三角函数的积化和差与和差化积</h3>
+
+      <p>欧拉公式不仅是连接指数和三角函数的桥梁，它还能<strong>推导出所有三角恒等式</strong>——包括工程中极为重要的积化和差与和差化积公式。这些公式是理解混频、调制解调等通信电路的基础。</p>
+
+      <h4>从欧拉公式出发的推导</h4>
+
+      <p>从欧拉公式的两个版本出发：</p>
+
+      <div class="derivation">
+        <div class="step">$$e^{j\alpha} = \cos\alpha + j\sin\alpha \quad\text{......①}$$</div>
+        <div class="step">$$e^{j\beta} = \cos\beta + j\sin\beta \quad\text{......②}$$</div>
+
+        <div class="arrow-step">↓ 将 ① × ②（指数相加 = 角度相加）</div>
+        <div class="step">$$e^{j(\alpha+\beta)} = (\cos\alpha\cos\beta - \sin\alpha\sin\beta) + j(\cos\alpha\sin\beta + \sin\alpha\cos\beta)$$</div>
+        <div class="step">对比 $e^{j(\alpha+\beta)} = \cos(\alpha+\beta) + j\sin(\alpha+\beta)$，实部、虚部分别相等：<br>
+        $$\boxed{\cos(\alpha+\beta) = \cos\alpha\cos\beta - \sin\alpha\sin\beta}$$<br>
+        $$\boxed{\sin(\alpha+\beta) = \sin\alpha\cos\beta + \cos\alpha\sin\beta}$$</div>
+      </div>
+
+      <h4>积化和差公式</h4>
+      <p>将上面的和角/差角公式相加减，整理得到<strong>积化和差</strong>——把两个三角函数的乘积转化为和差形式：</p>
+
+      <table>
+        <thead>
+          <tr><th>公式名称</th><th>表达式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>余弦积化和差</td><td>$\cos\alpha \cos\beta = \dfrac{1}{2}[\cos(\alpha+\beta) + \cos(\alpha-\beta)]$</td></tr>
+          <tr><td>正弦×余弦</td><td>$\sin\alpha \cos\beta = \dfrac{1}{2}[\sin(\alpha+\beta) + \sin(\alpha-\beta)]$</td></tr>
+          <tr><td>正弦积化和差</td><td>$\sin\alpha \sin\beta = -\dfrac{1}{2}[\cos(\alpha+\beta) - \cos(\alpha-\beta)]$</td></tr>
+        </tbody>
+      </table>
+
+      <h4>和差化积公式</h4>
+      <p>反过来，把两角和差的三角函数化为乘积形式——这就是<strong>和差化积</strong>：</p>
+
+      <table>
+        <thead>
+          <tr><th>公式名称</th><th>表达式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>正弦和差化积</td><td>$\sin\alpha + \sin\beta = 2\sin\dfrac{\alpha+\beta}{2}\cos\dfrac{\alpha-\beta}{2}$</td></tr>
+          <tr><td>正弦差化积</td><td>$\sin\alpha - \sin\beta = 2\cos\dfrac{\alpha+\beta}{2}\sin\dfrac{\alpha-\beta}{2}$</td></tr>
+          <tr><td>余弦和差化积</td><td>$\cos\alpha + \cos\beta = 2\cos\dfrac{\alpha+\beta}{2}\cos\dfrac{\alpha-\beta}{2}$</td></tr>
+          <tr><td>余弦差化积</td><td>$\cos\alpha - \cos\beta = -2\sin\dfrac{\alpha+\beta}{2}\sin\dfrac{\alpha-\beta}{2}$</td></tr>
+        </tbody>
+      </table>
+
+      <h4 id="ch1-s5-mixing">工程实例：混频器——积化和差的物理实现</h4>
+
+      <p><strong>混频（Mixing）</strong>是通信和射频系统中无处不在的操作：将两个不同频率的正弦信号相乘，利用积化和差产生新的频率分量。</p>
+
+      <p>设输入信号为 $v_{in}(t) = V_1\cos(\omega_1 t)$，本振信号为 $v_{LO}(t) = V_2\cos(\omega_2 t)$，两者通过模拟乘法器（或非线性器件）相乘：</p>
+
+      <div class="derivation">
+        <div class="step"><strong>相乘</strong>：$v_{out}(t) = v_{in}(t) \cdot v_{LO}(t) = V_1 V_2 \cos(\omega_1 t)\cos(\omega_2 t)$</div>
+        <div class="arrow-step">↓ 应用积化和差公式</div>
+        <div class="step">$v_{out}(t) = \dfrac{V_1 V_2}{2}[\cos((\omega_1+\omega_2)t) + \cos((\omega_1-\omega_2)t)]$</div>
+      </div>
+
+      <p><strong>输出包含两个新的频率成分</strong>：</p>
+
+      <table>
+        <thead>
+          <tr><th>频率分量</th><th>表达式</th><th>名称</th><th>典型应用</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>和频</td><td>$\omega_1 + \omega_2$</td><td>上变频（低→高）</td><td>射频发射：基带信号搬移到载波频率</td></tr>
+          <tr><td>差频</td><td>$|\omega_1 - \omega_2|$</td><td>下变频（高→低）</td><td>超外差接收：射频信号搬移到中频</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box teal">
+        <strong>超外差接收机就是混频的经典应用</strong>：天线收到 100MHz 射频信号，本振产生 110MHz 正弦波，混频后输出 10MHz 中频（$|100-110|=10$MHz）。中频频率固定，后续放大滤波都针对这个固定频率设计——这就是为什么老式收音机叫"超外差式"。
+      </div>
+
+      <h4>具体数值例子</h4>
+      <p>假设一个无线传感器节点需要将 10kHz 低频数据信号发射出去：</p>
+      <ol>
+        <li><strong>基带信号</strong>：$v_{BB}(t) = \cos(2\pi \times 10\text{kHz} \times t)$</li>
+        <li><strong>载波（本振）</strong>：$v_{RF}(t) = \cos(2\pi \times 433\text{MHz} \times t)$（ISM 频段）</li>
+        <li><strong>混频输出</strong>：
+          $$v_{out}(t) = \frac{1}{2}[\cos(2\pi \times 433.01\text{MHz} \times t) + \cos(2\pi \times 432.99\text{MHz} \times t)]$$
+        </li>
+      </ol>
+      <p>10kHz 基带信息被"搬运"到了 433MHz 附近——天线可以高效辐射这个频率。这就是<strong>上变频（low to high）</strong>。</p>
+      <p>反向操作（下变频 high to low）：接收端将 433MHz 射频与本振 433MHz 混频，差频正好恢复出 10kHz 基带信号。</p>
+
+      <div class="info-box purple">
+        <strong>关键洞察</strong>：混频的本质就是<strong>积化和差的物理实现</strong>。乘法器（或任何非线性器件）完成的是数学上的"乘法"，而积化和差告诉我们乘法的结果必然包含和频与差频两个分量。不需要死记这两个公式——只要记住"乘积变和差"，从欧拉公式几步就能推出来。
+      </div>
+
+      <!-- ═══ 极坐标实例化 ═══ -->
+      <h3 id="ch1-s6">1.6 极坐标的工程实例化</h3>
+
+      <p>前面说过极坐标中"模=增益，幅角=相移"。这一节我们用两个真实的硬件场景来体会这句话的威力。</p>
+
+      <h4 id="ch1-s6-apf">实例一：全通滤波器的相移 = 分子幅角 − 分母幅角</h4>
+
+      <p>一阶全通滤波器的传递函数（滞后型为例）：</p>
+
+      $$G(s) = -\frac{sT - 1}{sT + 1}$$
+
+      <p>令 $s = j\omega$，并定义 $\omega_0 = 1/T$，则：</p>
+
+      $$G(j\omega) = -\frac{-1 + j\dfrac{\omega}{\omega_0}}{1 + j\dfrac{\omega}{\omega_0}}$$
+
+      <p>按照"传递函数是除法 → 极坐标 → 模相除、角相减"的原则：</p>
+
+      <table>
+        <thead>
+          <tr><th></th><th>分子 $N = -1 + j\omega/\omega_0$</th><th>分母 $D = 1 + j\omega/\omega_0$</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>模</td><td>$|N| = \sqrt{1+(\omega/\omega_0)^2}$</td><td>$|D| = \sqrt{1+(\omega/\omega_0)^2}$</td></tr>
+          <tr><td>幅角</td><td>$\theta_N = \pi - \arctan(\omega/\omega_0)$ &nbsp;(第二象限)</td><td>$\theta_D = \arctan(\omega/\omega_0)$ &nbsp;(第一象限)</td></tr>
+        </tbody>
+      </table>
+
+      <p>总增益 $= |N|/|D| = 1$（分子分母模相等），所以幅频特性是一条 0dB 直线——这就是"全通"的来源。</p>
+
+      <p>总相移 $= \theta_N - \theta_D + (-180°)$（前面的负号贡献 −180°）：</p>
+
+      $$\varphi(\omega) = -180° + \left[\pi - \arctan\frac{\omega}{\omega_0} - \arctan\frac{\omega}{\omega_0}\right] = -180° + 2\arctan\frac{\omega_0}{\omega}$$
+
+      <div class="info-box green">
+        <strong>极坐标视角的核心价值</strong>：你不需要记住任何相频公式。只要看到传递函数是一个分式，就知道：(1) 增益 = 分子模 / 分母模；(2) 相移 = 分子辐角 − 分母辐角。剩下的工作就是分别求分子和分母的辐角——而求辐角的唯一工具就是 1.3 节 + 1.3b 节的象限修正法则。整条链路是<strong>机械性的</strong>，不依赖任何灵感。
+      </div>
+
+      <h4 id="ch1-s6-bldc">实例二：无刷直流电机的磁场合成——极坐标向量叠加</h4>
+
+      <p>无刷电机（BLDC/PMSM）的控制核心是<strong>旋转磁场</strong>——定子三相绕组通入互差 120° 的电流，各自产生的磁场矢量在空间中合成一个幅值恒定、匀速旋转的总磁场，拖动转子转动。这个过程天然要用极坐标来分析。</p>
+
+      <p>设 A、B、C 三相绕组在空间中依次相差 120° 物理角度，各相通入如下电流（以 A 相为零参考）：</p>
+
+      <table>
+        <thead>
+          <tr><th>相</th><th>空间角度</th><th>电流瞬时值</th><th>产生的磁场矢量</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A 相</td><td>$0°$</td><td>$i_A = I_m \cos(\omega_e t)$</td><td>$\vec{F}_A = F_m \cos(\omega_e t) \cdot e^{j0°}$</td></tr>
+          <tr><td>B 相</td><td>$120°$</td><td>$i_B = I_m \cos(\omega_e t - 120°)$</td><td>$\vec{F}_B = F_m \cos(\omega_e t - 120°) \cdot e^{j120°}$</td></tr>
+          <tr><td>C 相</td><td>$240°$</td><td>$i_C = I_m \cos(\omega_e t - 240°)$</td><td>$\vec{F}_C = F_m \cos(\omega_e t - 240°) \cdot e^{j240°}$</td></tr>
+        </tbody>
+      </table>
+
+      <p>其中 $F_m$ 为单相最大磁动势幅值，$\omega_e$ 为电角速度（等于极对数 × 机械转速）。总磁场矢量为三者之和：</p>
+
+      $$\vec{F}_{total} = \vec{F}_A + \vec{F}_B + \vec{F}_C$$
+
+      <p>展开每一项（利用 $re^{j\theta} = r\cos\theta + jr\sin\theta$）并求和：</p>
+
+      <div class="derivation">
+        <div class="step">$\vec{F}_A = F_m\cos(\omega_e t)$ （沿实轴方向）</div>
+        <div class="step">$\vec{F}_B = F_m\cos(\omega_e t - 120°)[\cos 120° + j\sin 120°] = F_m\cos(\omega_e t - 120°)[-0.5 + j\dfrac{\sqrt{3}}{2}]$</div>
+        <div class="step">$\vec{F}_C = F_m\cos(\omega_e t - 240°)[\cos 240° + j\sin 240°] = F_m\cos(\omega_e t - 240°)[-0.5 - j\dfrac{\sqrt{3}}{2}]$</div>
+        <div class="arrow-step">↓ 三者实部 + 虚部分别求和</div>
+        <div class="step">经过化简（利用三角函数和差化积公式），最终结果：<br>
+        $$\boxed{\vec{F}_{total} = 1.5 F_m \cdot e^{j\omega_e t}}$$</div>
+      </div>
+
+      <p>这是一个惊人的结论：<strong>三个脉振磁场合成一个幅值恒定为 $1.5 F_m$、以电角速度 $\omega_e$ 匀速旋转的圆磁场！</strong></p>
+
+      <div class="cvs-wrap">
+        <canvas id="cvsBldcField" width="680" height="380"></canvas>
+        <div class="cvs-title">图1-1 无刷电机三相磁场合成：三个脉振矢量（彩色）合成旋转圆磁场（粗黑箭头）</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>参数</th><th>表达式</th><th>物理解释</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>合磁场幅值</td><td>$|\vec{F}_{total}| = 1.5 F_m$</td><td>恒定不变（圆磁场），转矩脉动为零</td></tr>
+          <tr><td>旋转速度</td><td>$\omega_e = p_n \cdot \Omega_m$</td><td>电角速度 = 极对数 × 机械角速度</td></tr>
+          <tr><td>方向</td><td>取决于通电相序（ABC → 正转，ACB → 反转）</td><td>改变任意两相接线顺序即可反转</td></tr>
+          <tr><td>FOC 控制本质</td><td>控制 $\vec{F}_{total}$ 的幅值和方向</td><td>即控制转矩和磁链——dq 坐标变换的物理基础</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box coral">
+        <strong>与硬件工程师的关系</strong>：如果你在做电机驱动（比如无刷水泵、风扇驱动板），FOC（磁场定向控制）算法中的 Park 变换 / Clark 变换本质上就是坐标系旋转——从 ABC 三相静止坐标系转到 dq 旋转坐标系。而坐标系旋转的数学工具正是<strong>复数（或其矩阵等价形式）的旋转变换</strong>：乘以 $e^{-j\theta}$ 就是将整个坐标系逆时针旋转 $\theta$ 角度。这和全通滤波器中"分子幅角−分母幅角=相移"用的是同一套数学语言。
+      </div>
 
       <h3 id="ch1-s4">1.4 正弦波→复指数的完整变换过程</h3>
 
@@ -2198,6 +2408,70 @@ function setupCanvas(c, w, h) {
   }, { rootMargin: '-10% 0px -70% 0px' });
 
   sections.forEach(function(s) { observer.observe(s.sec); });
+})();
+</script>
+
+<script>
+// ===== 图1-1 无刷电机三相磁场合成 =====
+(function(){
+  var c=document.getElementById('cvsBldcField'); if(!c) return;
+  var dpr=window.devicePixelRatio||1; var cw=680,ch=380;
+  c.width=cw*dpr;c.height=ch*dpr; c.style.width=cw+'px';c.style.height=ch+'px';
+  var ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  var cx=cw/2,cy=ch/2+10,R=130,phase=0;
+  var C={A:'#3b82f6',B:'#22c55e',C:'#ef4444',S:'#1a1a2e'};
+  function draw(){
+    ctx.fillStyle='#f5f4f1';ctx.fillRect(0,0,cw,ch);
+    ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(40,cy);ctx.lineTo(cw-40,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,30);ctx.lineTo(cx,ch-50);ctx.stroke();
+    ctx.strokeStyle='rgba(0,0,0,0.08)';ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.arc(cx,cy,R*1.5,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);
+    [{a:0,l:'A相'},{a:120,l:'B相'},{a:240,l:'C相'}].forEach(function(x){
+      var r=x.a*Math.PI/180;
+      ctx.strokeStyle='rgba(0,0,0,0.15)';
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*1.7*Math.cos(r),cy-R*1.7*Math.sin(r));ctx.stroke();
+      ctx.fillStyle='rgba(0,0,0,0.35)';ctx.font='12px sans-serif';
+      var tx=cx+(R*1.8+20)*Math.cos(r),ty=cy-(R*1.8+20)*Math.sin(r);
+      ctx.fillText(x.l,tx-12,ty+4);
+    });
+    var ph=[0,-2.0944,-4.1888],pc=[C.A,C.B,C.C],vs=[];
+    for(var i=0;i<3;i++){
+      var cur=Math.cos(phase+ph[i]),aa=i*2.0944,mag=cur*R;
+      var ex=cx+mag*Math.cos(aa),ey=cy-mag*Math.sin(aa);
+      vs.push({x:ex,y:ey});
+      ctx.strokeStyle=pc[i];ctx.lineWidth=cur>=0?3:2;if(cur<0)ctx.globalAlpha=0.5;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();ctx.globalAlpha=1;
+      if(Math.abs(mag)>5){
+        var al=8,an=Math.atan2(cy-ey,ex-cx);
+        ctx.fillStyle=pc[i];ctx.beginPath();ctx.moveTo(ex,ey);
+        ctx.lineTo(ex-al*Math.cos(an-0.4),ey+al*Math.sin(an-0.4));
+        ctx.lineTo(ex-al*Math.cos(an+0.4),ey+al*Math.sin(an+0.4));ctx.closePath();ctx.fill();
+      }
+      ctx.fillStyle=pc[i];ctx.font='bold 11px sans-serif';ctx.fillText('ABC'[i],ex+6,ey-4);
+    }
+    var sx=vs[0].x+vs[1].x+vs[2].x-cx*2,sy=vs[0].y+vs[1].y+vs[2].y-cy*2;
+    ctx.strokeStyle=C.S;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+sx,cy+sy);ctx.stroke();
+    var sm=Math.sqrt(sx*sx+sy*sy);
+    if(sm>5){var sa=Math.atan2(-sy,sx);ctx.fillStyle=C.S;ctx.beginPath();ctx.moveTo(cx+sx,cy+sy);
+      ctx.lineTo(cx+sx-10*Math.cos(sa-0.35),cy+sy+10*Math.sin(sa-0.35));
+      ctx.lineTo(cx+sx-10*Math.cos(sa+0.35),cy+sy+10*Math.sin(sa+0.35));ctx.closePath();ctx.fill();}
+    ctx.fillStyle=C.S;ctx.font='bold 12px sans-serif';ctx.fillText('\u03A3F',cx+sx+8,cy+sy-4);
+    ctx.fillStyle='rgba(255,255,255,0.92)';ctx.strokeStyle='rgba(0,0,0,0.1)';
+    ctx.fillRect(cw-170,16,158,70);ctx.strokeRect(cw-170,16,158,70);
+    ctx.fillStyle='#333';ctx.font='12px sans-serif';
+    var dp=(phase*180/Math.PI)%360;if(dp<0)dp+=360;
+    ctx.fillText('\u7535\u89d2\u5EA6 \u03B8e:'+dp.toFixed(0)+'\u00B0',cw-162,36);
+    ctx.fillText('|\u03A3F|='+((sm/R)*1.5).toFixed(2)+' Fm',cw-162,54);
+    ctx.font='11px sans-serif';
+    ['A\u76F8(\u84DD)','B\u76F8(\u7EFF)','C\u76F8(\u7EA2)','\u5408\u6210(\u9ED1)'].forEach(function(l,i){
+      ctx.fillStyle=['#3b82f6','#22c55e','#ef4444','#1a1a2e'][i];
+      ctx.fillRect(cw-168,96+i*16,10,10);ctx.fillStyle='#555';ctx.fillText(l,cw-152,105+i*16);
+    });
+  }
+  draw();
+  c.addEventListener('mouseenter',function(){requestAnimationFrame(function lp(){phase+=0.02;draw();requestAnimationFrame(lp);});});
 })();
 </script>
 
