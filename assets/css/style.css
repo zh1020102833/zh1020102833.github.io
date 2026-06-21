@@ -119,7 +119,7 @@ a:hover {
   font-size: 15px;
 }
 
-/* --- Profile Tags --- */
+/* --- Profile Tags (about page) --- */
 .profile-tags {
   display: flex;
   flex-wrap: wrap;
@@ -154,6 +154,23 @@ a:hover {
   background: #e8f5e9;
   color: #2e7d32;
   border: 1px solid #a5d6a7;
+}
+
+/* --- About Me Button (index page) --- */
+.about-me-btn {
+  display: inline-block;
+  padding: 6px 18px;
+  background: #4A90D9;
+  color: #fff !important;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: background 0.2s, transform 0.1s;
+}
+.about-me-btn:hover {
+  background: #357abd;
+  transform: translateY(-1px);
 }
 
 /* --- Search Bar --- */
