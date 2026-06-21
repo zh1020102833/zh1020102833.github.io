@@ -3,45 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>关于 - 我的文章</title>
-  <meta name="description" content="关于本个人文章网站">
+  <title>关于 - 啊卓的技术笔记</title>
+  <meta name="description" content="关于啊卓和这个技术笔记站">
   <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .about-avatar { font-size: 64px; text-align: center; margin: 20px 0 10px; }
+    .about-name { text-align: center; font-size: 24px; font-weight: 700; color: #1a1a2e; }
+    .about-subtitle { text-align: center; color: #888; font-size: 14px; margin-top: 4px; }
+    .about-section { margin-top: 28px; }
+    .about-section h2 { font-size: 18px; color: #1a1a2e; border-bottom: 2px solid #4A90D9; display: inline-block; padding-bottom: 4px; margin-bottom: 12px; }
+    .about-section p, .about-section li { color: #555; line-height: 1.8; }
+    .about-section ul { padding-left: 20px; }
+    .tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .tag-item { display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 13px; font-weight: 500; }
+    .tag-blue { background: #e8f0fe; color: #1a73e8; border: 1px solid #c6dbfa; }
+    .tag-amber { background: #fef3e2; color: #d97706; border: 1px solid #fde6b0; }
+    .tag-red { background: #fce4ec; color: #c62828; border: 1px solid #f8bbd0; }
+    .tag-green { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .contact-box { background: #f0f7ff; border: 1px solid #c6dbfa; border-radius: 10px; padding: 16px 20px; margin-top: 12px; }
+    .contact-box p { margin: 4px 0; }
+    .timeline { border-left: 3px solid #4A90D9; padding-left: 18px; margin-top: 12px; }
+    .timeline-item { margin-bottom: 14px; position: relative; }
+    .timeline-item::before { content: ''; position: absolute; left: -24px; top: 6px; width: 10px; height: 10px; background: #4A90D9; border-radius: 50%; }
+    .timeline-item .t-period { font-size: 13px; color: #999; }
+    .timeline-item .t-content { font-size: 15px; color: #444; }
+  </style>
 </head>
 <body>
 
-  <div class="main-wrapper">
-    <div class="page-header">
-      <h1>关于本站</h1>
-    </div>
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">⚡ 啊卓的技术笔记</a>
+    <button class="nav-toggle" aria-label="切换菜单">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="../index.html">首页</a></li>
+      <li><a href="archive.html">归档</a></li>
+      <li><a href="about.html" class="active">关于</a></li>
+    </ul>
+  </div>
+</nav>
 
-    <div class="about-content">
-      <p>这是一个纯静态个人文章网站，基于 HTML + CSS + JavaScript 构建。</p>
+<div class="main-wrapper">
+  <div class="about-avatar">⚡</div>
+  <div class="about-name">啊卓</div>
+  <div class="about-subtitle">硬件工程师 · 正在往系统工程师的方向走</div>
 
-      <h2>技术栈</h2>
-      <ul>
-        <li>前端：纯 HTML5、CSS3、JavaScript（无框架）</li>
-        <li>部署：阿里云 OSS + CDN</li>
-        <li>上传：ossutil 命令行工具</li>
-        <li>域名：自定义域名 + HTTPS</li>
-      </ul>
+  <div class="about-section">
+    <h2>我是谁</h2>
+    <p>河南人，大专学历但不被学历定义。2026年6月入职河南中科清能源，之前在深圳梅丽纳米孔科技干了六年——主导96通道纳米孔测序仪的微弱信号调理（30kHz带宽，8pA RMS噪声）。pA级恒流源、跨阻放大、FFT噪声分析，这些是我吃饭的家伙。</p>
+    <p>务实、自驱、有方向感。对短板不掩饰，但也不被短板定义。</p>
+  </div>
 
-      <h2>站点特点</h2>
-      <ul>
-        <li>纯静态，无需服务器和数据库</li>
-        <li>低成本，OSS 存储按量付费</li>
-        <li>CDN 加速，访问速度快</li>
-        <li>结构清晰，易于维护和扩展</li>
-      </ul>
-
-      <h2>联系我</h2>
-      <p>如有问题或建议，欢迎在文章评论区留言或通过邮件联系。</p>
+  <div class="about-section">
+    <h2>职业轨迹</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="t-period">2026.06 — 至今</div>
+        <div class="t-content"><strong>河南中科清能源</strong> — 系统工程师方向，深低温感知系统开发</div>
+      </div>
+      <div class="timeline-item">
+        <div class="t-period">2020.05 — 2026</div>
+        <div class="t-content"><strong>深圳梅丽纳米孔科技</strong> — 硬件工程师，pA级微弱信号检测、FPGA高速收发器电源、CYUSB3014设备</div>
+      </div>
     </div>
   </div>
 
-  <footer class="site-footer">
-    <p>&copy; 2026 我的文章</p>
-  </footer>
+  <div class="about-section">
+    <h2>技术栈</h2>
+    <div class="tag-group">
+      <span class="tag-item tag-blue">pA级微弱信号检测</span>
+      <span class="tag-item tag-blue">跨阻放大(TIA)</span>
+      <span class="tag-item tag-blue">FFT噪声分析</span>
+      <span class="tag-item tag-blue">DAC精密信号源</span>
+      <span class="tag-item tag-blue">功率电子(DCDC/反激)</span>
+      <span class="tag-item tag-blue">Xilinx FPGA MGT/GTX</span>
+      <span class="tag-item tag-blue">CYUSB3014(FX3)</span>
+      <span class="tag-item tag-blue">嵌入式MCU</span>
+      <span class="tag-item tag-blue">控制理论/信号处理</span>
+    </div>
+  </div>
 
-  <script src="../assets/js/nav.js"></script>
+  <div class="about-section">
+    <h2>动漫</h2>
+    <div class="tag-group">
+      <span class="tag-item tag-amber">⚔️ 剑来</span>
+      <span class="tag-item tag-amber">🐉 牧神记</span>
+      <span class="tag-item tag-amber">🧙 凡人修仙</span>
+      <span class="tag-item tag-amber">🏴‍☠️ 海贼王</span>
+      <span class="tag-item tag-amber">🍥 火影</span>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>电视剧</h2>
+    <div class="tag-group">
+      <span class="tag-item tag-red">🎭 天道</span>
+      <span class="tag-item tag-red">🏙️ 创世纪</span>
+      <span class="tag-item tag-red">⚔️ 老版三国演义</span>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>联系方式</h2>
+    <div class="contact-box">
+      <p>🐧 <strong>QQ</strong>：1020102833</p>
+      <p>💻 <strong>GitHub</strong>：<a href="https://github.com/zh1020102833" target="_blank">zh1020102833</a></p>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>关于本站</h2>
+    <p>纯静态个人技术笔记站，基于 HTML + CSS + JavaScript 构建，托管在 GitHub Pages。写东西是为了把学过的东西真正吃透——写不出来就是没懂。</p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>&copy; 2026 啊卓的技术笔记 &nbsp;|&nbsp; 🐧 QQ: 1020102833</p>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
 </body>
 </html>
