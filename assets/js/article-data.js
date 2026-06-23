@@ -73,25 +73,32 @@ var siteData = {
           file: 'articles/signal-conditioning.html'
         },
         {
-          id: '从欧拉公式到传递函数',
+          id: 'euler-to-transfer-function',
           title: '从欧拉公式到传递函数：信号处理的数学链路',
           date: '2026-06-19',
           summary: '从欧拉公式出发，串联复数阻抗、拉普拉斯变换、传递函数到Bode图，结合全通相移器实例，建立完整的信号处理数学链路。',
-          file: 'articles/从欧拉公式到传递函数.html'
+          file: 'articles/euler-to-transfer-function.html'
         },
         {
-          id: '脑机原理篇-电极与放大器',
+          id: 'bci-electrodes-and-amplifier',
           title: '脑机原理篇 — 电极与放大器',
           date: '2026-06-10',
           summary: '基于脑机接口硬件专家课原理篇，梳理半电池电位、极化电位、接触阻抗、三电极系统、增益限制推导、1/f噪声计算，结合纳米孔测序工程经验进行类比理解。',
-          file: 'articles/脑机原理篇-电极与放大器.html'
+          file: 'articles/bci-electrodes-and-amplifier.html'
         },
         {
-          id: '运放关键参数速查表',
+          id: 'op-amp-parameter-quick-reference',
           title: '运放关键参数速查表',
           date: '2025-02-24',
           summary: '系统梳理运算放大器数据手册中的关键电气参数、功能特性、应用设计与布局生产要点，以速查表形式呈现，适合硬件工程师选型和设计参考。',
-          file: 'articles/运放关键参数速查表.html'
+          file: 'articles/op-amp-parameter-quick-reference.html'
+        },
+        {
+          id: 'virtual-short-virtual-open-limitations',
+          title: '虚短与虚断 · 原理及应用局限性',
+          date: '2026-06-22',
+          summary: '从负反馈数学模型出发，推导虚短虚断的成立条件与误差界限，分析开环增益、反馈深度对近似精度的影响，揭示应用局限性。',
+          file: 'articles/virtual-short-virtual-open-limitations.html'
         }
       ]
     },
