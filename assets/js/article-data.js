@@ -193,6 +193,13 @@ var siteData = {
           date: '2026-05-22',
           summary: '分享技术写作的经验与技巧。',
           file: 'articles/writing-tips.html'
+        },
+        {
+          id: 'dac-linear-sweep-problem-log',
+          title: 'DAC 线性扫描速率提升实践',
+          date: '2026-06-24',
+          summary: 'DAC电压扫描从1V/12ms提速到1V/ms的工程实践：RC滤波参数计算、阶梯波平滑原理、放电残余分析，附带完整数值推导。',
+          file: 'articles/dac-linear-sweep-problem-log.html'
         }
       ]
     }
