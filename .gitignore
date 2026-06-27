@@ -24,10 +24,12 @@ upload-tools/*.local.*
 *.bak
 *~
 
-# 明文文章（本地编辑，部署用加密版）
+# 明文文章（本地编辑，部署用加密版；展示文章例外）
 articles/*.html
 !articles/模板.html
 !articles/template.html
+!articles/euler-to-transfer-function.html
+!articles/virtual-short-virtual-open-limitations.html
 
 # Node（预留）
 node_modules/

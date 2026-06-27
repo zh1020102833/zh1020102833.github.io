@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从欧拉公式到传递函数：信号处理的数学链路</title>
+<!-- 必填：分类名（9选1） -->
+<meta name="category" content="硬件">
+<!-- 必填：日期（YYYY-MM-DD） -->
+<meta name="date" content="2026-06-19">
+<!-- 必填：一句话简介 -->
+<meta name="description" content="从欧拉公式出发，串联复数阻抗、拉普拉斯变换、传递函数到Bode图，结合全通相移器实例，建立完整的信号处理数学链路。">
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$']]
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+<style>
+:root {
+  --bg: #f5f4f1;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --border-med: rgba(0,0,0,0.15);
+  --canvas-bg: #ececec;
+  --code-bg: #f0f0f0;
+
+  --text: #1c1b19;
+  --text-sec: #555350;
+  --text-hint: #8c8883;
+
+  --accent: #16599e;
+  --accent-light: #e3eef9;
+  --teal: #0d6751;
+  --teal-light: #dff3ec;
+  --coral: #913719;
+  --coral-light: #f9e9e2;
+  --amber: #7d4908;
+  --amber-light: #f9ecd6;
+  --purple: #4e44b0;
+  --purple-light: #eceafc;
+  --green: #36650f;
+  --green-light: #e9f2db;
+
+  --sidebar-w: 260px;
+  --sidebar-bg: #111827;
+  --sidebar-text: #9ca3af;
+  --sidebar-active: #2dd4bf;
+  --sidebar-hover: #1f2937;
+  --sidebar-heading: #6b7280;
+
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+               "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  overflow-y: auto;
+  z-index: 100;
+  padding: 28px 0 40px;
+}
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--sidebar-heading);
+  padding: 0 24px 16px;
+}
+.sidebar-nav a {
+  display: block;
+  padding: 7px 24px;
+  font-size: 13px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-left: 3px solid transparent;
+  line-height: 1.5;
+}
+.sidebar-nav a:hover { color: #e5e7eb; background: var(--sidebar-hover); }
+.sidebar-nav a.active {
+  color: var(--sidebar-active);
+  border-left-color: var(--sidebar-active);
+  background: rgba(45,212,191,0.06);
+}
+.sidebar-nav .sub a { padding-left: 44px; font-size: 12px; color: #6b7280; }
+.sidebar-home {
+  display: block;
+  padding: 8px 24px;
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-home:hover { color: var(--sidebar-active); background: var(--sidebar-hover); }
+
+/* ── Main ── */
+.main-wrap { margin-left: var(--sidebar-w); min-width: 0; }
+.page-header {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 28px 24px;
+}
+.page-header h1 { font-size: 24px; font-weight: 500; color: var(--text); }
+.page-header p { font-size: 13px; color: var(--text-hint); margin-top: 6px; }
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+}
+
+/* ── Chapter ── */
+.chapter {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  scroll-margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.chapter-num {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-hint);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.chapter-title {
+  font-size: 19px;
+  font-weight: 500;
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+/* ── Headings ── */
+h3 { font-size: 15px; font-weight: 500; margin-top: 24px; }
+h4 { font-size: 14px; font-weight: 500; color: var(--text-sec); margin-top: 18px; }
+p { margin-bottom: 12px; }
+ul, ol { margin-bottom: 14px; padding-left: 20px; }
+li { margin: 6px 0; }
+
+/* ── Info Box ── */
+.info-box {
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+  color: var(--accent);
+}
+.info-box.teal   { background: var(--teal-light);   border-left: 3px solid var(--teal);   color: var(--teal); }
+.info-box.coral  { background: var(--coral-light);  border-left: 3px solid var(--coral);  color: var(--coral); }
+.info-box.warn   { background: #fff5eb;             border-left: 3px solid #e07b30;       color: #8b4a0e; }
+.info-box.purple { background: var(--purple-light); border-left: 3px solid var(--purple); color: var(--purple); }
+.info-box.green  { background: var(--green-light);  border-left: 3px solid var(--green);  color: var(--green); }
+
+/* ── Table ── */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 16px 0;
+  font-size: 13px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+thead th {
+  background: #f0f0f0;
+  font-weight: 500;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  border-bottom: 0.5px solid var(--border);
+}
+tbody td {
+  padding: 9px 14px;
+  border-bottom: 0.5px solid var(--border);
+  vertical-align: top;
+}
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ── Tag ── */
+.tag {
+  display: inline-block;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  margin-right: 4px;
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.tag.teal    { background: var(--teal-light);   color: var(--teal); }
+.tag.coral   { background: var(--coral-light);  color: var(--coral); }
+.tag.amber   { background: var(--amber-light);  color: var(--amber); }
+.tag.purple  { background: var(--purple-light); color: var(--purple); }
+.tag.green   { background: var(--green-light);  color: var(--green); }
+
+/* ── Flow Box ── */
+.flow-box {
+  background: #f8f7f5;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 16px 0;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+.flow-box .arrow { color: var(--teal); font-weight: 500; }
+
+/* ── Blockquote ── */
+blockquote {
+  border-left: 3px solid var(--border-med);
+  padding: 8px 16px;
+  margin: 14px 0;
+  color: var(--text-sec);
+  font-size: 13px;
+  background: #fafaf8;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ── Code ── */
+code {
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 12px;
+}
+pre {
+  background: #f0f0f0;
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 14px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+pre code { background: none; padding: 0; }
+
+/* ── Canvas ── */
+.cvs-wrap {
+  background: #f0f0f0;
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 16px 0;
+  text-align: center;
+}
+.cvs-wrap canvas {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+}
+.cvs-wrap label {
+  display: inline-block;
+  margin: 8px 12px 0;
+  font-size: 12px;
+  color: var(--text-sec);
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 200px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  margin: 8px 0;
+  vertical-align: middle;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* ── Hamburger (mobile) ── */
+.hamburger { display:none;position:fixed;top:12px;left:12px;z-index:200;width:36px;height:36px;background:var(--sidebar-bg);border-radius:6px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none }
+.hamburger span{display:block;width:18px;height:2px;background:#9ca3af;transition:.25s}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(4.5px,4.5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(4.5px,-4.5px)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
+
+/* ── Back to Top ── */
+.back-top{display:none;position:fixed;bottom:32px;right:32px;z-index:90;width:40px;height:40px;background:var(--sidebar-bg);color:var(--sidebar-text);border:none;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:.2s}
+.back-top.show{display:block}.back-top:hover{transform:translateY(-2px);color:var(--sidebar-active)}
+
+/* ── Derivation Box ── */
+.derivation{background:#faf9f7;border:.5px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin:14px 0;font-size:13px;line-height:2}
+.derivation .step{margin:4px 0;padding-left:12px;border-left:2px solid var(--accent-light)}
+.derivation .arrow-step{color:var(--accent);font-weight:600;margin:4px 0}
+.derivation .note{color:var(--text-sec);font-size:12px;margin-top:6px}
+
+/* ── Collapsible detail ── */
+details.deriv-detail{margin:14px 0;border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden}
+details.deriv-detail summary{background:#f8f7f5;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-sec);list-style:none;display:flex;align-items:center;gap:8px}
+details.deriv-detail summary::before{content:'\\25B6';font-size:10px;transition:transform .2s}
+details.deriv-detail[open] summary::before{transform:rotate(90deg)}
+details.deriv-detail[open] summary{border-bottom:.5px solid var(--border)}
+details.deriv-detail>div{padding:16px}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); display: block; }
+  .sidebar-overlay.show { display: block; }
+  .main-wrap { margin-left: 0; }
+  .content { padding: 0 16px 60px; }
+  .chapter { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<button class="hamburger" id="hambBtn" aria-label="菜单"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#ch0">序章：为什么需要这些数学</a></li>
+    <li><a href="#ch1">第一章 欧拉公式与复数</a></li>
+    <li class="sub"><a href="#ch1-s1">1.1 交流信号的本质</a></li>
+    <li class="sub"><a href="#ch1-s2">1.2 欧拉公式的含义</a></li>
+    <li class="sub"><a href="#ch1-s3">1.3 复数的两种表示</a></li>
+    <li class="sub"><a href="#ch1-s3b">1.3b arctan象限修正法则</a></li>
+    <li class="sub"><a href="#ch1-s4">1.4 正弦波→复指数的完整变换过程</a></li>
+    <li class="sub"><a href="#ch1-s5">1.5 三角函数积化和差与和差化积</a></li>
+    <li class="sub"><a href="#ch1-s6">1.6 极坐标的工程实例化</a></li>
+    <li><a href="#ch2">第二章 阻抗：电容与电感的复数化</a></li>
+    <li class="sub"><a href="#ch2-s1">2.1 电阻：实数阻抗</a></li>
+    <li class="sub"><a href="#ch2-s2">2.2 电容：虚数阻抗（逐步推导）</a></li>
+    <li class="sub"><a href="#ch2-s3">2.3 电感：另一个虚数</a></li>
+    <li><a href="#ch3">第三章 拉普拉斯变换：时域到频域的桥梁</a></li>
+    <li class="sub"><a href="#ch3-s1">3.1 为什么需要拉氏变换</a></li>
+    <li class="sub"><a href="#ch3-s2">3.2 s = σ + jω 的物理意义</a></li>
+    <li class="sub"><a href="#ch3-s3">3.3 为什么稳态分析令 σ = 0</a></li>
+    <li><a href="#ch4">第四章 传递函数：系统的数学画像</a></li>
+    <li class="sub"><a href="#ch4-s1">4.1 什么是传递函数</a></li>
+    <li class="sub"><a href="#ch4-s2">4.2 零点与极点</a></li>
+    <li class="sub"><a href="#ch4-splane">4.2* s 平面零极点分布图</a></li>
+    <li class="sub"><a href="#ch4-s3">4.3 为什么引入 T = RC</a></li>
+    <li class="sub"><a href="#ch4-s4">4.4 从电路方程到传递函数——RC低通完整推导</a></li>
+    <li class="sub"><a href="#ch4-s5">4.5 二阶系统、阻尼比与 Q 值</a></li>
+    <li><a href="#ch5">第五章 从传递函数到 Bode 图</a></li>
+    <li class="sub"><a href="#ch5-s1">5.1 求增益和相移的四步法</a></li>
+    <li class="sub"><a href="#ch5-s2">5.2 基本因子的 Bode 贡献</a></li>
+    <li class="sub"><a href="#ch5-s3">5.3 增益用 dB 的原因</a></li>
+    <li class="sub"><a href="#ch5-s4">5.4 相位裕度与增益裕度</a></li>
+    <li><a href="#ch6">第六章 全通滤波器：零极点叠加实战</a></li>
+    <li class="sub"><a href="#ch6-s1">6.1 电路与传递函数</a></li>
+    <li class="sub"><a href="#ch6-s2">6.2 增益为什么恒为 1</a></li>
+    <li class="sub"><a href="#ch6-s3">6.3 相位：0° 到 −180° 逐步拆解</a></li>
+    <li class="sub"><a href="#ch6-s4">6.4 RHP 零点的工程意义</a></li>
+    <li class="sub"><a href="#ch6-s5">6.5 最小相位系统</a></li>
+    <li><a href="#ch7">第七章 知识脉络速记</a></li>
+  </ul>
+  <a class="sidebar-home" href="/index.html" title="返回首页">← 返回首页</a>
+</nav>
+
+<div class="main-wrap">
+  <header class="page-header">
+    <h1>从欧拉公式到传递函数 · 信号处理的数学链路</h1>
+    <p>欧拉公式 · 复数阻抗 · 拉普拉斯变换 · 传递函数 · Bode 图 · 全通滤波器 · s平面可视化 · v3.1 修复版 · 2026-06-19</p>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══════════════ 序章 ═══════════════ -->
+    <section class="chapter" id="ch0">
+      <div class="chapter-num">序章</div>
+      <h2 class="chapter-title">为什么需要这些数学</h2>
+
+      <p>如果你翻开任何一本电路分析教材，会发现一个奇怪的现象：明明我们处理的是真实的电压和电流——示波器上能看到的那种——但公式里全都是 $j$、$s$、$\omega$、$e^{j\omega t}$ 这些"不真实"的东西。</p>
+
+      <p>原因是：<strong>交流信号不仅有大小，还有相位。两者缺一不可。</strong>一个 5 V 的正弦波，如果不告诉你它的相位，你连它当前瞬时值是多少都不知道。普通的实数只有一个维度——大小。而复数天然有两个维度——模（大小）和幅角（相位），刚好对应交流信号的两个属性。</p>
+
+      <div class="info-box teal">
+        <strong>核心认知</strong>：整条数学链路的起点就是这件事——复数不是数学家的抽象游戏，而是描述交流信号的最自然语言。从欧拉公式出发，一路走到复数阻抗、拉普拉斯变换、传递函数、Bode 图，每一步都是在用复数这个工具解决工程问题。
+      </div>
+
+      <p>下面这张流程框展示了完整的知识链路，每一章对应其中一环：</p>
+
+      <div class="flow-box">正弦信号 $u(t) = U_m \sin(\omega t + \phi)$
+  ↓ <span class="arrow">欧拉公式</span>（第一章）
+复数表示 $U_m e^{j(\omega t + \phi)}$ = 模 × 相位
+  ↓ <span class="arrow">复数阻抗</span>（第二章）
+电容 $Z_C = 1/(j\omega C)$，电感 $Z_L = j\omega L$
+  ↓ <span class="arrow">拉普拉斯变换</span>（第三章）
+s = σ + jω，微分变代数，时域 → 频域
+  ↓ <span class="arrow">传递函数</span>（第四章）
+$H(s) = V_{out}(s) / V_{in}(s)$，零点与极点
+  ↓ <span class="arrow">令 s = jω，画 Bode 图</span>（第五章）
+增益(dB) + 相位(°) vs 频率
+  ↓ <span class="arrow">工程设计</span>（第六章）
+滤波器设计、补偿网络、稳定性分析</div>
+
+      <div class="info-box purple">
+        <strong>下一站</strong>：我们从链路的起点出发——欧拉公式。为什么一个数学公式能成为整条信号处理链路的基石？因为它把三角函数变成了指数函数，而指数运算的规则简单到令人发指。
+      </div>
+    </section>
+
+    <!-- ═══════════════ 第一章 ═══════════════ -->
+    <section class="chapter" id="ch1">
+      <div class="chapter-num">第一章</div>
+      <h2 class="chapter-title">欧拉公式与复数</h2>
+
+      <h3 id="ch1-s1">1.1 交流信号的本质</h3>
+
+      <p>示波器上看到的正弦波，数学表达式是：</p>
+
+      $$u(t) = U_m \sin(\omega t + \phi)$$
+
+      <p>这里有三个参数：</p>
+
+      <table>
+        <thead>
+          <tr><th>参数</th><th>含义</th><th>单位</th><th>类比</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>$U_m$</td><td>振幅（峰值）</td><td>V</td><td>波浪有多高</td></tr>
+          <tr><td>$\omega$</td><td>角频率 $\omega = 2\pi f$</td><td>rad/s</td><td>波浪有多快</td></tr>
+          <tr><td>$\phi$</td><td>初相位</td><td>rad（或 °）</td><td>波浪从哪开始</td></tr>
+        </tbody>
+      </table>
+
+      <p>问题来了：如果你有两个正弦信号，想知道它们叠加后是什么，用 $\sin$ 函数直接加会很痛苦——三角函数的和差化积公式既难记又容易错。</p>
+
+      <div class="info-box coral">
+        <strong>痛点</strong>：正弦函数的加减乘除运算极其繁琐。工程上需要大量做"信号 × 系统传递函数"的乘法，如果用三角函数直接算，几乎不可行。
+      </div>
+
+      <h3 id="ch1-s2">1.2 欧拉公式——泰勒级数推导（详细步骤）</h3>
+
+      <p>欧拉公式是整条链路的基石：</p>
+
+      $$e^{j\theta} = \cos\theta + j\sin\theta$$
+
+      <p>这个公式可以从<strong>泰勒级数展开</strong>严格推导出来。下面一步步走，不跳任何中间步骤：</p>
+
+      <div class="derivation">
+        <div class="step"><strong>第一步：写出 $e^x$ 的泰勒级数展开式</strong></div>
+        <p>任何光滑函数都可以在某一点附近用多项式逼近。$e^x$ 在 $x=0$ 处的泰勒展开是微积分标准结论：</p>
+        $$e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \cdots$$
+        <p class="note">即 $e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!}$。每个分母 $n!$ 使越往后的项越小，保证级数收敛。</p>
+
+        <div class="arrow-step">↓ 把 $x$ 替换为 $j\theta$</div>
+
+        <div class="step"><strong>第二步：代入 $x = j\theta$</strong></div>
+        $$e^{j\theta} = 1 + (j\theta) + \frac{(j\theta)^2}{2!} + \frac{(j\theta)^3}{3!} + \frac{(j\theta)^4}{4!} + \frac{(j\theta)^5}{5!} + \cdots$$
+
+        <div class="arrow-step">↓ 利用 $j^2 = -1$ 逐项化简</div>
+
+        <div class="step"><strong>第三步：逐项计算 $j$ 的幂次</strong></div>
+        <table>
+          <thead><tr><th>项</th><th>$j$ 的幂次</th><th>化简结果</th></tr></thead>
+          <tbody>
+            <tr><td>第 1 项</td><td>$j^0 = 1$</td><td>$1$</td></tr>
+            <tr><td>第 2 项</td><td>$j^1 = j$</td><td>$+j\theta$</td></tr>
+            <tr><td>第 3 项</td><td>$j^2 = -1$</td><td>$+\frac{-\theta^2}{2!} = -\frac{\theta^2}{2}$</td></tr>
+            <tr><td>第 4 项</td><td>$j^3 = j^2 \cdot j = (-1)\cdot j = -j$</td><td>$-\frac{j\theta^3}{6}$</td></tr>
+            <tr><td>第 5 项</td><td>$j^4 = (j^2)^2=1$</td><td>$+\frac{\theta^4}{24}$</td></tr>
+            <tr><td>第 6 项</td><td>$j^5 = j^4 \cdot j = j$</td><td>$+\frac{j\theta^5}{120}$</td></tr>
+          </tbody>
+        </table>
+        <p class="note">$j$ 的幂次周期为 4：$1 \to j \to -1 \to -j \to 1 \to \cdots$。因为 $j^2=-1, j^3=-j, j^4=1$。</p>
+
+        <div class="arrow-step">↓ 代回原式并分组</div>
+
+        <div class="step"><strong>第四步：把不含 $j$ 的项（实部）和含 $j$ 的项（虚部）分开</strong></div>
+        $$e^{j\theta} = \underbrace{1 - \frac{\theta^2}{2!} + \frac{\theta^4}{4!} - \cdots}_{\text{实部}} + j\underbrace{\left(\theta - \frac{\theta^3}{3!} + \frac{\theta^5}{5!} - \cdots\right)}_{\text{虚部}}$$
+
+        <div class="arrow-step">↓ 识别出两种泰勒级数</div>
+
+        <div class="step"><strong>第五步：对照余弦和正弦的泰勒级数</strong></div>
+        <p>微积分中，$\cos\theta$ 和 $\sin\theta$ 在 0 处的泰勒展开分别是：</p>
+        $$\cos\theta = 1 - \frac{\theta^2}{2!} + \frac{\theta^4}{4!} - \cdots$$
+        $$\sin\theta = \theta - \frac{\theta^3}{3!} + \frac{\theta^5}{5!} - \cdots$$
+        <p>对比第四步——实部正好是 $\cos\theta$，虚部括号里正好是 $\sin\theta$！因此：</p>
+        $$\boxed{e^{j\theta} = \cos\theta + j\sin\theta}$$
+        <p class="note">核心思路：指数展开成级数 → 按 $j$ 幂次分组 → 两组恰好是 cos 和 sin 的级数。不需要任何"魔法"。</p>
+      </div>
+
+      <p>这个公式说了一件了不起的事：<strong>指数函数可以分解成一个余弦和一个正弦</strong>。反过来说，一个正弦波可以用指数函数来表示。</p>
+
+      <p>把交流信号用欧拉公式改写：</p>
+
+      $$U_m \sin(\omega t + \phi) = \text{Im}\left[U_m e^{j(\omega t + \phi)}\right]$$
+
+      <p>这里 $\text{Im}[\cdot]$ 表示取虚部。在实际工程运算中，我们经常直接用完整的复指数 $U_m e^{j(\omega t + \phi)}$ 来参与计算，最后再取实部或虚部还原成物理信号。</p>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：欧拉公式的真正价值不在于"数学恒等式"，而在于<strong>把三角函数运算转换成了指数运算</strong>。指数运算的规则极简——乘法 = 指数相加，除法 = 指数相减——这让信号处理变得可行。
+      </div>
+
+      <div class="cvs-wrap">
+        <canvas id="cvsEuler" width="700" height="340"></canvas>
+        <label>拖动 θ 看向量在复平面上的旋转：θ = <input type="range" id="thetaSlider" min="0" max="628" value="78" step="1"> <span id="thetaVal">45°</span></label>
+      </div>
+
+      <h3 id="ch1-s3">1.3 复数的两种表示</h3>
+
+      <p>一个复数 $A$ 有两种等价的写法：</p>
+
+      <table>
+        <thead>
+          <tr><th>形式</th><th>表达式</th><th>包含信息</th><th>适用场景</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>直角坐标</td><td>$A = a + jb$</td><td>实部 $a$ + 虚部 $b$</td><td>加减运算</td></tr>
+          <tr><td>极坐标</td><td>$A = |A| e^{j\theta}$</td><td>模 $|A|$ + 幅角 $\theta$</td><td>乘除运算、增益和相位</td></tr>
+        </tbody>
+      </table>
+
+      <p>两者的转换关系：</p>
+
+      $$|A| = \sqrt{a^2 + b^2}, \quad \theta = \arctan\frac{b}{a}$$
+
+      $$a = |A|\cos\theta, \quad b = |A|\sin\theta$$
+
+      <p>在电子学中，<strong>极坐标形式更有工程意义</strong>：模就是增益（放大倍数），幅角就是相移。这正是 Bode 图要画的两个量。</p>
+
+      <div class="info-box">
+        <strong>补充</strong>：复数除法的极坐标形式特别简洁——模相除，角相减：
+        $$\frac{A_1}{A_2} = \frac{|A_1|}{|A_2|} e^{j(\theta_1 - \theta_2)}$$
+        这意味着传递函数 $H(j\omega) = V_{out} / V_{in}$ 的增益 = 输出模 / 输入模，相移 = 输出幅角 − 输入幅角。
+      </div>
+
+      <h4>复数运算小结</h4>
+
+      <table>
+        <thead>
+          <tr><th>运算</th><th>直角坐标</th><th>极坐标</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>加法</td><td>$(a_1 + a_2) + j(b_1 + b_2)$</td><td>不方便</td></tr>
+          <tr><td>乘法</td><td>展开后合并</td><td>$|A_1||A_2| e^{j(\theta_1+\theta_2)}$</td></tr>
+          <tr><td>除法</td><td>需要共轭</td><td>$\frac{|A_1|}{|A_2|} e^{j(\theta_1-\theta_2)}$</td></tr>
+        </tbody>
+      </table>
+
+      <p><span class="tag green">技巧</span>工程计算口诀：<strong>加减用直角坐标，乘除用极坐标</strong>。传递函数是除法，所以天然适合极坐标。</p>
+
+      <h4 id="ch1-s3b">复数辐角的 arctan 象限修正法则</h4>
+
+      <p>上面写 $\theta = \arctan(b/a)$ 是简化写法。<strong>实际上 arctan 函数的值域只有 $(-90°, +90°)$</strong>，而复数辐角的范围是 $(-180°, +180°)$。如果实部 $a$ 为负（二、三象限），直接用 arctan 会得到错误结果，必须用 $\pi$ 修正：</p>
+
+      <table>
+        <thead>
+          <tr><th>象限</th><th>实部 $a$</th><th>虚部 $b$</th><th>辐角公式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>一象限</td><td>$a > 0$</td><td>$b > 0$</td><td>$\theta = \arctan\dfrac{b}{a}$ &nbsp;（直接）</td></tr>
+          <tr><td>二象限</td><td>$a < 0$</td><td>$b > 0$</td><td>$\theta = \pi - \arctan\dfrac{b}{|a|}$ &nbsp;（$\pi$ 修正）</td></tr>
+          <tr><td>三象限</td><td>$a < 0$</td><td>$b < 0$</td><td>$\theta = -\pi + \arctan\dfrac{|b|}{|a|}$ &nbsp;（$-\pi$ 修正）</td></tr>
+          <tr><td>四象限</td><td>$a > 0$</td><td>$b < 0$</td><td>$\theta = \arctan\dfrac{b}{a}$ &nbsp;（直接）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box warn">
+        <strong>经典反例</strong>：复数 $-1 + j$ 的真实辐角是 $135°$（第二象限）。但 $\arctan(1/{-1}) = -45°$，差了 $180°$！正确做法：先算 $\arctan(1/1) = 45°$，再用 $\pi - 45° = 135°$。这个修正在推导传递函数相频特性时<strong>几乎每次都会用到</strong>。
+      </div>
+
+      <p><strong>记忆口诀</strong>：实部为正直接算，实部为负要转弯——正虚部用 $\pi-$ 减，负虚部用 $-\pi+$ 加。</p>
+
+      <!-- ═══ 三角函数积化和差 / 和差化积 ═══ -->
+      <h3 id="ch1-s5">1.5 三角函数的积化和差与和差化积</h3>
+
+      <p>欧拉公式不仅是连接指数和三角函数的桥梁，它还能<strong>推导出所有三角恒等式</strong>——包括工程中极为重要的积化和差与和差化积公式。这些公式是理解混频、调制解调等通信电路的基础。</p>
+
+      <h4>从欧拉公式出发的推导</h4>
+
+      <p>从欧拉公式的两个版本出发：</p>
+
+      <div class="derivation">
+        <div class="step">$$e^{j\alpha} = \cos\alpha + j\sin\alpha \quad\text{......①}$$</div>
+        <div class="step">$$e^{j\beta} = \cos\beta + j\sin\beta \quad\text{......②}$$</div>
+
+        <div class="arrow-step">↓ 将 ① × ②（指数相加 = 角度相加）</div>
+        <div class="step">$$e^{j(\alpha+\beta)} = (\cos\alpha\cos\beta - \sin\alpha\sin\beta) + j(\cos\alpha\sin\beta + \sin\alpha\cos\beta)$$</div>
+        <div class="step">对比 $e^{j(\alpha+\beta)} = \cos(\alpha+\beta) + j\sin(\alpha+\beta)$，实部、虚部分别相等：<br>
+        $$\boxed{\cos(\alpha+\beta) = \cos\alpha\cos\beta - \sin\alpha\sin\beta}$$<br>
+        $$\boxed{\sin(\alpha+\beta) = \sin\alpha\cos\beta + \cos\alpha\sin\beta}$$</div>
+      </div>
+
+      <h4>积化和差公式</h4>
+      <p>将上面的和角/差角公式相加减，整理得到<strong>积化和差</strong>——把两个三角函数的乘积转化为和差形式：</p>
+
+      <table>
+        <thead>
+          <tr><th>公式名称</th><th>表达式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>余弦积化和差</td><td>$\cos\alpha \cos\beta = \dfrac{1}{2}[\cos(\alpha+\beta) + \cos(\alpha-\beta)]$</td></tr>
+          <tr><td>正弦×余弦</td><td>$\sin\alpha \cos\beta = \dfrac{1}{2}[\sin(\alpha+\beta) + \sin(\alpha-\beta)]$</td></tr>
+          <tr><td>正弦积化和差</td><td>$\sin\alpha \sin\beta = -\dfrac{1}{2}[\cos(\alpha+\beta) - \cos(\alpha-\beta)]$</td></tr>
+        </tbody>
+      </table>
+
+      <h4>和差化积公式</h4>
+      <p>反过来，把两角和差的三角函数化为乘积形式——这就是<strong>和差化积</strong>：</p>
+
+      <table>
+        <thead>
+          <tr><th>公式名称</th><th>表达式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>正弦和差化积</td><td>$\sin\alpha + \sin\beta = 2\sin\dfrac{\alpha+\beta}{2}\cos\dfrac{\alpha-\beta}{2}$</td></tr>
+          <tr><td>正弦差化积</td><td>$\sin\alpha - \sin\beta = 2\cos\dfrac{\alpha+\beta}{2}\sin\dfrac{\alpha-\beta}{2}$</td></tr>
+          <tr><td>余弦和差化积</td><td>$\cos\alpha + \cos\beta = 2\cos\dfrac{\alpha+\beta}{2}\cos\dfrac{\alpha-\beta}{2}$</td></tr>
+          <tr><td>余弦差化积</td><td>$\cos\alpha - \cos\beta = -2\sin\dfrac{\alpha+\beta}{2}\sin\dfrac{\alpha-\beta}{2}$</td></tr>
+        </tbody>
+      </table>
+
+      <h4 id="ch1-s5-mixing">工程实例：混频器——积化和差的物理实现</h4>
+
+      <p><strong>混频（Mixing）</strong>是通信和射频系统中无处不在的操作：将两个不同频率的正弦信号相乘，利用积化和差产生新的频率分量。</p>
+
+      <p>设输入信号为 $v_{in}(t) = V_1\cos(\omega_1 t)$，本振信号为 $v_{LO}(t) = V_2\cos(\omega_2 t)$，两者通过模拟乘法器（或非线性器件）相乘：</p>
+
+      <div class="derivation">
+        <div class="step"><strong>相乘</strong>：$v_{out}(t) = v_{in}(t) \cdot v_{LO}(t) = V_1 V_2 \cos(\omega_1 t)\cos(\omega_2 t)$</div>
+        <div class="arrow-step">↓ 应用积化和差公式</div>
+        <div class="step">$v_{out}(t) = \dfrac{V_1 V_2}{2}[\cos((\omega_1+\omega_2)t) + \cos((\omega_1-\omega_2)t)]$</div>
+      </div>
+
+      <p><strong>输出包含两个新的频率成分</strong>：</p>
+
+      <table>
+        <thead>
+          <tr><th>频率分量</th><th>表达式</th><th>名称</th><th>典型应用</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>和频</td><td>$\omega_1 + \omega_2$</td><td>上变频（低→高）</td><td>射频发射：基带信号搬移到载波频率</td></tr>
+          <tr><td>差频</td><td>$|\omega_1 - \omega_2|$</td><td>下变频（高→低）</td><td>超外差接收：射频信号搬移到中频</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box teal">
+        <strong>超外差接收机就是混频的经典应用</strong>：天线收到 100MHz 射频信号，本振产生 110MHz 正弦波，混频后输出 10MHz 中频（$|100-110|=10$MHz）。中频频率固定，后续放大滤波都针对这个固定频率设计——这就是为什么老式收音机叫"超外差式"。
+      </div>
+
+      <h4>具体数值例子</h4>
+      <p>假设一个无线传感器节点需要将 10kHz 低频数据信号发射出去：</p>
+      <ol>
+        <li><strong>基带信号</strong>：$v_{BB}(t) = \cos(2\pi \times 10\text{kHz} \times t)$</li>
+        <li><strong>载波（本振）</strong>：$v_{RF}(t) = \cos(2\pi \times 433\text{MHz} \times t)$（ISM 频段）</li>
+        <li><strong>混频输出</strong>：
+          $$v_{out}(t) = \frac{1}{2}[\cos(2\pi \times 433.01\text{MHz} \times t) + \cos(2\pi \times 432.99\text{MHz} \times t)]$$
+        </li>
+      </ol>
+      <p>10kHz 基带信息被"搬运"到了 433MHz 附近——天线可以高效辐射这个频率。这就是<strong>上变频（low to high）</strong>。</p>
+      <p>反向操作（下变频 high to low）：接收端将 433MHz 射频与本振 433MHz 混频，差频正好恢复出 10kHz 基带信号。</p>
+
+      <div class="info-box purple">
+        <strong>关键洞察</strong>：混频的本质就是<strong>积化和差的物理实现</strong>。乘法器（或任何非线性器件）完成的是数学上的"乘法"，而积化和差告诉我们乘法的结果必然包含和频与差频两个分量。不需要死记这两个公式——只要记住"乘积变和差"，从欧拉公式几步就能推出来。
+      </div>
+
+      <!-- ═══ 极坐标实例化 ═══ -->
+      <h3 id="ch1-s6">1.6 极坐标的工程实例化</h3>
+
+      <p>前面说过极坐标中"模=增益，幅角=相移"。这一节我们用两个真实的硬件场景来体会这句话的威力。</p>
+
+      <h4 id="ch1-s6-apf">实例一：全通滤波器的相移 = 分子幅角 − 分母幅角</h4>
+
+      <p>一阶全通滤波器的传递函数（滞后型为例）：</p>
+
+      $$G(s) = -\frac{sT - 1}{sT + 1}$$
+
+      <p>令 $s = j\omega$，并定义 $\omega_0 = 1/T$，则：</p>
+
+      $$G(j\omega) = -\frac{-1 + j\dfrac{\omega}{\omega_0}}{1 + j\dfrac{\omega}{\omega_0}}$$
+
+      <p>按照"传递函数是除法 → 极坐标 → 模相除、角相减"的原则：</p>
+
+      <table>
+        <thead>
+          <tr><th></th><th>分子 $N = -1 + j\omega/\omega_0$</th><th>分母 $D = 1 + j\omega/\omega_0$</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>模</td><td>$|N| = \sqrt{1+(\omega/\omega_0)^2}$</td><td>$|D| = \sqrt{1+(\omega/\omega_0)^2}$</td></tr>
+          <tr><td>幅角</td><td>$\theta_N = \pi - \arctan(\omega/\omega_0)$ &nbsp;(第二象限)</td><td>$\theta_D = \arctan(\omega/\omega_0)$ &nbsp;(第一象限)</td></tr>
+        </tbody>
+      </table>
+
+      <p>总增益 $= |N|/|D| = 1$（分子分母模相等），所以幅频特性是一条 0dB 直线——这就是"全通"的来源。</p>
+
+      <p>总相移 $= \theta_N - \theta_D + (-180°)$（前面的负号贡献 −180°）：</p>
+
+      $$\varphi(\omega) = -180° + \left[\pi - \arctan\frac{\omega}{\omega_0} - \arctan\frac{\omega}{\omega_0}\right] = -180° + 2\arctan\frac{\omega_0}{\omega}$$
+
+      <div class="info-box green">
+        <strong>极坐标视角的核心价值</strong>：你不需要记住任何相频公式。只要看到传递函数是一个分式，就知道：(1) 增益 = 分子模 / 分母模；(2) 相移 = 分子辐角 − 分母辐角。剩下的工作就是分别求分子和分母的辐角——而求辐角的唯一工具就是 1.3 节 + 1.3b 节的象限修正法则。整条链路是<strong>机械性的</strong>，不依赖任何灵感。
+      </div>
+
+      <h4 id="ch1-s6-bldc">实例二：无刷直流电机的磁场合成——极坐标向量叠加</h4>
+
+      <p>无刷电机（BLDC/PMSM）的控制核心是<strong>旋转磁场</strong>——定子三相绕组通入互差 120° 的电流，各自产生的磁场矢量在空间中合成一个幅值恒定、匀速旋转的总磁场，拖动转子转动。这个过程天然要用极坐标来分析。</p>
+
+      <p>设 A、B、C 三相绕组在空间中依次相差 120° 物理角度，各相通入如下电流（以 A 相为零参考）：</p>
+
+      <table>
+        <thead>
+          <tr><th>相</th><th>空间角度</th><th>电流瞬时值</th><th>产生的磁场矢量</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A 相</td><td>$0°$</td><td>$i_A = I_m \cos(\omega_e t)$</td><td>$\vec{F}_A = F_m \cos(\omega_e t) \cdot e^{j0°}$</td></tr>
+          <tr><td>B 相</td><td>$120°$</td><td>$i_B = I_m \cos(\omega_e t - 120°)$</td><td>$\vec{F}_B = F_m \cos(\omega_e t - 120°) \cdot e^{j120°}$</td></tr>
+          <tr><td>C 相</td><td>$240°$</td><td>$i_C = I_m \cos(\omega_e t - 240°)$</td><td>$\vec{F}_C = F_m \cos(\omega_e t - 240°) \cdot e^{j240°}$</td></tr>
+        </tbody>
+      </table>
+
+      <p>其中 $F_m$ 为单相最大磁动势幅值，$\omega_e$ 为电角速度（等于极对数 × 机械转速）。总磁场矢量为三者之和：</p>
+
+      $$\vec{F}_{total} = \vec{F}_A + \vec{F}_B + \vec{F}_C$$
+
+      <p>展开每一项（利用 $re^{j\theta} = r\cos\theta + jr\sin\theta$）并求和：</p>
+
+      <div class="derivation">
+        <div class="step">$\vec{F}_A = F_m\cos(\omega_e t)$ （沿实轴方向）</div>
+        <div class="step">$\vec{F}_B = F_m\cos(\omega_e t - 120°)[\cos 120° + j\sin 120°] = F_m\cos(\omega_e t - 120°)[-0.5 + j\dfrac{\sqrt{3}}{2}]$</div>
+        <div class="step">$\vec{F}_C = F_m\cos(\omega_e t - 240°)[\cos 240° + j\sin 240°] = F_m\cos(\omega_e t - 240°)[-0.5 - j\dfrac{\sqrt{3}}{2}]$</div>
+        <div class="arrow-step">↓ 三者实部 + 虚部分别求和</div>
+        <div class="step">经过化简（利用三角函数和差化积公式），最终结果：<br>
+        $$\boxed{\vec{F}_{total} = 1.5 F_m \cdot e^{j\omega_e t}}$$</div>
+      </div>
+
+      <p>这是一个惊人的结论：<strong>三个脉振磁场合成一个幅值恒定为 $1.5 F_m$、以电角速度 $\omega_e$ 匀速旋转的圆磁场！</strong></p>
+
+      <div class="cvs-wrap">
+        <canvas id="cvsBldcField" width="680" height="380"></canvas>
+        <div class="cvs-title">图1-1 无刷电机三相磁场合成：三个脉振矢量（彩色）合成旋转圆磁场（粗黑箭头）</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>参数</th><th>表达式</th><th>物理解释</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>合磁场幅值</td><td>$|\vec{F}_{total}| = 1.5 F_m$</td><td>恒定不变（圆磁场），转矩脉动为零</td></tr>
+          <tr><td>旋转速度</td><td>$\omega_e = p_n \cdot \Omega_m$</td><td>电角速度 = 极对数 × 机械角速度</td></tr>
+          <tr><td>方向</td><td>取决于通电相序（ABC → 正转，ACB → 反转）</td><td>改变任意两相接线顺序即可反转</td></tr>
+          <tr><td>FOC 控制本质</td><td>控制 $\vec{F}_{total}$ 的幅值和方向</td><td>即控制转矩和磁链——dq 坐标变换的物理基础</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box coral">
+        <strong>与硬件工程师的关系</strong>：如果你在做电机驱动（比如无刷水泵、风扇驱动板），FOC（磁场定向控制）算法中的 Park 变换 / Clark 变换本质上就是坐标系旋转——从 ABC 三相静止坐标系转到 dq 旋转坐标系。而坐标系旋转的数学工具正是<strong>复数（或其矩阵等价形式）的旋转变换</strong>：乘以 $e^{-j\theta}$ 就是将整个坐标系逆时针旋转 $\theta$ 角度。这和全通滤波器中"分子幅角−分母幅角=相移"用的是同一套数学语言。
+      </div>
+
+      <h3 id="ch1-s4">1.4 正弦波→复指数的完整变换过程</h3>
+
+      <p>把具体正弦信号转成复指数是很多教材跳过的步骤，但理解它很重要。</p>
+
+      <div class="derivation">
+        <div class="step"><strong>欧拉公式的两个等价版本</strong>：</div>
+        $$e^{j\theta} = \cos\theta + j\sin\theta \quad \text{......①}$$
+        $$e^{-j\theta} = \cos\theta - j\sin\theta \quad \text{......②}$$
+        <p class="note">② 式是把 ① 中的 $j$ 换成 $-j$ 得到的。</p>
+
+        <div class="arrow-step">↓ 用 ① − ② 解出 $\sin\theta$</div>
+
+        <div class="step">① − ② 得：$e^{j\theta} - e^{-j\theta} = (\cos\theta + j\sin\theta) - (\cos\theta - j\sin\theta) = 2j\sin\theta$</div>
+        <div class="step">两边同除以 $2j$：$$\boxed{\sin\theta = \frac{e^{j\theta} - e^{-j\theta}}{2j}}$$</div>
+
+        <div class="arrow-step">↓ 把 $\theta$ 替换成 $(\omega t + \phi)$</div>
+
+        <div class="step">代入实际信号：$U_m\sin(\omega t+\phi) = U_m \cdot \frac{e^{j(\omega t+\phi)} - e^{-j(\omega t+\phi)}}{2j}$</div>
+
+        <div class="arrow-step">↓ 更简洁的写法（取虚部）</div>
+
+        <div class="step">$U_m e^{j(\omega t+\phi)} = U_m\cos(\omega t+\phi) + j\,U_m\sin(\omega t+\phi)$<br>
+        它的虚部正好是正弦信号，所以：$$\boxed{U_m\sin(\omega t+\phi) = \text{Im}[U_m e^{j(\omega t+\phi)}]}$$</div>
+        <p class="note">为什么可以直接用复指数参与计算？因为线性系统对复数输入的响应方式和对实数输入一样——只要最后取对应的分量（实部或虚部）就行。</p>
+      </div>
+
+      <div class="info-box purple">
+        <strong>下一站</strong>：现在我们有了复数这个工具——它能同时表示信号的大小和相位。但电子学中还有电阻、电容、电感三种基本元件，它们的电压电流关系各不相同。能不能用复数统一描述它们？答案是复数阻抗——下一章就来拆解。
+      </div>
+    </section>
+
+    <!-- ═══════════════ 第二章 ═══════════════ -->
+    <section class="chapter" id="ch2">
+      <div class="chapter-num">第二章</div>
+      <h2 class="chapter-title">阻抗：电容与电感的复数化</h2>
+
+      <h3 id="ch2-s1">2.1 电阻：实数阻抗</h3>
+
+      <p>电阻的阻抗最简单：</p>
+
+      $$Z_R = R$$
+
+      <p>它是一个纯实数。意味着：流过电阻的电流和两端的电压<strong>同相</strong>——没有相位差。欧姆定律 $U = IR$ 在交流下直接成立，不需要复数。</p>
+
+      <h3 id="ch2-s2">2.2 电容：虚数阻抗（逐步推导）</h3>
+
+      <p>电容的电压电流关系来自物理定律——电荷量 $Q = C \cdot U$，而电流是电荷的变化率：</p>
+
+      $$i_C = C \frac{du_C}{dt}$$
+
+      <div class="derivation">
+        <div class="step"><strong>给定条件</strong>：电容两端电压 $u_C(t) = U_m \sin(\omega t)$（先假设初相 $\phi=0$，简化推导）</div>
+
+        <div class="arrow-step">↓ 对电压求导得到电流</div>
+
+        <div class="step"><strong>求导过程（链式法则）</strong>：</div>
+        $$\frac{d}{dt}[U_m \sin(\omega t)] = U_m \cdot \frac{d}{dt}[\sin(\omega t)] = U_m \cdot \cos(\omega t) \cdot \omega = \omega U_m \cos(\omega t)$$
+
+        <div class="arrow-step">↓ 代回电容电流公式</div>
+
+        <div class="step">$i_C(t) = C \cdot \omega U_m \cos(\omega t) = \omega C U_m \cos(\omega t)$</div>
+
+        <div class="arrow-step">↓ 用 $\cos(x) = \sin(x + \pi/2)$ 转换</div>
+
+        <div class="step">$$i_C(t) = \omega C U_m \sin\left(\omega t + \frac{\pi}{2}\right)$$</div>
+        <p>对比电压 $u_C(t) = U_m \sin(\omega t)$，电流多了 $+\pi/2$ 即 <strong>+90° 相移</strong>。结论：电流超前电压 90°。</p>
+
+        <div class="arrow-step">↓ 进入复数域</div>
+
+        <div class="step"><strong>复数域表示</strong>：电压相量 $\dot{U}_C = U_m$（省略 $e^{j\omega t}$ 因子），电流 $\dot{I}_C = \omega C U_m e^{j\pi/2}$。而 $e^{j\pi/2} = j$，所以：</div>
+        $$\dot{I}_C = j\omega C \cdot \dot{U}_C$$
+
+        <div class="arrow-step">↓ 阻抗 = 电压 / 电流</div>
+
+        <div class="step">$$Z_C = \frac{\dot{U}_C}{\dot{I}_C} = \frac{\dot{U}_C}{j\omega C \cdot \dot{U}_C} = \frac{1}{j\omega C}$$</div>
+
+        <div class="arrow-step">↓ 分子分母同乘 $j$ 消去分母中的 $j$</div>
+
+        <div class="step">$$Z_C = \frac{j}{j^2\omega C} = \frac{j}{(-1)\omega C} = \boxed{-j\frac{1}{\omega C}}$$</div>
+      </div>
+
+      <p>阻抗的模 $|Z_C| = \dfrac{1}{\omega C}$，幅角 $\theta = -90°$。</p>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：电容阻抗中的 $-j$（即 $e^{-j\pi/2}$）不是一个数学把戏，它精确地编码了"电流超前电压 90°"这个物理事实。$j$ 代表 +90° 旋转，$-j$ 代表 −90° 旋转。
+      </div>
+
+      <div class="info-box warn">
+        <strong>注意</strong>：阻抗的负号不表示"负阻抗"或"消耗能量"，它表示<strong>相位方向</strong>。电容是储能元件，不消耗能量（理想情况下）。
+      </div>
+
+      <h3 id="ch2-s3">2.3 电感：另一个虚数</h3>
+
+      <p>电感的电压电流关系：</p>
+
+      $$u_L = L \frac{di_L}{dt}$$
+
+      <p>如果电流是 $i = I_m \sin(\omega t)$，那么电压比电流<strong>超前 90°</strong>。阻抗：</p>
+
+      $$Z_L = j\omega L$$
+
+      <p>模 $|Z_L| = \omega L$，幅角 $\theta = +90°$。</p>
+
+      <table>
+        <thead>
+          <tr><th>元件</th><th>阻抗</th><th>模</th><th>幅角</th><th>电压 vs 电流相位</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>电阻 R</td><td>$R$</td><td>$R$</td><td>$0°$</td><td>同相</td></tr>
+          <tr><td>电容 C</td><td>$1/(j\omega C)$</td><td>$1/(\omega C)$</td><td>$-90°$</td><td>电流超前电压 90°</td></tr>
+          <tr><td>电感 L</td><td>$j\omega L$</td><td>$\omega L$</td><td>$+90°$</td><td>电压超前电流 90°</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box purple">
+        <strong>延伸</strong>：为什么电容是 $-j$ 而电感是 $+j$？因为电容的 $i = C \cdot du/dt$（微分一次，引入 +90°），而阻抗是 $U/I$（除法，再反向），所以阻抗是 $-j$。电感同理但方向相反。根源在于：微分操作在频域等价于乘以 $j\omega$，积分等价于除以 $j\omega$。
+      </div>
+
+      <p>有了复数阻抗，整个交流电路分析就可以<strong>用欧姆定律统一处理</strong>——把 $R$ 换成 $Z$，所有直流电路的方法（分压、分流、叠加定理）都直接适用。这是复数在电子学中的第一个大用处。</p>
+
+      <div class="info-box purple">
+        <strong>下一站</strong>：阻抗让我们能在频域分析电路，但电路方程本质上是微分方程——电容电流 $i = C\,du/dt$ 就是一个微分。解微分方程很痛苦，有没有办法把它变成简单的代数运算？拉普拉斯变换就是这个"作弊器"。
+      </div>
+    </section>
+
+    <!-- ═══════════════ 第三章 ═══════════════ -->
+    <section class="chapter" id="ch3">
+      <div class="chapter-num">第三章</div>
+      <h2 class="chapter-title">拉普拉斯变换：时域到频域的桥梁</h2>
+
+      <h3 id="ch3-s1">3.1 为什么需要拉氏变换</h3>
+
+      <p>电路方程本质上是<strong>微分方程</strong>。比如 RC 低通滤波器：</p>
+
+      $$RC \frac{du_{out}}{dt} + u_{out} = u_{in}$$
+
+      <p>解这个微分方程需要找到特解和通解、确定初始条件，过程繁琐。拉普拉斯变换提供了一个"作弊"手段：<strong>把微分方程变成代数方程</strong>。</p>
+
+      <p>核心规则只有一条：</p>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：在拉氏变换的 s 域中，时域的微分 $\frac{d}{dt}$ 变成了乘以 $s$，积分 $\int dt$ 变成了除以 $s$。微分方程变成了代数方程，可以用加减乘除求解。
+      </div>
+
+      <p>用拉氏变换处理上面的 RC 方程（假设零初始条件）：</p>
+
+      $$RC \cdot s \cdot U_{out}(s) + U_{out}(s) = U_{in}(s)$$
+
+      $$U_{out}(s) \cdot (1 + sRC) = U_{in}(s)$$
+
+      <p>一行代数就把输入输出关系提出来了。</p>
+
+      <h3 id="ch3-s2">3.2 s = σ + jω 的物理意义</h3>
+
+      <p>拉普拉斯变换引入的复频率 $s$ 是：</p>
+
+      $$s = \sigma + j\omega$$
+
+      <p>它对应的时域信号是：</p>
+
+      $$e^{st} = e^{(\sigma + j\omega)t} = \underbrace{e^{\sigma t}}_{\text{包络}} \cdot \underbrace{\sin(\omega t)}_{\text{振荡}}$$
+
+      <p>这里有三个情况：</p>
+
+      <table>
+        <thead>
+          <tr><th>σ 值</th><th>包络 $e^{\sigma t}$</th><th>波形</th><th>物理含义</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>σ &lt; 0</td><td>递减 → 0</td><td>衰减振荡</td><td><strong>暂态</strong>（会消失）</td></tr>
+          <tr><td>σ = 0</td><td>恒定 = 1</td><td>等幅振荡</td><td><strong>稳态</strong>（持续不变）</td></tr>
+          <tr><td>σ &gt; 0</td><td>递增 → ∞</td><td>发散振荡</td><td><strong>不稳定</strong>（系统爆炸）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="cvs-wrap">
+        <canvas id="cvsSigma" width="780" height="220"></canvas>
+        <label>σ: <input type="range" id="sigmaSlider" min="-150" max="150" value="-80" step="1"> <span id="sigmaVal">−0.80</span></label>
+        <br><label>拖动滑块观察不同 σ 下波形的变化（蓝线=波形，灰虚线=包络）</label>
+      </div>
+
+      <p>简单说：</p>
+      <ul>
+        <li><strong>jω 部分</strong>控制振荡的快慢——这就是频率</li>
+        <li><strong>σ 部分</strong>控制振幅的变化趋势——增大、不变还是减小</li>
+      </ul>
+
+      <h3 id="ch3-s3">3.3 为什么稳态分析令 σ = 0</h3>
+
+      <p>实际工程中，我们最关心的是<strong>稳态</strong>——暂态已经消失后系统持续的行为。比如给 RC 滤波器输入正弦波：</p>
+
+      <ol>
+        <li><strong>刚接通</strong>：电容还没充满电，输出有一个过渡过程（暂态），对应 σ &lt; 0 的衰减项</li>
+        <li><strong>过渡结束</strong>：暂态衰减为零，输出变成稳定的等幅正弦波，对应 σ = 0</li>
+      </ol>
+
+      <p>所以做频率响应分析（Bode 图）时，令 σ = 0，只保留 jω：</p>
+
+      $$s = 0 + j\omega = j\omega$$
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：令 σ = 0 就是"把暂态丢掉，只看稳态"。此时 $s = j\omega$，拉普拉斯变换退化为傅里叶变换。传递函数 $H(s)$ 变成 $H(j\omega)$，这就是画 Bode 图的起点。
+      </div>
+
+      <div class="info-box">
+        <strong>补充</strong>：傅里叶变换是拉普拉斯变换的特例（σ = 0）。拉氏变换更通用——它还能处理暂态（σ ≠ 0），但代价是分析更复杂。工程上"够用就行"——稳态分析已经解决大部分设计问题。
+      </div>
+
+      <h4>三种变换的关系</h4>
+
+      <div class="flow-box">拉普拉斯变换（s = σ + jω）
+  ↓ σ = 0 时
+傅里叶变换（s = jω）
+  ↓ 只看幅值和相位
+Bode 图（增益 dB + 相位 °）</div>
+
+      <div class="info-box purple">
+        <strong>下一站</strong>：拉氏变换把微分方程变成了代数方程——那这个代数方程的"解"长什么样？它就是传递函数 $H(s)$，一个描述系统输入输出关系的数学画像。拿到它，你就掌握了系统对所有频率的响应。更重要的是，传递函数的分子分母隐藏着"零点"和"极点"——它们的位置决定了系统是否稳定。
+      </div>
+    </section>
+
+    <!-- ═══════════════ 第四章 ═══════════════ -->
+    <section class="chapter" id="ch4">
+      <div class="chapter-num">第四章</div>
+      <h2 class="chapter-title">传递函数：系统的数学画像</h2>
+
+      <h3 id="ch4-s1">4.1 什么是传递函数</h3>
+
+      <p>传递函数定义为<strong>零初始条件下，输出的拉氏变换与输入的拉氏变换之比</strong>：</p>
+
+      $$H(s) = \frac{V_{out}(s)}{V_{in}(s)}$$
+
+      <p>它是系统本身的属性——只取决于电路结构（R、C、L 的值），与输入信号无关。换个输入，传递函数不变。</p>
+
+      <p>以 RC 低通滤波器为例，从微分方程推导：</p>
+
+      $$RC \frac{du_{out}}{dt} + u_{out} = u_{in}$$
+
+      <p>拉氏变换后：</p>
+
+      $$H(s) = \frac{U_{out}(s)}{U_{in}(s)} = \frac{1}{1 + sRC}$$
+
+      <p>这个表达式包含了系统在不同频率下的全部行为信息——增益和相移都从这里推导。</p>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：传递函数就是系统在 s 域的"身份证"。拿到它，你就掌握了这个系统对所有频率输入的响应——不需要逐个频率去解微分方程。
+      </div>
+
+      <h3 id="ch4-s2">4.2 零点与极点</h3>
+
+      <p>传递函数一般写成分子分母多项式的比：</p>
+
+      $$H(s) = \frac{N(s)}{D(s)}$$
+
+      <table>
+        <thead>
+          <tr><th>名称</th><th>定义</th><th>含义</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>零点</strong></td><td>分子 $N(s) = 0$ 的根</td><td>在该频率增益 = 0（输出为零）</td></tr>
+          <tr><td><strong>极点</strong></td><td>分母 $D(s) = 0$ 的根</td><td>在该频率增益 → ∞（系统共振/不稳定）</td></tr>
+        </tbody>
+      </table>
+
+      <p>以 RC 低通 $H(s) = 1/(1 + sRC)$ 为例：</p>
+      <ul>
+        <li>分子恒为 1 → <strong>没有零点</strong></li>
+        <li>分母 $1 + sRC = 0$ → 极点 $s = -1/(RC)$ → 在左半平面（LHP）</li>
+      </ul>
+
+      <div class="info-box coral">
+        <strong>易错</strong>：求零点是让<strong>分子</strong> = 0，求极点是让<strong>分母</strong> = 0。不要搞反了。
+      </div>
+
+      <h4>零极点位置与稳定性</h4>
+
+      <p>在 s 平面上，零点和极点的位置决定了系统的性质：</p>
+
+      <table>
+        <thead>
+          <tr><th>位置</th><th>含义</th><th>稳定性</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>左半平面（LHP），σ &lt; 0</td><td>衰减项</td><td>稳定（暂态会消失）</td></tr>
+          <tr><td>虚轴上，σ = 0</td><td>等幅振荡</td><td>临界稳定</td></tr>
+          <tr><td>右半平面（RHP），σ &gt; 0</td><td>发散项</td><td><strong>不稳定</strong></td></tr>
+        </tbody>
+      </table>
+
+      <p><span class="tag coral">重要</span><strong>所有极点必须在左半平面，系统才稳定</strong>。这是控制系统设计的底线。</p>
+
+      <h4>零点的 LHP 与 RHP 之别</h4>
+
+      <p>零点对增益的贡献相同（都是 +20 dB/dec），但对相位的贡献不同：</p>
+
+      <table>
+        <thead>
+          <tr><th>零点位置</th><th>增益贡献</th><th>相位贡献</th><th>对相位裕度的影响</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>LHP 零点</td><td>+20 dB/dec</td><td><strong>+90°</strong>（超前）</td><td>改善（增加裕度）</td></tr>
+          <tr><td>RHP 零点</td><td>+20 dB/dec</td><td><strong>−90°</strong>（滞后）</td><td>恶化（减少裕度）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box coral">
+        <strong>关键问题</strong>：RHP 零点是"非最小相位"零点。它同时做两件恶化稳定性的事——增益上升（把穿越频率推高）+ 相位下降（压缩相位裕度）。这是 Miller 补偿中需要消除 RHP 零点的根本原因。
+      </div>
+
+      <h4 id="ch4-splane">s 平面零极点分布图</h4>
+
+      <p>把零点和极点画在 s 平面上，可以直观地判断系统稳定性。横轴是实部 σ，纵轴是虚部 jω。左半平面（LHP, σ &lt; 0）是稳定区，右半平面（RHP, σ &gt; 0）是不稳定区。</p>
+
+      <div class="info-box">
+        <strong>读图规则</strong>：极点用 <span style="color:#913719;font-size:16px;font-weight:bold">&times;</span> 标记，零点用 <span style="color:#16599e;font-size:16px">&#9675;</span> 标记。只要所有极点都在 LHP，系统就是稳定的。切换不同系统观察零极点位置的变化：
+      </div>
+
+      <div class="cvs-wrap">
+        <canvas id="cvsSPlane" width="780" height="440"></canvas>
+        <br>
+        <label>选择系统：
+          <select id="sysSelect" style="font-size:13px;padding:2px 6px;border-radius:4px;border:1px solid #ccc;">
+            <option value="rc">RC 低通：H(s) = 1/(1+sT)</option>
+            <option value="allpass">全通：H(s) = (1&#8722;sT)/(1+sT)</option>
+            <option value="second">二阶系统：H(s) = &#969;n&#178;/(s&#178;+2&#950;&#969;n&#183;s+&#969;n&#178;)</option>
+            <option value="unstable">不稳定系统：H(s) = 1/(1&#8722;sT)</option>
+            <option value="rhpzero">RHP 零点+极点：H(s) = (1&#8722;sT)/(1+sT&#8322;)</option>
+          </select>
+        </label>
+        &nbsp;
+        <label id="zetaSlider" style="display:none;">
+          &#950; = <input type="range" id="zetaRange" min="5" max="100" value="50" step="1"> <span id="zetaVal">0.5</span>
+        </label>
+        <br>
+        <span id="sysDesc" style="font-size:12px;color:var(--text-sec);"></span>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>系统</th><th>极点位置</th><th>零点位置</th><th>稳定性</th><th>特点</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>RC 低通</td><td>LHP：s = &#8722;1/T</td><td>无</td><td>稳定</td><td>一阶系统，相位 0°→−90°</td></tr>
+          <tr><td>全通滤波器</td><td>LHP：s = &#8722;1/T</td><td>RHP：s = +1/T</td><td>稳定</td><td>零极点关于虚轴对称，相位 0°→−180°</td></tr>
+          <tr><td>二阶系统</td><td>LHP 共轭对</td><td>无</td><td>稳定（&#950; &gt; 0）</td><td>拖 &#950; 滑块观察极点沿圆弧移动</td></tr>
+          <tr><td>不稳定系统</td><td>RHP：s = +1/T</td><td>无</td><td><strong>不稳定</strong></td><td>极点在 RHP &#8594; 指数发散</td></tr>
+          <tr><td>RHP零点+极点</td><td>LHP（两个）</td><td>RHP：s = +1/T</td><td>稳定但难补偿</td><td>非最小相位，恶化相位裕度</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="ch4-s3">4.3 为什么引入 T = RC</h3>
+
+      <p>RC 低通的传递函数原始形式：</p>
+
+      $$H(s) = \frac{1}{1 + sRC}$$
+
+      <p>R 和 C 以乘积 RC 的形式出现，从不分开。引入时间常数 $T = RC$ 后：</p>
+
+      $$H(s) = \frac{1}{1 + sT}$$
+
+      <p>两个参数合并为一个，书写简洁。更重要的是，$T$ 有明确的物理意义：</p>
+
+      <table>
+        <thead>
+          <tr><th>角度</th><th>含义</th><th>公式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>时域</td><td>RC 充放电的快慢</td><td>$T$ 越小，响应越快</td></tr>
+          <tr><td>频域</td><td>转折频率</td><td>$\omega_0 = 1/T = 1/(RC)$</td></tr>
+        </tbody>
+      </table>
+
+      <p>令 $s = j\omega$ 后，传递函数变为：</p>
+
+      $$H(j\omega) = \frac{1}{1 + j\omega/\omega_0}$$
+
+      <p>这里 $\omega/\omega_0$ 是"当前频率相对于转折频率的倍数"——一个无量纲的比值。这个形式在 Bode 图分析中反复出现。</p>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：$T = RC$ 是参数归一化。它把两个电路参数（R 和 C）合并成一个有物理意义的量。$T$ 决定了转折频率 $\omega_0 = 1/T$ 在频率轴上的位置——调 $T$（调 R 或 C）就是在频率轴上平移整条频率响应曲线。
+      </div>
+
+      <h3 id="ch4-s4">4.4 从电路方程到传递函数——RC 低通完整推导</h3>
+
+      <p>这一节把整个过程从头走一遍，不留任何跳跃。这是全书最重要的推导。</p>
+
+      <div class="derivation">
+        <div class="step"><strong>第 1 步：画电路，标节点</strong></div>
+        <p>输入 $V_{in}$ 经电阻 R 到中间节点，该节点分两路：电容 C 到地 (GND)，以及输出 $V_{out}$（即电容两端电压）。</p>
+
+        <div class="arrow-step">↓ 第 2 步：列回路电压方程（KVL）</div>
+
+        <div class="step"><strong>第 2 步：从 $V_{in}$ 经 R 经 C 回到地</strong>：</div>
+        $$V_R + V_C = V_{in}$$
+        <p>其中 $V_R$ 是电阻压降，$V_C = V_{out}$ 是电容压降。</p>
+
+        <div class="arrow-step">↓ 第 3 步：代入元件方程</div>
+
+        <div class="step"><strong>第 3 步</strong>：电阻 $V_R = IR$，电容 $I = C \frac{dV_C}{dt} = C \frac{dV_{out}}{dt}$</div>
+        <p>所以 $V_R = RC \frac{dV_{out}}{dt}$，KVL 方程为：</p>
+        $$RC \frac{dV_{out}}{dt} + V_{out} = V_{in}$$
+
+        <div class="arrow-step">↓ 第 4 步：拉氏变换（零初始条件）</div>
+
+        <div class="step"><strong>第 4 步：逐项变换</strong></div>
+        <table><thead><tr><th>时域</th><th>s 域</th><th>规则</th></tr></thead><tbody>
+        <tr><td>$RC\frac{dV_{out}}{dt}$</td><td>$RCs \cdot V_{out}(s)$</td><td>微分→乘 s</td></tr>
+        <tr><td>$V_{out}$</td><td>$V_{out}(s)$</td><td>直接变换</td></tr>
+        <tr><td>$V_{in}$</td><td>$V_{in}(s)$</td><td>直接变换</td></tr></tbody></table>
+        $$RCs \cdot V_{out}(s) + V_{out}(s) = V_{in}(s)$$
+
+        <div class="arrow-step">↓ 第 5 步：代数求解</div>
+
+        <div class="step"><strong>第 5 步</strong>：提出公因子 $V_{out}(s)$</div>
+        $$V_{out}(s) \cdot (1 + sRC) = V_{in}(s)$$
+        $$V_{out}(s) = V_{in}(s) \cdot \frac{1}{1 + sRC}$$
+
+        <div class="arrow-step">↓ 第 6 步：定义传递函数</div>
+
+        <div class="step"><strong>第 6 步</strong>：令 $T = RC$，$\omega_0 = 1/T = 1/(RC)$</div>
+        $$\boxed{H(s) = \frac{V_{out}(s)}{V_{in}(s)} = \frac{1}{1 + sT}, \quad \omega_0 = \frac{1}{RC}}$$
+      </div>
+
+      <h3 id="ch4-s5">4.5 补充：二阶系统、阻尼比与 Q 值</h3>
+
+      <p>一阶系统（如 RC 低通）只有一个极点，行为简单。但工程中更常见的是<strong>二阶系统</strong>——比如 RLC 谐振电路、运放加上反馈网络后的闭环响应、机械系统的弹簧-阻尼器。二阶系统的标准传递函数：</p>
+
+      $$H(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$$
+
+      <p>其中 $\omega_n$ 是<strong>自然频率</strong>（无阻尼振荡频率），$\zeta$ 是<strong>阻尼比</strong>（damping ratio）。这两个参数决定了系统的全部动态特性。</p>
+
+      <table>
+        <thead>
+          <tr><th>阻尼比 ζ</th><th>极点位置</th><th>时域响应</th><th>工程含义</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ζ = 0</td><td>纯虚轴上（共轭）</td><td>等幅振荡</td><td>无阻尼，LC 谐振</td></tr>
+          <tr><td>0 &lt; ζ &lt; 1</td><td>LHP 共轭对</td><td>衰减振荡（有超调）</td><td>欠阻尼，大多数实际系统</td></tr>
+          <tr><td>ζ = 1</td><td>LHP 重实根</td><td>无超调，最快回到稳态</td><td>临界阻尼</td></tr>
+          <tr><td>ζ &gt; 1</td><td>LHP 两个实根</td><td>无超调，但响应慢</td><td>过阻尼</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：阻尼比 ζ 是二阶系统最重要的参数。ζ 太小 → 超调大、振铃多；ζ 太大 → 响应慢。工程上通常目标 ζ ≈ 0.707（即 $\sqrt{2}/2$），此时超调约 4.3%，兼顾速度和平稳。
+      </div>
+
+      <h4>Q 值（品质因数）与阻尼比的关系</h4>
+
+      <p>在滤波器和谐振器设计中，常用 <strong>Q 值</strong>代替阻尼比：</p>
+
+      $$Q = \frac{1}{2\zeta}$$
+
+      <p>Q 值的物理意义是谐振峰的"尖锐程度"——Q 越大，峰越尖锐，选择性越好，但相位变化也越剧烈。两者是一枚硬币的两面：</p>
+
+      <table>
+        <thead>
+          <tr><th>参数</th><th>大值含义</th><th>小值含义</th><th>适用领域</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>阻尼比 ζ</td><td>阻尼强，响应慢</td><td>阻尼弱，振荡多</td><td>控制系统</td></tr>
+          <tr><td>Q 值</td><td>选择性好，振铃多</td><td>选择性差，响应平</td><td>滤波器/谐振器</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <strong>换算速记</strong>：ζ = 0.707 ↔ Q = 0.707；ζ = 0.5 ↔ Q = 1；ζ = 0.25 ↔ Q = 2。控制系统看 ζ，射频/滤波器看 Q，描述的是同一件事。
+      </div>
+
+      <div class="info-box purple">
+        <strong>下一站</strong>：传递函数 $H(s)$ 描述了系统在 s 域的行为，但工程师需要的是看得见的图表——某个频率下增益是多少 dB、相移是多少度。这就需要令 $s = j\omega$，从 s 域切换到频域，画出 Bode 图。
+      </div>
+    </section>
+
+    <!-- ═══════════════ 第五章 ═══════════════ -->
+    <section class="chapter" id="ch5">
+      <div class="chapter-num">第五章</div>
+      <h2 class="chapter-title">从传递函数到 Bode 图</h2>
+
+      <h3 id="ch5-s1">5.1 求增益和相移的四步法</h3>
+
+      <p>拿到任何传递函数 $H(s)$，求增益和相移的标准流程：</p>
+
+      <table>
+        <thead>
+          <tr><th>步骤</th><th>操作</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Step 1</td><td>令 $s = j\omega$</td><td>从 s 域切换到频域（丢掉暂态，只看稳态）</td></tr>
+          <tr><td>Step 2</td><td>写成标准因式分解形式</td><td>把 $H(j\omega)$ 拆成基本因子的乘积</td></tr>
+          <tr><td>Step 3</td><td>分别求每个因子的模和幅角</td><td>模相乘 = 增益，幅角相加 = 相移</td></tr>
+          <tr><td>Step 4</td><td>叠加得到总增益和总相移</td><td>增益取 dB 后变加法，相位直接加</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：之所以可以拆开分别算再叠加，是因为复数乘法的性质——模相乘、幅角相加。在 dB 域中模相乘变成对数相加，所以增益也变成加法。这让 Bode 图可以用"折线近似"快速画出。
+      </div>
+
+      <p>对于复数 $a + jb$ 的基本运算：</p>
+
+      $$|a + jb| = \sqrt{a^2 + b^2}$$
+
+      $$\angle(a + jb) = \arctan\frac{b}{a} \quad (\text{注意象限})$$
+
+      <h3 id="ch5-s2">5.2 基本因子的 Bode 贡献</h3>
+
+      <p>任何传递函数都可以写成以下基本因子的乘积：</p>
+
+      $$H(j\omega) = K \cdot \frac{(1 + j\omega/\omega_{z1}) \cdots}{(1 + j\omega/\omega_{p1}) \cdots}$$
+
+      <p>每个因子对增益和相位的贡献是独立的：</p>
+
+      <table>
+        <thead>
+          <tr><th>因子类型</th><th>增益贡献（dB）</th><th>相位贡献</th><th>备注</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>常数 $K$</td><td>$20\log_{10}|K|$（水平线）</td><td>0°（K&gt;0）或 ±180°（K&lt;0）</td><td>不随频率变化</td></tr>
+          <tr><td>LHP 零点 $(1 + j\omega/\omega_z)$</td><td>0 → +20 dB/dec</td><td>0° → <strong>+90°</strong></td><td>增益和相位都增加</td></tr>
+          <tr><td>LHP 极点 $1/(1 + j\omega/\omega_p)$</td><td>0 → −20 dB/dec</td><td>0° → <strong>−90°</strong></td><td>增益和相位都减少</td></tr>
+          <tr><td>RHP 零点 $(1 - j\omega/\omega_z)$</td><td>0 → +20 dB/dec</td><td>0° → <strong>−90°</strong></td><td>增益增加但相位减少</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Bode 渐近线近似画法</h4>
+
+      <p>实际工程中不需要精确计算每个频率点，用<strong>折线近似</strong>就够看：</p>
+
+      <ul>
+        <li><strong>增益图</strong>：在转折频率 $\omega_0$ 处画折线，之前水平（0 dB 或其他值），之后按 ±20 dB/dec 斜率走</li>
+        <li><strong>相位图</strong>：在 $\omega_0/10$ 到 $10\omega_0$ 之间，从 0° 线性过渡到 ±90°</li>
+      </ul>
+
+      <div class="cvs-wrap">
+        <canvas id="cvsBode" width="780" height="320"></canvas>
+        <label>一阶低通滤波器 Bode 图（调整 fc 滑块看转折频率如何移动曲线）</label>
+        <br>
+        <label>fc: <input type="range" id="fcSlider" min="10" max="10000" value="1000" step="10"> <span id="fcVal">1000 Hz</span></label>
+        <label><input type="checkbox" id="asympCheck" checked> 显示渐近折线</label>
+      </div>
+
+      <h3 id="ch5-s3">5.3 增益用 dB 的原因</h3>
+
+      <p>Bode 图的纵轴用分贝（dB）而不是线性比值，原因有两个：</p>
+
+      <ol>
+        <li><strong>压缩动态范围</strong>：增益可能从 1000 到 0.001，跨 6 个数量级。用 dB 后变成 +60 到 −60，方便画图</li>
+        <li><strong>乘法变加法</strong>：多个因子串联时，总增益 = 各因子增益之积。取 dB 后变成加法，可以叠加折线</li>
+      </ol>
+
+      <p>换算关系：</p>
+
+      $$\text{增益(dB)} = 20\log_{10}\left|\frac{V_{out}}{V_{in}}\right|$$
+
+      <table>
+        <thead>
+          <tr><th>线性增益</th><th>dB 值</th><th>含义</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>100</td><td>+40 dB</td><td>放大 100 倍</td></tr>
+          <tr><td>10</td><td>+20 dB</td><td>放大 10 倍</td></tr>
+          <tr><td>1</td><td>0 dB</td><td>不放大不衰减</td></tr>
+          <tr><td>0.1</td><td>−20 dB</td><td>衰减 10 倍</td></tr>
+          <tr><td>0.01</td><td>−40 dB</td><td>衰减 100 倍</td></tr>
+        </tbody>
+      </table>
+
+      <p><span class="tag green">技巧</span>记住两个基准：增益 = 1 对应 0 dB，增益变化 10 倍对应 20 dB。其他值可以快速估算。</p>
+
+      <h4>对数运算规则（Bode 图的基础）</h4>
+
+      <p>dB 计算依赖对数，核心规则：</p>
+
+      $$\log(M \times N) = \log M + \log N$$
+
+      $$\log\frac{M}{N} = \log M - \log N$$
+
+      $$\log(M^n) = n \log M$$
+
+      <p>这就是为什么取 dB 后，乘法（多因子增益相乘）变成了加法（dB 值相加），可以在 Bode 图上用折线叠加。</p>
+
+      <h3 id="ch5-s4">5.4 相位裕度与增益裕度</h3>
+
+      <p>Bode 图画出来后，工程师最关心的两个指标是<strong>相位裕度（Phase Margin, PM）</strong>和<strong>增益裕度（Gain Margin, GM）</strong>——它们衡量系统离"不稳定"有多远。</p>
+
+      <table>
+        <thead>
+          <tr><th>指标</th><th>定义</th><th>在哪看</th><th>工程目标</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>相位裕度 PM</strong></td><td>增益穿越频率处，相位距 −180° 的差值</td><td>增益 = 0 dB 处看相位</td><td>≥ 45°（理想 60°）</td></tr>
+          <tr><td><strong>增益裕度 GM</strong></td><td>相位穿越 −180° 处，增益距 0 dB 的差值</td><td>相位 = −180° 处看增益</td><td>≥ 6 dB（理想 10 dB）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：PM = 0° 意味着系统刚好在振荡边缘（Barkhausen 判据：环路增益 = 1 且相移 = 180°）。PM 越大，系统越"钝"但越稳定；PM 越小，系统越"灵敏"但越容易振荡。
+      </div>
+
+      <h4>为什么是 −180°？</h4>
+
+      <p>负反馈系统中，反馈信号已经反相一次（−1，等效于 180° 相移），如果环路再贡献 −180° 相移，总相移就是 180° + (−180°) = 360° ≡ 0°——反馈信号和输入信号同相，变成正反馈。此时如果环路增益还 ≥ 1，系统就会振荡。</p>
+
+      $$\text{总相移} = \underbrace{+180°}_{\text{负反馈}} \;+\; \underbrace{(-180°)}_{\text{环路额外相移}} = 0° \quad \Rightarrow \quad \text{正反馈！}$$
+
+      <div class="info-box coral">
+        <strong>易错</strong>：相位裕度是在<strong>增益 = 0 dB</strong> 的频率处读相位，不是在任意频率。增益裕度是在<strong>相位 = −180°</strong> 的频率处读增益。两个指标在 Bode 图上读的是不同频率点。
+      </div>
+
+      <h4>相位裕度与阻尼比的近似关系</h4>
+
+      <p>对于二阶系统，相位裕度和阻尼比之间有一个很好的近似公式：</p>
+
+      $$\zeta \approx \frac{\text{PM}(°)}{100}$$
+
+      <p>即 PM = 45° ≈ ζ = 0.45，PM = 60° ≈ ζ = 0.60，PM = 76° ≈ ζ = 0.707。这给了你一个直觉：<strong>想要好的动态响应（ζ ≈ 0.7），就要保证 PM ≈ 60°~70°</strong>。</p>
+
+      <div class="info-box">
+        <strong>工程速记</strong>：PM &lt; 30° → 振铃严重；PM ≈ 45° → 可接受但超调明显；PM ≈ 60° → 好的折中；PM &gt; 75° → 过于保守，响应慢。
+      </div>
+
+      <div class="info-box purple">
+        <strong>下一站</strong>：Bode 图告诉我们增益和相位怎么随频率变化，但要真正理解一个系统的行为，还需要把这些知识用起来。全通滤波器是一个绝佳的实战案例——它的增益恒为 0 dB，但相位从 0° 变到 −180°。为什么？因为它的零点和极点"合伙"做了一件有意思的事。接下来，我们用零极点叠加的视角，彻底拆解它。
+      </div>
+    </section>
+
+    <!-- ═══════════════ 第六章 ═══════════════ -->
+    <section class="chapter" id="ch6">
+      <div class="chapter-num">第六章</div>
+      <h2 class="chapter-title">全通滤波器：零极点叠加实战</h2>
+
+      <h3 id="ch6-s1">6.1 传递函数</h3>
+
+      <p>一阶全通滤波器的标准传递函数：</p>
+
+      $$H(s) = \frac{1 - sT}{1 + sT}$$
+
+      <p>其中 $T = RC$。分子和分母只差一个符号——这一个小小区别，造成了"全通"的特性。</p>
+
+      <h4>零点和极点</h4>
+
+      <p>求零点（分子 = 0）：</p>
+      $$1 - sT = 0 \Rightarrow s = +\frac{1}{T} \quad \text{（RHP 零点）}$$
+
+      <p>求极点（分母 = 0）：</p>
+      $$1 + sT = 0 \Rightarrow s = -\frac{1}{T} \quad \text{（LHP 极点）}$$
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：零点和极点关于虚轴对称——极点在 LHP（$-1/T$），零点在 RHP（$+1/T$）。这种对称性是全通滤波器的标志。
+      </div>
+
+      <h3 id="ch6-s2">6.2 增益为什么恒为 1</h3>
+
+      <p>令 $s = j\omega$，设 $\omega_0 = 1/T$：</p>
+
+      $$H(j\omega) = \frac{1 - j\omega/\omega_0}{1 + j\omega/\omega_0}$$
+
+      <p>分别算分子分母的模：</p>
+
+      $$|\text{分子}| = \sqrt{1^2 + (\omega/\omega_0)^2} = \sqrt{1 + (\omega/\omega_0)^2}$$
+
+      $$|\text{分母}| = \sqrt{1^2 + (\omega/\omega_0)^2} = \sqrt{1 + (\omega/\omega_0)^2}$$
+
+      <p>两者<strong>完全相等</strong>：</p>
+
+      $$|H(j\omega)| = \frac{\sqrt{1 + (\omega/\omega_0)^2}}{\sqrt{1 + (\omega/\omega_0)^2}} = 1 \quad \Rightarrow \quad 0 \text{ dB}$$
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：RHP 零点贡献 +20 dB/dec 增益，LHP 极点贡献 −20 dB/dec 增益，两者正好抵消 → 增益恒为 0 dB → "全通"——所有频率的信号都无衰减通过。
+      </div>
+
+      <h3 id="ch6-s3">6.3 相位：为什么是 0° 到 −180° — 逐步拆解</h3>
+
+      <p>这是最容易混淆的部分。我们不跳步，一项一项分析相位贡献。</p>
+
+      <div class="derivation">
+        <div class="step"><strong>先把 $H(j\omega)$ 的分子和分母分别整理好：</strong></div>
+        $$H(j\omega) = \frac{1 - j\omega/\omega_0}{1 + j\omega/\omega_0}$$
+
+        <div class="arrow-step">↓ 分子的相位</div>
+
+        <div class="step"><strong>① RHP 零点 $(1 - j\omega/\omega_0)$</strong>：$a+jb$ 中 $a=1$, $b=-\omega/\omega_0$<br>
+        幅角 = $\arctan(-\omega/\omega_0) = -\arctan(\omega/\omega_0)$<br>
+        ω→0：0°；ω=ω₀：−45°；ω→∞：<strong>−90°</strong></div>
+
+        <div class="arrow-step">↓ 分母的相位</div>
+
+        <div class="step"><strong>② 分母 LHP 极点 $(1 + j\omega/\omega_0)$</strong>：$a+jb$ 中 $a=1$, $b=\omega/\omega_0$<br>
+        幅角 = $+\arctan(\omega/\omega_0)$ = 0°→+90°<br>
+        <strong>但这是分母</strong>，总相位 = 分子相位 <strong>减去</strong> 分母相位。<br>
+        所以分母对总相位的贡献是<strong>相反数</strong>：0°→<strong>−90°</strong></div>
+
+        <div class="arrow-step">↓ 叠加 = 分子相位 − 分母相位</div>
+
+        <div class="step"><strong>总相位 = ① RHP零点 − ② 分母相位</strong>：</div>
+        <table>
+          <thead><tr><th>频率 ω</th><th>①RHP零点</th><th>②分母(取反)</th><th>总相位</th></tr></thead>
+          <tbody>
+            <tr><td>→ 0</td><td>0°</td><td>−0°</td><td><strong>0°</strong></td></tr>
+            <tr><td>= ω₀</td><td>−45°</td><td>−45°</td><td><strong>−90°</strong></td></tr>
+            <tr><td>→ ∞</td><td>−90°</td><td>−90°</td><td><strong>−180°</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details class="deriv-detail">
+        <summary>为什么 RHP 零点和分母极点的相位贡献"同向"？</summary>
+        <div>
+          <p>这里有个关键洞察：LHP 极点本身相位是 0°→+90°（超前），但因为它在分母，所以总相位要<strong>减去</strong>它，效果就是 0°→−90°（滞后）。</p>
+          <p>RHP 零点的相位天然就是 0°→−90°（滞后，因为 $b = -\omega/\omega_0$ 取负的 arctan）。</p>
+          <p>两者叠加：分子贡献 −90° + 分母贡献 −90° = 总相位 −180°。RHP 零点和 LHP 极点的相位贡献<strong>同方向</strong>——都往滞后方向走，这是非最小相位系统的典型特征。</p>
+        </div>
+      </details>
+
+      <p>直接从公式推导更简洁：</p>
+
+      $$\angle H(j\omega) = \angle(\text{分子}) - \angle(\text{分母})$$
+
+      $$\angle(\text{分子}) = \arctan(-\omega/\omega_0) = -\arctan(\omega/\omega_0)$$
+
+      $$\angle(\text{分母}) = \arctan(\omega/\omega_0)$$
+
+      $$\angle H = -\arctan(\omega/\omega_0) - \arctan(\omega/\omega_0) = -2\arctan(\omega/\omega_0)$$
+
+      <p>代入数值验证：</p>
+      <ul>
+        <li>ω → 0：$-2 \times 0 = 0°$</li>
+        <li>ω = ω₀：$-2 \times \pi/4 = -\pi/2 = -90°$</li>
+        <li>ω → ∞：$-2 \times \pi/2 = -\pi = -180°$</li>
+      </ul>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：全通滤波器的相位全程为负（滞后），从 0° 变到 −180°。RHP 零点和 LHP 极点（因在分母而取反）的相位贡献<strong>同向</strong>——都是往滞后方向走，叠加后总相移 −180°。这就是"非最小相位"的含义：相位比最小相位系统多出一份。
+      </div>
+
+      <div class="cvs-wrap">
+        <canvas id="cvsAllpass" width="780" height="340"></canvas>
+        <label>全通滤波器 Bode 图：增益恒为 0 dB，相位从 0° 到 −180°</label>
+      </div>
+
+      <h3 id="ch6-s4">6.4 RHP 零点的工程意义</h3>
+
+      <p>全通滤波器是一个纯理论例子——它的增益恒为 1，没有滤波功能。但在实际工程中，RHP 零点经常<strong>不请自来</strong>：</p>
+
+      <table>
+        <thead>
+          <tr><th>场景</th><th>RHP 零点来源</th><th>后果</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>运放 Miller 补偿</td><td>补偿电容 Cc 的前馈通路</td><td>降低相位裕度，可能振荡</td></tr>
+          <tr><td>Buck 变换器 CCM 模式</td><td>占空比到输出电压的延迟</td><td>限制带宽，影响瞬态响应</td></tr>
+          <tr><td>共射放大器高频段</td><td>基极-集电极电容的直通</td><td>高频增益下降变缓，相位恶化</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box coral">
+        <strong>RHP 零点为什么是坏东西</strong>：它同时做两件恶化稳定性的事——增益上升（+20 dB/dec，把穿越频率推高）+ 相位下降（−90°，压缩相位裕度）。两者叠加，单位增益时很容易让相位裕度掉到 0° 以下 → 振荡。
+      </div>
+
+      <p>对比 LHP 零点：增益也是 +20 dB/dec，但相位是 +90°（超前），反而<strong>改善</strong>相位裕度。</p>
+
+      <h4>Miller 补偿中消除 RHP 零点的方法</h4>
+
+      <p>在 Miller 电容 Cc 回路中串联调零电阻 Rz：</p>
+
+      <table>
+        <thead>
+          <tr><th>Rz 取值</th><th>效果</th><th>零点去向</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Rz = 0</td><td>原始 Miller 补偿</td><td>RHP（有害）</td></tr>
+          <tr><td>Rz = 1/gm</td><td>零点被推到无穷远</td><td>消失</td></tr>
+          <tr><td>Rz &gt; 1/gm</td><td>零点翻到左半平面</td><td>LHP（有益，增加相位裕度）</td></tr>
+        </tbody>
+      </table>
+
+      <p><span class="tag green">推荐</span>工程上通常取 Rz 略大于 1/gm，不仅消除有害的 RHP 零点，还白赚一个 +90° 超前，直接改善相位裕度。</p>
+
+      <h3 id="ch6-s5">6.5 最小相位系统与非最小相位系统</h3>
+
+      <p>在前面多次提到"非最小相位"这个词，现在来正式定义它。</p>
+
+      <table>
+        <thead>
+          <tr><th>类型</th><th>定义</th><th>零点位置</th><th>相位特征</th><th>典型例子</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>最小相位系统</strong></td><td>所有零点都在 LHP</td><td>全部 LHP</td><td>给定增益曲线，相位唯一确定</td><td>RC 低通、正常运放电路</td></tr>
+          <tr><td><strong>非最小相位系统</strong></td><td>有零点在 RHP（或延迟）</td><td>含 RHP 零点</td><td>相同增益曲线，相位更负</td><td>全通滤波器、Miller 补偿</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box teal">
+        <strong>关键认知</strong>：之所以叫"最小相位"，是因为在所有具有<strong>相同增益曲线</strong>的系统中，全部零点在 LHP 的那个系统的相位变化最小（最不负）。RHP 零点会让相位比最小相位系统<strong>多出</strong>一份滞后，所以叫"非最小"相位。
+      </div>
+
+      <h4>为什么"最小相位"重要？</h4>
+
+      <p>对于最小相位系统，有一个强有力的结论：<strong>增益和相位不是独立的——知道一个就能推出另一个</strong>（Bode 增益-相位关系，也叫 Kramers-Kronig 关系在因果系统中的体现）。这意味着：</p>
+
+      <ul>
+        <li>如果你只看了增益曲线就能判断系统是否最小相位——如果增益下降但相位还在继续变差，说明有 RHP 零点</li>
+        <li>补偿网络设计时，对于最小相位系统，调增益就够了（如 Type II/III 补偿器）</li>
+        <li>对于非最小相位系统，光调增益不行——必须想办法消除 RHP 零点（如 Miller 补偿的调零电阻）</li>
+      </ul>
+
+      <div class="info-box coral">
+        <strong>工程判据</strong>：如果你的 Bode 图上，增益曲线在高频已经下降到 0 dB 以下，但相位还在继续掉——警惕！很可能是 RHP 零点在作怪。这是 Buck 变换器 CCM 模式和 Miller 补偿运放的典型症状。
+      </div>
+
+      <h4>延迟也是一种"非最小相位"</h4>
+
+      <p>纯时间延迟 $e^{-s\tau}$ 的增益恒为 1（0 dB），但相位随频率线性下降：$\angle = -\omega\tau$。它等效于无穷多个 RHP 零点，所以也是非最小相位的。数字控制系统中的采样延迟就属于这一类。</p>
+
+      <div class="info-box">
+        <strong>补充</strong>：这也是为什么数字控制（有采样延迟）比模拟控制（无延迟）更难做稳定——延迟等效于引入了非最小相位特性，压缩了可用的相位裕度。
+      </div>
+
+      <div class="info-box purple">
+        <strong>下一站</strong>：到这里，从欧拉公式到传递函数到 Bode 图到零极点分析，整条数学链路已经串起来了。最后一章把所有知识点浓缩成一张速记表，方便日后读工程文章时快速回查。
+      </div>
+    </section>
+
+    <!-- ═══════════════ 第七章 ═══════════════ -->
+    <section class="chapter" id="ch7">
+      <div class="chapter-num">第七章</div>
+      <h2 class="chapter-title">知识脉络速记</h2>
+
+      <p>整条链路可以用一张表串起来：</p>
+
+      <table>
+        <thead>
+          <tr><th>环节</th><th>数学工具</th><th>解决了什么问题</th><th>关键公式</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>交流信号表示</td><td>欧拉公式</td><td>三角函数 → 指数运算</td><td>$e^{j\theta} = \cos\theta + j\sin\theta$</td></tr>
+          <tr><td>元件阻抗</td><td>复数</td><td>电容/电感的电压电流相位差</td><td>$Z_C = 1/(j\omega C)$, $Z_L = j\omega L$</td></tr>
+          <tr><td>微分方程求解</td><td>拉普拉斯变换</td><td>微分 → 代数</td><td>$\frac{d}{dt} \to s$</td></tr>
+          <tr><td>系统描述</td><td>传递函数</td><td>输入输出的频率关系</td><td>$H(s) = V_{out}(s)/V_{in}(s)$</td></tr>
+          <tr><td>稳态分析</td><td>令 s = jω</td><td>只看稳态，丢掉暂态</td><td>$\sigma = 0$</td></tr>
+          <tr><td>频率响应</td><td>Bode 图</td><td>增益(dB) + 相位(°) vs 频率</td><td>$20\log_{10}|H(j\omega)|$</td></tr>
+          <tr><td>稳定性判断</td><td>零极点位置</td><td>极点 LHP = 稳定，RHP 零点 = 危险</td><td>极点必须 σ &lt; 0</td></tr>
+          <tr><td>二阶系统</td><td>阻尼比 ζ / Q 值</td><td>ζ 决定超调和响应速度，Q = 1/(2ζ)</td><td>ζ ≈ 0.707 最佳折中</td></tr>
+          <tr><td>稳定性裕度</td><td>相位裕度 PM / 增益裕度 GM</td><td>PM 在 0 dB 处读相位，GM 在 −180° 处读增益</td><td>PM ≥ 45°, GM ≥ 6 dB</td></tr>
+          <tr><td>系统分类</td><td>最小相位 / 非最小相位</td><td>零点全在 LHP = 最小相位，含 RHP 零点 = 非最小相位</td><td>最小相位系统增益↔相位一一对应</td></tr>
+        </tbody>
+      </table>
+
+      <h4>核心公式速查</h4>
+
+      <div class="flow-box">欧拉公式:     $e^{j\theta} = \cos\theta + j\sin\theta$
+复数模:       $|a + jb| = \sqrt{a^2 + b^2}$
+复数幅角:     $\theta = \arctan(b/a)$
+电容阻抗:     $Z_C = 1/(j\omega C) = -j/(\omega C)$
+电感阻抗:     $Z_L = j\omega L$
+拉氏核心:     $d/dt \to s$, $\int dt \to 1/s$
+传递函数:     $H(s) = V_{out}(s) / V_{in}(s)$
+稳态条件:     $s = j\omega$（令 σ = 0）
+增益(dB):     $20\log_{10}|H(j\omega)|$
+相位:         $\angle H = \angle(\text{分子}) - \angle(\text{分母})$
+零点:         分子 = 0 的根
+极点:         分母 = 0 的根
+LHP 零点相位: 0° → +90°（超前，有益）
+RHP 零点相位: 0° → −90°（滞后，有害）
+LHP 极点相位: 0° → −90°（滞后）
+二阶系统:     H(s) = ωn²/(s²+2ζωn·s+ωn²)
+阻尼比 ζ:     ζ=0 无阻尼, ζ=0.707 最佳, ζ=1 临界
+Q 值:         Q = 1/(2ζ)，Q大→选择性好→振铃多
+相位裕度 PM:  增益=0dB处读相位，距−180°的差，≥45°
+增益裕度 GM:  相位=−180°处读增益，距0dB的差，≥6dB
+ζ ≈ PM/100:   PM=60° → ζ≈0.6（二阶近似）
+最小相位:     零点全在LHP，增益↔相位一一对应
+非最小相位:   含RHP零点，相同增益下相位更负</div>
+
+      <div class="info-box teal">
+        <strong>一句话总结</strong>：欧拉公式让交流信号变成复数运算 → 复数让阻抗统一了 R/L/C → 拉氏变换把微分方程变成代数方程 → 传递函数成为系统的数学画像 → 令 s = jω 后画 Bode 图 → 零极点位置决定稳定性和动态特性。这条链路是模拟电路和控制系统设计的数学基础。
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="back-top" id="backTop" title="回到顶部">↑</button>
+
+<script>
+// ═══════ Mobile hamburger ═══════
+(function() {
+  var btn = document.getElementById('hambBtn'), sb = document.getElementById('sidebar'), ov = document.getElementById('sidebarOverlay');
+  if (!btn) return;
+  function open() { btn.classList.add('open'); sb.classList.add('open'); ov.classList.add('show'); }
+  function close() { btn.classList.remove('open'); sb.classList.remove('open'); ov.classList.remove('show'); }
+  btn.addEventListener('click', function() { sb.classList.contains('open') ? close() : open(); });
+  ov.addEventListener('click', close);
+  document.querySelectorAll('.sidebar-nav a').forEach(function(a) { a.addEventListener('click', close); });
+})();
+
+// ═══════ Back to top ═══════
+(function() {
+  var b = document.getElementById('backTop'); if (!b) return;
+  window.addEventListener('scroll', function() { b.classList.toggle('show', window.scrollY > 400); });
+  b.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+})();
+
+// ═══════ Helper: setup canvas DPR ═══════
+function setupCanvas(c, w, h) {
+  if (!c) return null;
+  var ctx = c.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+  c.width = w * dpr; c.height = h * dpr;
+  c.style.width = w + 'px'; c.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+  return { ctx: ctx, W: w, H: h };
+}
+
+// ═══════ Canvas 1: σ 波形对比（交互版） ═══════
+(function() {
+  var c = document.getElementById('cvsSigma');
+  var o = setupCanvas(c, 780, 220);
+  if (!o) return;
+  var ctx = o.ctx, W = o.W, H = o.H;
+  var slider = document.getElementById('sigmaSlider');
+  var sigmaLabel = document.getElementById('sigmaVal');
+
+  function draw(sv) {
+    ctx.fillStyle = '#ececec'; ctx.fillRect(0, 0, W, H);
+    var sigma = sv / 100, midY = H / 2;
+    var col = sigma < 0 ? '#913719' : sigma > 0 ? '#7d4908' : '#0d6751';
+
+    // 中线
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY); ctx.stroke();
+
+    // 包络线
+    ctx.strokeStyle = col + '44'; ctx.lineWidth = 1; ctx.setLineDash([3, 2]);
+    for (var env = -1; env <= 1; env += 2) {
+      ctx.beginPath();
+      for (var i = 0; i <= 500; i++) {
+        var t = i / 500 * 4;
+        var amp = Math.exp(sigma * t) * 55 * env;
+        var x = (i / 500) * (W - 40) + 20;
+        if (i === 0) ctx.moveTo(x, midY - amp);
+        else ctx.lineTo(x, midY - amp);
+      }
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // 波形
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath();
+    for (var i = 0; i <= 800; i++) {
+      var t = i / 800 * 4;
+      var val = Math.exp(sigma * t) * 55 * Math.sin(t * 5);
+      var x = (i / 800) * (W - 40) + 20;
+      if (i === 0) ctx.moveTo(x, midY - val);
+      else ctx.lineTo(x, midY - val);
+    }
+    ctx.stroke();
+
+    // 标签
+    ctx.fillStyle = col; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+    var label = sigma < 0 ? ('σ = ' + sigma.toFixed(2) + ' < 0  衰减振荡（暂态会消失）')
+              : sigma > 0 ? ('σ = ' + sigma.toFixed(2) + ' > 0  发散振荡（不稳定！）')
+              : 'σ = 0  等幅振荡（稳态）';
+    ctx.fillText(label, W / 2, 18);
+  }
+
+  draw(-80);
+  slider.addEventListener('input', function() {
+    var v = parseInt(slider.value) / 100;
+    sigmaLabel.textContent = (v >= 0 ? '+' : '') + v.toFixed(2);
+    draw(parseInt(slider.value));
+  });
+})();
+
+// ═══════ Canvas: Euler rotation ═══════
+(function() {
+  var c = document.getElementById('cvsEuler');
+  var o = setupCanvas(c, 700, 340);
+  if (!o) return;
+  var ctx = o.ctx, W = o.W, H = o.H;
+  var slider = document.getElementById('thetaSlider');
+  var thetaLabel = document.getElementById('thetaVal');
+
+  function draw(dg) {
+    ctx.fillStyle = '#ececec'; ctx.fillRect(0, 0, W, H);
+    var cx = W / 2 - 40, cy = H / 2 + 20, R = 120;
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx - R - 30, cy); ctx.lineTo(cx + R + 30, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy - R - 30); ctx.lineTo(cx, cy + R + 30); ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.stroke();
+
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Re (实部)', cx + R + 30, cy - 8);
+    ctx.save(); ctx.translate(cx - 10, cy - R - 20); ctx.rotate(-Math.PI / 2); ctx.fillText('Im (虚轴)', 0, 0); ctx.restore();
+    ctx.fillText('1', cx + R + 8, cy + 14); ctx.fillText('-1', cx - R - 8, cy + 14);
+    ctx.fillText('j', cx - 8, cy - R - 10); ctx.fillText('-j', cx - 8, cy + R + 18);
+
+    var rad = dg * Math.PI / 180, x = cx + R * Math.cos(rad), y = cy - R * Math.sin(rad);
+
+    ctx.strokeStyle = '#16599e'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
+    ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
+    ctx.strokeStyle = '#913719'; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, cy); ctx.stroke();
+    ctx.strokeStyle = '#0d6751'; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(cx, y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#16599e'; ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI); ctx.fill();
+    ctx.fillStyle = '#913719'; ctx.beginPath(); ctx.arc(x, cy, 3, 0, 2 * Math.PI); ctx.fill();
+    ctx.font = 'bold 11px sans-serif'; ctx.textAlign = x > cx ? 'left' : 'right';
+    ctx.fillText(Math.cos(rad).toFixed(3), x + (x > cx ? 6 : -6), cy + 16);
+    ctx.fillStyle = '#0d6751'; ctx.beginPath(); ctx.arc(cx, y, 3, 0, 2 * Math.PI); ctx.fill();
+    ctx.textAlign = 'right'; ctx.fillText(Math.sin(rad).toFixed(3) + 'j', cx - 6, y + 4);
+
+    ctx.strokeStyle = 'rgba(22,89,158,0.3)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, 35, 0, -rad, rad > 0 ? true : false); ctx.stroke();
+
+    ctx.fillStyle = '#16599e'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+    var midAngle = -rad / 2;
+    ctx.fillText(dg.toFixed(0) + '°', cx + 48 * Math.cos(midAngle), cy - 48 * Math.sin(midAngle));
+
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('e^(j·' + dg.toFixed(0) + '°) = ' + Math.cos(rad).toFixed(3) + ' + j·' + Math.sin(rad).toFixed(3), 20, 28);
+  }
+
+  draw(45);
+  slider.addEventListener('input', function() {
+    var deg = parseInt(slider.value) / 10;
+    thetaLabel.textContent = deg.toFixed(0) + '°';
+    draw(deg);
+  });
+})();
+
+// ═══════ Canvas 2: Bode 图交互 ═══════
+(function() {
+  var c = document.getElementById('cvsBode');
+  if (!c) return;
+  var slider = document.getElementById('fcSlider');
+  var fcLabel = document.getElementById('fcVal');
+  var asympCheck = document.getElementById('asympCheck');
+  if (!slider) return;
+
+  var ctx = c.getContext('2d');
+  var W = c.width, H = c.height;
+  var dpr = window.devicePixelRatio || 1;
+  c.width = W * dpr; c.height = H * dpr;
+  c.style.width = W + 'px'; c.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  function draw(fc, showAsymp) {
+    ctx.fillStyle = '#ececec';
+    ctx.fillRect(0, 0, W, H);
+
+    var fMin = 1, fMax = 100000;
+    var gainMin = -60, gainMax = 10;
+    var phaseMin = -100, phaseMax = 10;
+    var padL = 50, padR = 20, padT = 16, padB = 30;
+
+    // 增益区
+    var gH = H * 0.5;
+    var pH = H * 0.4;
+    var gap = H * 0.05;
+
+    function fToX(f) {
+      return padL + (Math.log10(f) - Math.log10(fMin)) / (Math.log10(fMax) - Math.log10(fMin)) * (W - padL - padR);
+    }
+    function gainToY(g) {
+      return padT + (gainMax - g) / (gainMax - gainMin) * gH;
+    }
+    function phaseToY(p) {
+      return padT + gH + gap + (phaseMax - p) / (phaseMax - phaseMin) * pH;
+    }
+
+    // 网格
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 0.5;
+    [1,10,100,1000,10000,100000].forEach(function(f) {
+      var x = fToX(f);
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + gH + gap + pH); ctx.stroke();
+    });
+    [0,-20,-40,-60].forEach(function(g) {
+      var y = gainToY(g);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    });
+    [-90,-45,0].forEach(function(p) {
+      var y = phaseToY(p);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    });
+
+    // 标签
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    [0,-20,-40,-60].forEach(function(g) {
+      ctx.fillText(g + ' dB', padL - 4, gainToY(g) + 3);
+    });
+    [-90,-45,0].forEach(function(p) {
+      ctx.fillText(p + '°', padL - 4, phaseToY(p) + 3);
+    });
+    ctx.textAlign = 'center';
+    [1,10,100,1000,10000,100000].forEach(function(f) {
+      var lbl = f >= 1000 ? (f/1000) + 'k' : f;
+      ctx.fillText(lbl + 'Hz', fToX(f), H - 8);
+    });
+
+    // 标题
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Gain (dB)', padL, padT - 4);
+    ctx.fillText('Phase (°)', padL, padT + gH + gap - 4);
+
+    // fc 线
+    ctx.strokeStyle = '#91371988';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    var fcX = fToX(fc);
+    ctx.beginPath();
+    ctx.moveTo(fcX, padT); ctx.lineTo(fcX, padT + gH + gap + pH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 渐近线
+    if (showAsymp) {
+      ctx.strokeStyle = '#16599e44'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(padL, gainToY(0)); ctx.lineTo(fcX, gainToY(0));
+      var eg = 0 - 20 * (Math.log10(fMax) - Math.log10(fc)) / Math.log10(10);
+      ctx.lineTo(W - padR, gainToY(Math.max(eg, gainMin)));
+      ctx.stroke(); ctx.setLineDash([]);
+
+      ctx.strokeStyle = '#0d675155'; ctx.setLineDash([5, 3]);
+      var flc = fc / 10, fhc = fc * 10;
+      ctx.beginPath(); ctx.moveTo(padL, phaseToY(0)); ctx.lineTo(fToX(flc), phaseToY(0));
+      ctx.lineTo(fToX(fhc), phaseToY(-90)); ctx.lineTo(W - padR, phaseToY(-90));
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // 增益曲线
+    ctx.strokeStyle = '#16599e';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var i = 0; i <= 400; i++) {
+      var logF = Math.log10(fMin) + (i / 400) * (Math.log10(fMax) - Math.log10(fMin));
+      var f = Math.pow(10, logF);
+      var w = 2 * Math.PI * f;
+      var wc = 2 * Math.PI * fc;
+      var mag = 1 / Math.sqrt(1 + (w/wc)*(w/wc));
+      var gainDB = 20 * Math.log10(mag);
+      var x = fToX(f);
+      var y = gainToY(gainDB);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // 相位曲线
+    ctx.strokeStyle = '#0d6751';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var i = 0; i <= 400; i++) {
+      var logF = Math.log10(fMin) + (i / 400) * (Math.log10(fMax) - Math.log10(fMin));
+      var f = Math.pow(10, logF);
+      var w = 2 * Math.PI * f;
+      var wc = 2 * Math.PI * fc;
+      var phase = -Math.atan(w/wc) * 180 / Math.PI;
+      var x = fToX(f);
+      var y = phaseToY(phase);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // fc 标注
+    ctx.fillStyle = '#913719';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('fc = ' + fc + ' Hz', fcX, padT - 4);
+  }
+
+  draw(1000, true);
+  slider.addEventListener('input', function() {
+    var v = parseInt(slider.value);
+    fcLabel.textContent = v + ' Hz';
+    draw(v, asympCheck.checked);
+  });
+  asympCheck.addEventListener('change', function() {
+    draw(parseInt(slider.value), asympCheck.checked);
+  });
+})();
+
+// ═══════ Canvas 3: 全通 Bode 图 ═══════
+(function() {
+  var c = document.getElementById('cvsAllpass');
+  if (!c) return;
+  var ctx = c.getContext('2d');
+  var W = c.width, H = c.height;
+  var dpr = window.devicePixelRatio || 1;
+  c.width = W * dpr; c.height = H * dpr;
+  c.style.width = W + 'px'; c.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0, 0, W, H);
+
+  var rMin = 0.01, rMax = 100;
+  var padL = 50, padR = 20, padT = 16, padB = 30;
+  var gH = H * 0.4;
+  var pH = H * 0.5;
+  var gap = H * 0.06;
+
+  function rToX(r) {
+    return padL + (Math.log10(r) - Math.log10(rMin)) / (Math.log10(rMax) - Math.log10(rMin)) * (W - padL - padR);
+  }
+  function gainToY(g) {
+    var gMin = -5, gMax = 5;
+    return padT + (gMax - g) / (gMax - gMin) * gH;
+  }
+  function phaseToY(p) {
+    var pMin = -180, pMax = 0;
+    return padT + gH + gap + (pMax - p) / (pMax - pMin) * pH;
+  }
+
+  // 网格
+  ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+  ctx.lineWidth = 0.5;
+  [0.01,0.1,1,10,100].forEach(function(r) {
+    var x = rToX(r);
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + gH + gap + pH); ctx.stroke();
+  });
+  [0].forEach(function(g) {
+    var y = gainToY(g);
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+  });
+  [-180,-90,0].forEach(function(p) {
+    var y = phaseToY(p);
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+  });
+
+  // 标签
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('0 dB', padL - 4, gainToY(0) + 3);
+  [-180,-90,0].forEach(function(p) {
+    ctx.fillText(p + '°', padL - 4, phaseToY(p) + 3);
+  });
+  ctx.textAlign = 'center';
+  ['0.01','0.1','1','10','100'].forEach(function(r, i) {
+    var vals = [0.01,0.1,1,10,100];
+    ctx.fillText('ω/ω₀=' + r, rToX(vals[i]), H - 8);
+  });
+
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Gain (dB)', padL, padT - 4);
+  ctx.fillText('Phase (°)', padL, padT + gH + gap - 4);
+
+  // ω₀ 线
+  ctx.strokeStyle = '#91371988';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 3]);
+  var w0X = rToX(1);
+  ctx.beginPath();
+  ctx.moveTo(w0X, padT); ctx.lineTo(w0X, padT + gH + gap + pH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 增益曲线（恒 0 dB）
+  ctx.strokeStyle = '#16599e';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var i = 0; i <= 400; i++) {
+    var logR = Math.log10(rMin) + (i / 400) * (Math.log10(rMax) - Math.log10(rMin));
+    var r = Math.pow(10, logR);
+    var gainDB = 0; // 全通增益恒为 0 dB
+    var x = rToX(r);
+    var y = gainToY(gainDB);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // 相位曲线: φ = -2*arctan(ω/ω₀): 0° → -90° → -180°
+  ctx.strokeStyle = '#0d6751';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var i = 0; i <= 400; i++) {
+    var logR = Math.log10(rMin) + (i / 400) * (Math.log10(rMax) - Math.log10(rMin));
+    var r = Math.pow(10, logR);
+    var phaseDeg = -2 * Math.atan(r) * 180 / Math.PI;
+    var x = rToX(r);
+    var y = phaseToY(phaseDeg);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // ω₀ 标注
+  ctx.fillStyle = '#913719';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('ω = ω₀', w0X, padT - 4);
+
+  // −90° 标注点
+  ctx.fillStyle = '#0d6751';
+  ctx.beginPath();
+  ctx.arc(w0X, phaseToY(-90), 3, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.fillText('−90°', w0X + 20, phaseToY(-90) + 3);
+})();
+
+// ═══════ Canvas: s-plane zero-pole map (v2) ═══════
+(function() {
+  var c = document.getElementById('cvsSPlane');
+  if (!c) return;
+  var o = setupCanvas(c, 780, 440);
+  if (!o) return;
+  var ctx = o.ctx, W = o.W, H = o.H;
+  var sel = document.getElementById('sysSelect');
+  var desc = document.getElementById('sysDesc');
+  var zetaSlider = document.getElementById('zetaSlider');
+  var zetaRange = document.getElementById('zetaRange');
+  var zetaVal = document.getElementById('zetaVal');
+  if (!sel) return;
+
+  var cx = W / 2, cy = H / 2;
+  var scale = 62;
+
+  var zetaRays = [0, 0.2, 0.4, 0.5, 0.7, 0.9, 1.0];
+  var currentZeta = 0.5;
+
+  function getSecondPoles(zeta) {
+    var wn = 1.0;
+    var imPart = wn * Math.sqrt(Math.max(0, 1 - zeta * zeta));
+    return [{re: -zeta * wn, im: imPart}, {re: -zeta * wn, im: -imPart}];
+  }
+
+  function buildSystems() {
+    var sp = getSecondPoles(currentZeta);
+    var zetaTxt = currentZeta.toFixed(2);
+    return {
+      rc: {
+        poles: [{re: -1, im: 0}], zeros: [], hasSlider: false,
+        desc: '\u6781\u70b9 s = \u22121/T\uff08LHP\uff09\u2192 \u4e00\u9636\u7a33\u5b9a\u7cfb\u7edf\u3002\u65e0\u96f6\u70b9\u3002',
+        tf: 'H(s) = 1/(1+sT)',
+        info: '\u4e00\u9636\u4f4e\u901a\uff0c\u8f6c\u6298\u9891\u7387 \u03c90 = 1/T\uff0c\u76f8\u4f4d 0\u00b0\u2192\u221290\u00b0'
+      },
+      allpass: {
+        poles: [{re: -1, im: 0}], zeros: [{re: 1, im: 0}], hasSlider: false,
+        desc: '\u6781\u70b9 LHP + \u96f6\u70b9 RHP\uff0c\u5173\u4e8e\u865a\u8f74\u5bf9\u79f0 \u2192 \u5168\u901a\uff08\u589e\u76ca0dB\uff09\uff0c\u76f8\u4f4d 0\u00b0\u2192\u2212180\u00b0\u3002',
+        tf: 'H(s) = (1\u2212sT)/(1+sT)',
+        info: '\u975e\u6700\u5c0f\u76f8\u4f4d\uff0c\u96f6\u6781\u70b9\u5e45\u9891\u62b5\u6d88\uff0c\u76f8\u9891\u53e0\u52a0\u6ede\u540e'
+      },
+      second: {
+        poles: sp, zeros: [], hasSlider: true,
+        desc: '\u4e8c\u9636\u5171\u8f6d\u6781\u70b9\u5bf9\uff0c\u03b6=' + zetaTxt + '\uff0c\u03c9n=1 \u2192 ' + (currentZeta < 1 ? '\u6b20\u963b\u5c3c\uff0c\u6709\u8d85\u8c03' : currentZeta >= 0.999 ? '\u4e34\u754c\u963b\u5c3c' : '\u8fc7\u963b\u5c3c') + '\u3002',
+        tf: 'H(s) = \u03c9n\u00b2/(s\u00b2+2\u03b6\u03c9n\u00b7s+\u03c9n\u00b2)',
+        info: '\u62d6\u52a8 \u03b6 \u6ed1\u5757\u89c2\u5bdf\u6781\u70b9\u5982\u4f55\u6cbf \u03c9n=1 \u5706\u5f27\u79fb\u52a8'
+      },
+      unstable: {
+        poles: [{re: 1, im: 0}], zeros: [], hasSlider: false,
+        desc: '\u6781\u70b9\u5728 RHP\uff08s = +1/T\uff09\u2192 \u4e0d\u7a33\u5b9a\uff01\u65f6\u57df\u54cd\u5e94\u6307\u6570\u53d1\u6563\u3002',
+        tf: 'H(s) = 1/(1\u2212sT)',
+        info: '\u5373\u4f7f\u4e00\u9636\uff0cRHP\u6781\u70b9\u4e5f\u5bfc\u81f4\u53d1\u6563\u2014\u2014\u7a33\u5b9a\u6027\u53ea\u53d6\u51b3\u4e8e\u6781\u70b9\u03c3\u7684\u7b26\u53f7'
+      },
+      rhpzero: {
+        poles: [{re: -1, im: 0}, {re: -2, im: 0}], zeros: [{re: 1, im: 0}], hasSlider: false,
+        desc: '\u4e24\u4e2a LHP \u6781\u70b9 + \u4e00\u4e2a RHP \u96f6\u70b9 \u2192 \u7a33\u5b9a\u4f46\u975e\u6700\u5c0f\u76f8\u4f4d\u3002',
+        tf: 'H(s) = (1\u2212sT)/(1+sT\u2081)(1+sT\u2082)',
+        info: '\u5de5\u7a0b\u5178\u578b\u573a\u666f\uff1aMiller\u7535\u5bb9\u5f15\u5165\u7684RHP\u96f6\u70b9 + \u8fd0\u653e\u6781\u70b9'
+      }
+    };
+  }
+
+  function draw(sysName) {
+    var systems = buildSystems();
+    var sys = systems[sysName];
+    if (!sys) return;
+
+    ctx.fillStyle = '#ececec';
+    ctx.fillRect(0, 0, W, H);
+
+    // LHP gradient (green tint, left half)
+    var lhpgrad = ctx.createLinearGradient(cx, 0, 0, 0);
+    lhpgrad.addColorStop(0, 'rgba(13,103,81,0.02)');
+    lhpgrad.addColorStop(0.4, 'rgba(13,103,81,0.07)');
+    lhpgrad.addColorStop(1, 'rgba(13,103,81,0.14)');
+    ctx.fillStyle = lhpgrad;
+    ctx.fillRect(0, 0, cx, H);
+
+    // RHP gradient (red tint, right half)
+    var rhpgrad = ctx.createLinearGradient(cx, 0, W, 0);
+    rhpgrad.addColorStop(0, 'rgba(145,55,25,0.02)');
+    rhpgrad.addColorStop(0.5, 'rgba(145,55,25,0.05)');
+    rhpgrad.addColorStop(1, 'rgba(145,55,25,0.10)');
+    ctx.fillStyle = rhpgrad;
+    ctx.fillRect(cx, 0, cx, H);
+
+    // Constant ωn circles
+    [0.5, 1, 1.5, 2, 2.5, 3].forEach(function(wn) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, wn * scale, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('\u03c9n=' + wn, cx + wn * scale + 2, cy - 2);
+    });
+
+    // Constant ζ rays in LHP
+    zetaRays.forEach(function(zeta) {
+      if (zeta >= 1) return;
+      var sinTheta = Math.sqrt(1 - zeta * zeta);
+      var cosTheta = zeta;
+      var maxR = 4.0 * scale;
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 0.5;
+      ctx.setLineDash([4, 6]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx - cosTheta * maxR, cy - sinTheta * maxR);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx - cosTheta * maxR, cy + sinTheta * maxR);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      var lx = cx - cosTheta * (maxR + 6);
+      var ly = cy - sinTheta * (maxR + 6);
+      if (ly < 8) ly = 14;
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u03b6=' + zeta, lx, ly - 2);
+    });
+
+    // Axes
+    ctx.strokeStyle = 'rgba(0,0,0,0.38)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(6, cy); ctx.lineTo(W - 6, cy);
+    ctx.moveTo(cx, H - 6); ctx.lineTo(cx, 6);
+    ctx.stroke();
+
+    // Arrow heads
+    ctx.fillStyle = 'rgba(0,0,0,0.38)';
+    ctx.beginPath();
+    ctx.moveTo(W - 6, cy); ctx.lineTo(W - 14, cy - 5); ctx.lineTo(W - 14, cy + 5); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx, 6); ctx.lineTo(cx - 5, 14); ctx.lineTo(cx + 5, 14); ctx.fill();
+
+    // Axis labels
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('\u03c3 (Re)', W - 34, cy - 12);
+    ctx.textAlign = 'left';
+    ctx.fillText('j\u03c9 (Im)', cx + 12, 18);
+
+    // Region labels
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = 'rgba(13,103,81,0.75)';
+    ctx.textAlign = 'center';
+    ctx.fillText('LHP   \u7a33\u5b9a\u533a (\u03c3\u003c0)', cx * 0.42, 26);
+    ctx.fillStyle = 'rgba(145,55,25,0.75)';
+    ctx.fillText('RHP \u4e0d\u7a33\u5b9a\u533a (\u03c3\u003e0)', cx * 1.58, 26);
+
+    // Tick marks
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+    ctx.lineWidth = 0.5;
+    ctx.fillStyle = 'rgba(0,0,0,0.42)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    [-3, -2, -1, 1, 2, 3].forEach(function(v) {
+      var x = cx + v * scale;
+      if (x > 12 && x < W - 12) {
+        ctx.beginPath(); ctx.moveTo(x, cy - 4); ctx.lineTo(x, cy + 4); ctx.stroke();
+        ctx.fillText(v, x, cy + 16);
+      }
+    });
+    ctx.textAlign = 'right';
+    [-3, -2, -1, 1, 2, 3].forEach(function(v) {
+      var y = cy - v * scale;
+      if (y > 12 && y < H - 12) {
+        ctx.beginPath(); ctx.moveTo(cx - 4, y); ctx.lineTo(cx + 4, y); ctx.stroke();
+        ctx.fillText(v + 'j', cx - 7, y + 4);
+      }
+    });
+
+    // Draw poles (×)
+    sys.poles.forEach(function(p) {
+      var px = cx + p.re * scale, py = cy - p.im * scale;
+      // Glow
+      ctx.fillStyle = 'rgba(145,55,25,0.12)';
+      ctx.beginPath(); ctx.arc(px, py, 10, 0, 2 * Math.PI); ctx.fill();
+      // Cross
+      ctx.strokeStyle = '#913719';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(px - 8, py - 8); ctx.lineTo(px + 8, py + 8);
+      ctx.moveTo(px + 8, py - 8); ctx.lineTo(px - 8, py + 8);
+      ctx.stroke();
+      // Label
+      ctx.fillStyle = '#913719';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'left';
+      var lbl = p.im !== 0
+        ? p.re.toFixed(2) + (p.im > 0 ? '+' : '') + p.im.toFixed(2) + 'j'
+        : String(p.re);
+      ctx.fillText('pole: ' + lbl, px + 12, py - 8);
+    });
+
+    // Draw zeros (○) — filled blue ring
+    sys.zeros.forEach(function(z) {
+      var zx = cx + z.re * scale, zy = cy - z.im * scale;
+      // Glow
+      ctx.fillStyle = 'rgba(22,89,158,0.10)';
+      ctx.beginPath(); ctx.arc(zx, zy, 10, 0, 2 * Math.PI); ctx.fill();
+      // Filled blue circle + white center
+      ctx.fillStyle = '#16599e';
+      ctx.beginPath(); ctx.arc(zx, zy, 8, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(zx, zy, 4.5, 0, 2 * Math.PI); ctx.fill();
+      ctx.strokeStyle = '#16599e';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(zx, zy, 8, 0, 2 * Math.PI); ctx.stroke();
+      // Label
+      ctx.fillStyle = '#16599e';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'left';
+      var lbl = z.im !== 0
+        ? z.re.toFixed(2) + (z.im > 0 ? '+' : '') + z.im.toFixed(2) + 'j'
+        : String(z.re);
+      ctx.fillText('zero: ' + lbl, zx + 12, zy + 16);
+    });
+
+    // Info panel (bottom-right)
+    var allLHP = sys.poles.every(function(p) { return p.re < 0; });
+    var isStable = allLHP;
+    var infoW = 220, infoH = 58, infoX = W - infoW - 12, infoY = H - infoH - 8;
+
+    ctx.fillStyle = 'rgba(255,255,255,0.93)';
+    ctx.strokeStyle = isStable ? '#0d6751' : '#913719';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    var rr = 6;
+    ctx.moveTo(infoX + rr, infoY);
+    ctx.lineTo(infoX + infoW - rr, infoY);
+    ctx.quadraticCurveTo(infoX + infoW, infoY, infoX + infoW, infoY + rr);
+    ctx.lineTo(infoX + infoW, infoY + infoH - rr);
+    ctx.quadraticCurveTo(infoX + infoW, infoY + infoH, infoX + infoW - rr, infoY + infoH);
+    ctx.lineTo(infoX + rr, infoY + infoH);
+    ctx.quadraticCurveTo(infoX, infoY + infoH, infoX, infoY + infoH - rr);
+    ctx.lineTo(infoX, infoY + rr);
+    ctx.quadraticCurveTo(infoX, infoY, infoX + rr, infoY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = isStable ? '#0d6751' : '#913719';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(isStable ? '\u2714 \u7a33\u5b9a' : '\u2716 \u4e0d\u7a33\u5b9a', infoX + 10, infoY + 16);
+
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.font = '11px sans-serif';
+    ctx.fillText(sys.tf, infoX + 10, infoY + 32);
+
+    ctx.fillStyle = 'rgba(0,0,0,0.48)';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(sys.info, infoX + 10, infoY + 48);
+
+    if (desc) desc.textContent = sys.desc;
+  }
+
+  function updateSlider(sysName) {
+    if (sysName === 'second') {
+      zetaSlider.style.display = 'inline';
+      currentZeta = parseFloat(zetaRange.value) / 100;
+      zetaVal.textContent = currentZeta.toFixed(2);
+    } else {
+      zetaSlider.style.display = 'none';
+    }
+  }
+
+  draw('rc');
+  updateSlider('rc');
+
+  sel.addEventListener('change', function() {
+    updateSlider(sel.value);
+    draw(sel.value);
+  });
+
+  zetaRange.addEventListener('input', function() {
+    currentZeta = parseFloat(this.value) / 100;
+    zetaVal.textContent = currentZeta.toFixed(2);
+    draw('second');
+  });
+})();
+
+// ═══════ Sidebar active highlight ═══════
+(function() {
+  var links = document.querySelectorAll('.sidebar-nav a');
+  var sections = [];
+  links.forEach(function(link) {
+    var href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      var sec = document.querySelector(href);
+      if (sec) sections.push({link: link, sec: sec});
+    }
+  });
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        links.forEach(function(l) { l.classList.remove('active'); });
+        var match = sections.find(function(s) { return s.sec === entry.target; });
+        if (match) match.link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -70% 0px' });
+
+  sections.forEach(function(s) { observer.observe(s.sec); });
+})();
+</script>
+
+<script>
+// ===== 图1-1 无刷电机三相磁场合成 =====
+(function(){
+  var c=document.getElementById('cvsBldcField'); if(!c) return;
+  var dpr=window.devicePixelRatio||1; var cw=680,ch=380;
+  c.width=cw*dpr;c.height=ch*dpr; c.style.width=cw+'px';c.style.height=ch+'px';
+  var ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  var cx=cw/2,cy=ch/2+10,R=130,phase=0,running=false,animId=null;
+  var C={A:'#3b82f6',B:'#22c55e',C:'#ef4444',S:'#1a1a2e'};
+  function draw(){
+    ctx.fillStyle='#f5f4f1';ctx.fillRect(0,0,cw,ch);
+    // 坐标轴
+    ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(40,cy);ctx.lineTo(cw-40,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,30);ctx.lineTo(cx,ch-50);ctx.stroke();
+    // 参考圆（合成矢量轨迹）
+    ctx.strokeStyle='rgba(26,26,46,0.2)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.arc(cx,cy,1.5*R,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);
+    // 三相轴线与标签
+    [{a:0,l:'A相(0°)'},{a:120,l:'B相(120°)'},{a:240,l:'C相(240°)'}].forEach(function(x){
+      var r=x.a*Math.PI/180;
+      ctx.strokeStyle='rgba(0,0,0,0.15)';
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*1.7*Math.cos(r),cy-R*1.7*Math.sin(r));ctx.stroke();
+      ctx.fillStyle='rgba(0,0,0,0.35)';ctx.font='12px sans-serif';
+      var tx=cx+(R*1.8+20)*Math.cos(r),ty=cy-(R*1.8+20)*Math.sin(r);
+      ctx.fillText(x.l,tx-14,ty+4);
+    });
+    // 三相脉振矢量（用位移法，避免坐标偏移bug）
+    var ph=[0,-2.0944,-4.1888],pc=[C.A,C.B,C.C];
+    var sdx=0,sdy=0; // 合成位移累加器
+    for(var i=0;i<3;i++){
+      var cur=Math.cos(phase+ph[i]),aa=i*2.0944,mag=cur*R;
+      var dxi=mag*Math.cos(aa),dyi=-mag*Math.sin(aa);
+      sdx+=dxi; sdy+=dyi; // 累加位移
+      var ex=cx+dxi,ey=cy+dyi;
+      ctx.strokeStyle=pc[i];ctx.lineWidth=Math.abs(cur)>=0.3?3:2;
+      if(cur<0)ctx.globalAlpha=0.5;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();ctx.globalAlpha=1;
+      if(Math.abs(mag)>5){
+        var al=8,an=Math.atan2(cy-ey,ex-cx);
+        ctx.fillStyle=pc[i];ctx.beginPath();ctx.moveTo(ex,ey);
+        ctx.lineTo(ex-al*Math.cos(an-0.4),ey+al*Math.sin(an-0.4));
+        ctx.lineTo(ex-al*Math.cos(an+0.4),ey+al*Math.sin(an+0.4));ctx.closePath();ctx.fill();
+      }
+      ctx.fillStyle=pc[i];ctx.font='bold 11px sans-serif';ctx.fillText('ABC'[i],ex+6,ey-4);
+    }
+    // 合成矢量：中心 + 位移之和
+    var rx=cx+sdx,ry=cy+sdy;
+    var sm=Math.sqrt(sdx*sdx+sdy*sdy);
+    ctx.strokeStyle=C.S;ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(rx,ry);ctx.stroke();
+    if(sm>5){
+      var sa=Math.atan2(cy-ry,rx-cx);
+      ctx.fillStyle=C.S;ctx.beginPath();ctx.moveTo(rx,ry);
+      ctx.lineTo(rx-10*Math.cos(sa-0.35),ry+10*Math.sin(sa-0.35));
+      ctx.lineTo(rx-10*Math.cos(sa+0.35),ry+10*Math.sin(sa+0.35));
+      ctx.closePath();ctx.fill();
+    }
+    ctx.fillStyle=C.S;ctx.font='bold 12px sans-serif';ctx.fillText('\u03A3F',rx+8,ry-4);
+    // 信息面板
+    ctx.fillStyle='rgba(255,255,255,0.92)';ctx.strokeStyle='rgba(0,0,0,0.1)';
+    ctx.fillRect(cw-175,16,165,90);ctx.strokeRect(cw-175,16,165,90);
+    ctx.fillStyle='#333';ctx.font='12px sans-serif';
+    var dp=(phase*180/Math.PI)%360;if(dp<0)dp+=360;
+    ctx.fillText('\u7535\u89d2\u5EA6 \u03B8e: '+dp.toFixed(0)+'\u00B0',cw-168,36);
+    ctx.fillText('|ΣF| = 1.50 Fm (\u6052\u5B9A)',cw-168,54);
+    ctx.font='11px sans-serif';
+    ['A\u76F8(\u84DD)','B\u76F8(\u7EFF)','C\u76F8(\u7EA2)','\u5408\u6210(\u9ED1)'].forEach(function(l,i){
+      ctx.fillStyle=['#3b82f6','#22c55e','#ef4444','#1a1a2e'][i];
+      ctx.fillRect(cw-173,96+i*16,10,10);ctx.fillStyle='#555';ctx.fillText(l,cw-157,105+i*16);
+    });
+  }
+  draw();
+  c.addEventListener('mouseenter',function(){
+    if(running)return; running=true;
+    function lp(){phase+=0.02;draw();animId=requestAnimationFrame(lp);}
+    animId=requestAnimationFrame(lp);
+  });
+  c.addEventListener('mouseleave',function(){
+    running=false; if(animId){cancelAnimationFrame(animId);animId=null;}
+  });
+})();
+</script>
+
+<div style="margin-top:3rem; padding:1.5rem 2rem; background:linear-gradient(135deg,#f0fdf4,#ecfeff); border-radius:12px; border:1px solid #a7f3d0; text-align:center; font-size:15px; color:#333; line-height:2;">
+  <p style="margin:0;font-weight:600;font-size:16px;">📡 更多深度技术笔记已加密保护</p>
+  <p style="margin:0.5rem 0 0;color:#666;">防止搬运倒卖，但欢迎真诚交流 —— 加好友获取访问密码，一起探讨硬件设计</p>
+</div>
+
+</body>
+</html>

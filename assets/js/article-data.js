@@ -49,7 +49,7 @@ var siteData = {
           title: '从欧拉公式到传递函数：信号处理的数学链路',
           date: '2026-06-19',
           summary: '从欧拉公式出发，串联复数阻抗、拉普拉斯变换、传递函数到Bode图，结合全通相移器实例，建立完整的信号处理数学链路。',
-          file: 'articles/encrypted/euler-to-transfer-function.html'
+          file: 'articles/euler-to-transfer-function.html'
         },
         {
           id: 'filter-circuits-and-dsp',
@@ -98,7 +98,7 @@ var siteData = {
           title: '虚短与虚断 · 原理及应用局限性',
           date: '2026-06-22',
           summary: '从负反馈数学模型出发，推导虚短虚断的成立条件与误差界限，分析开环增益、反馈深度对近似精度的影响，揭示应用局限性。',
-          file: 'articles/encrypted/virtual-short-virtual-open-limitations.html'
+          file: 'articles/virtual-short-virtual-open-limitations.html'
         }
       ]
     },
