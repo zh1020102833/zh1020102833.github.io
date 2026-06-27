@@ -104,5 +104,32 @@
 
   <!-- ===== 必要脚本，放在 </body> 前 ===== -->
   <script src="../assets/js/nav.js"></script>
+
+  <!--
+  ══════════════════════════════════════════════════════════
+  加密发布流程（Staticrypt AES-256）
+  ══════════════════════════════════════════════════════════
+
+  1. 安装（仅首次）：
+     npm install -g staticrypt
+
+  2. 写完文章后加密：
+     staticrypt 文章文件名.html -p "密码" --short -d "encrypted/"
+     推荐中文 UI 参数：
+     --template-title "加密文章" \
+     --template-instructions "请输入密码查看" \
+     --template-placeholder "输入密码" \
+     --template-error "密码错误" \
+     --template-button "解锁"
+
+  3. 加密输出在 articles/encrypted/ 目录，部署该版本即可。
+
+  注意事项：
+  - meta: <meta name="encrypt" content="true">  ← 加密标记
+  - 密码用环境变量 STATICRYPT_PASSWORD，不写进仓库
+  - 原文保持明文便于编辑，加密版方部署
+  ══════════════════════════════════════════════════════════
+  -->
+
 </body>
 </html>

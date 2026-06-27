@@ -75,8 +75,10 @@ class ArticleMetaParser(HTMLParser):
             self.in_title = False
 
 
+ENCRYPTED_DIR = os.path.join(ARTICLES_DIR, "encrypted")
+
 def scan_articles():
-    """扫描 articles/ 目录，返回文章元数据列表。"""
+    """扫描 articles/ 目录下明文源文件，提取元数据；输出路径指向 encrypted/ 加密版。"""
     articles = []
     if not os.path.isdir(ARTICLES_DIR):
         print(f"错误: articles 目录不存在: {ARTICLES_DIR}")
@@ -87,6 +89,9 @@ def scan_articles():
             continue
 
         fpath = os.path.join(ARTICLES_DIR, fname)
+        if os.path.isdir(fpath):
+            continue  # 跳过 encrypted/ 等子目录
+
         with open(fpath, "r", encoding="utf-8") as f:
             html = f.read()
 
@@ -104,13 +109,20 @@ def scan_articles():
 
         file_id = fname.replace(".html", "")
 
+        # 检查加密版是否存在，存在则用加密路径，否则用原文路径
+        encrypted_path = os.path.join(ENCRYPTED_DIR, fname)
+        if os.path.exists(encrypted_path):
+            file = f"articles/encrypted/{fname}"
+        else:
+            file = f"articles/{fname}"
+
         articles.append({
             "id": file_id,
             "title": parser.title or file_id,
             "category": parser.category,
             "date": parser.date,
             "summary": parser.description or "",
-            "file": f"articles/{fname}",
+            "file": file,
         })
 
     return articles
