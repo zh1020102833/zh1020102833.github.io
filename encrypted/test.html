@@ -2,7 +2,7 @@
 <html class="staticrypt-html">
     <head>
         <meta charset="utf-8" />
-        <title>加密文章</title>
+        <title>Protected Page</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <!-- do not cache this page -->
@@ -171,11 +171,6 @@
                     font-size: 16px;
                 }
             }
-        
-            .staticrypt-content { background: #ffffff !important; font-family: -apple-system, BlinkMacSystemFont, sans-serif !important; color: #333 !important; line-height: 1.7 !important; }
-            .staticrypt-content h1,.staticrypt-content h2,.staticrypt-content h3 { color: #222 !important; }
-            .staticrypt-content a { color: #0066cc !important; }
-            .staticrypt-content img { max-width: 100% !important; }
         </style>
     </head>
 
@@ -188,8 +183,8 @@
             <div class="staticrypt-page">
                 <div class="staticrypt-form">
                     <div class="staticrypt-instructions">
-                        <p class="staticrypt-title">加密文章</p>
-                        <p>多数文章已加密保护，加好友（徐娅）获取密码</p>
+                        <p class="staticrypt-title">Protected Page</p>
+                        <p></p>
                     </div>
 
                     <hr class="staticrypt-hr" />
@@ -200,7 +195,7 @@
                                 id="staticrypt-password"
                                 type="password"
                                 name="password"
-                                placeholder="输入密码"
+                                placeholder="Password"
                                 autofocus
                             />
 
@@ -217,7 +212,7 @@
                             Remember me
                         </label>
 
-                        <input type="submit" class="staticrypt-decrypt-button" value="解锁" />
+                        <input type="submit" class="staticrypt-decrypt-button" value="DECRYPT" />
                     </form>
                 </div>
             </div>
@@ -821,11 +816,11 @@ exports.init = init;
 
   return exports;
 })());
-            const templateError = "密码错误",
+            const templateError = "Bad password!",
                 templateToggleAltShow = "Show password",
                 templateToggleAltHide = "Hide password",
                 isRememberEnabled = true,
-                staticryptConfig = {"staticryptEncryptedMsgUniqueVariableName":"7c30bf2d3fd00cd6dd152ce47df011d1bde1fd88ec3497cc6dc26e8542c91b098cec0b56b16c2bd07b0ac646c428e3785d1be41379aaae649949a125c3a346232c978ebb0db4d5284499346ad4bbdfc45ff13fcd37c967424ac76976570dadf0bdb5e3a32ab53c050c86c5d25b51aec5dfc4e0b90d053ff6ef10fed5ffe93c3c56a52b2bce897030ec696f3efedc8fec8f7579542b118aa052a85ad63020f2c2b17fcb8c7df346c61006bc3b51a89ce4a22c2e11edc60245fa678914dc0a34a0b6d376f652414371e94ee886ad6556a681c142c6d24b8748f014f869e615e18a5e4ba4884de867d9b1dac2d8b648dc95a90fdaf0e96e4c890444d4b5d8820fe8843802d9551d4a33f04ddea7aff1660b5fecb52d52d51cbe8d30093a58c25bacffe5d98888c5216fabcfaf3dbd2643a8e629f373ab6689d0fb71cfd3b9dd2364ab863d4ab33c97f8d320bf3b844c4566bc8d8ff6d4df9c185da63958bf00dc8a9b42a4bd344172ac65a3d1a2e1ef78ee7ff640ecf701cb751cf49663c314effeab77ffcb1f8103c88250b0631d5efd54543b552769fb153f6c93efdadefb00842dbda8a25802df46af13ff6c9cf9ec81bc24676b64bd1269f1a224ed6ab517b9898c8acf6048b6c88b4ea7861a5a1ab5a13a0c12248c5ca33a227a7627bba8067d4b7c809f7457b4b178bcd385a91a2025d06318e5740f739b2805010b93cd7f72ccc1fe5e1b507ced225660265e409a303ff2453380fcee920804c683574e4ae961584d5ca655087d5bc2ebdae3f83cfae3f71da99ca82034d38805f9f0c97b78c87665905ce2a4135d4a4544193c9833a104c013005a50e32f4fc5cb4db3b73b87fa985a2e821c552f1ffd0a8d8b7632ce7f487a31db2c6847d7fc1fafe0ebb68dc2789fa959f2dfa5c1dc40c0a05272cad73c45c94f6a400d4f04604e0ab10513122b855b55bdbfb6716a8fe917a9adbe7aed87acd8a15c8547eba758bd95783d2ad746527a6c770b79dd024b485908b430b416a41312fdbcb775600af8987b56c496ac314f827991847ba141c11869ccf0aee2a168029adbbce44f4d01803924c461eeeb41e590eb92d661c3a9903f7e3af61847ac3feae8e41f8541026e699a0ce169a31135c858755b43f91b4fba374837ee2428df181e56f36a18de16476c6e533bb914a8d2369166f92dc499eaedd21b98f6b86ad4a22f31a2d03402922283aa2e9eb39aaa7165afba8edabe18a54fc9ae0bb8a03539405037998d20cf5d5a0645ebca8d0ef95df007d89428bb6be4d852c9dbd5bd6c40eb9fea2b5142e5a9f9248e4060fcd64399e12c0455df9e109af233c439e81f04e0990ab108ee0fd2c11083cce4238c3f6a3ff15e744f4c679a8e863f9477b73b2bf4d5931fd05e6d726ba72c5ea37924fdef15459d3308be6ceb4a22b75b19a75d1a31b655b20d5d77a74cff876344546726c6cd4818ddf41e824e998af47165f784f7aa5845c50b7f23f88a12147f3b29aac49559e7ed36cf09af2689f4c5833fcb79b9d34b4313bf5907dfe1e56f4e4d069949ded9ab1428d8dbd4681a7dc4e4b7b0e4ad356c1647d033d313b6c004d684b63b80c6051f6a31853c4225fd9c377e69c6f79bb25621a2c29e3d422c86bdeaf1d8d830873bff2b2fcfd204b0959a33002e4521442936698d5173db79e318a5be33287c1fdf31f0e0715ef7d9f75c3234e7ae9b5e2a215b791644628f9f66644f944bbe76c5f98f0adbac79d9745075048f8dc53a915ddf2f1145592bc77847f0bbbc9059d8c58d7222b37beac79047a43d64a7465cce148045108b74fcb5041bdaafd16197623b4ef195578482aec598d50985287c13ee379c458821cf097c1e393d85ed5b3ffb988b4f331468a14e7eb54283155416b123be386e7287573443d43423ec3ffd6caa0fb6b1de461ead517fa130877871ab1d36946dc7f69cb81395015b21d7de4958aed2333765edce32f4a4ef9fc7f7245e9e3d5df93b6abdc5edf880fc3220455ac0c3ccbb5287fa74b835996ff187ed1ad6ace76ac34537f556bcdd8e444de14d4c57badc77373967aff1a29cae5ef9b00da9f73a267aabbce02a6a367f4a0739b1c41bc0ffb261b26620c987b63ec4af18cd9f8b4edcbb667b23b90be9c845b7daf30cc133a131dea878914c60ccc8c2c01b059e71937e3d2c9bf5f75f84f1c23fd7062d14cbf5d069d609f6c19f37047c30a3248cffeb7baa61c5989d05fe92a7f560fd10dfa3c10953318b64711ae41dba44f356dd686f69e79f994a70338d901001c933be4fad0d84488ed4be76cbceae34a03e5d172f3158cb7d2145cab7783667b5cadce053b95bbe5e1b37298e8e5bd600e3eba1d78be36796d5595a5322dc96cfc9781912fe11f243f7805d704dc01c52bd76fd476bd748724af6edcc2b241b9c4bb5d7f6f362eb15f9d0a02ba397edbaae7928cb031c008a6fbb84aed4b2ceeeafe4e673e093ddc6c0770ca003d8cce8242ddbd6b05170b9a56a527644227ea0a4586c932e36c37e9434001ecb6da176b9b77d914c68305d5f527c9dc393dd9ad235b07ea77162f6ea3680ef195b01c5c84261b9ac866f3e2f295e1c041019b3e22d4f3b8f0a5978172780d4e6b3be46c377a58a248b40b2b2f7487e5aa26cb1d4be9417e188f94714ea9fb0c8d6224f4fa3202aa6f3cca3aef06c2cb07feeb8b2e8c4462c3ed8c2ffa7e77273e82ecc5fee6533989a5d8108b6820d7585ecac4566b1a323a2ff78c61b303b823e2f0cbcf22d6664512faf4c09f4f9f474ed459f1d2038e0f63a12cacb43d9a5a1f6e2d3792925c3c5417a3860d54b0ec5fd1e462192d123ae7535640f3bc96e22409215b5973d38ccdfdb94783872b6433db562f889b5d7da934e42cbf115a1bbf34f868cdbfd0f8d17a50cc33dc8abc58b8f3812a374a0a15b2012f1e84fdb07974da3e582dd9d14210f64b91ac3afca0213f7af5e027389472dc0e0c72a9ee75ad08c27b97889788fae1b4f0423fed26c1fe793735018ddd9b18fac9f36f6882e16563099bd6fd3c87be7c4d89bfcbf106fa6ca7d230d2dc5381c44eb77c4c538d94fdfafc2f2f55c239aff44630cb9577030255ea05440a155509e51800a6bf730f53805ad0e3957e1eb4d83c78a87b295b15c428dbdab27ed4cddc4a35dbdae138fb2a1cdbccc6f50e9e7ddad34a37bc1ba1ec5d7cfa2a61d9e16fabf29aad275bfd00ea7b8876290a3d9a27b5445c09b9bab2cb54269ae211afc77f9f9a07f13bb9908bc96ae6f976c19a4f0c4824f145c6664a9958f","isRememberEnabled":true,"rememberDurationInDays":0,"staticryptSaltUniqueVariableName":"66f93fc8559b354d4fec658eed30016a"};
+                staticryptConfig = {"staticryptEncryptedMsgUniqueVariableName":"0c8daa09870f9fe5817828b259999a2114a439a2e1f18330a90575717d866059e9c125898f05bfcec4f7e5a20a8c3f525735228cf728b74667443234f2667084c9d121c7b1bd014e5ea176d59e8c66b0","isRememberEnabled":true,"rememberDurationInDays":0,"staticryptSaltUniqueVariableName":"ddbc350a7f412ed124ec5bb02f47d711"};
 
             // you can edit these values to customize some of the behavior of StatiCrypt
             const templateConfig = {
