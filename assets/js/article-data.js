@@ -80,6 +80,13 @@ var siteData = {
           file: 'articles/encrypted/op-amp-parameter-quick-reference.html'
         },
         {
+          id: 'opamp-interference-cmrr',
+          title: '运算放大器干扰源与共模抑制 · 完整篇',
+          date: '2026-06-27',
+          summary: '系统梳理运算放大器干扰来源（空间辐射、电源、地线、器件噪声），RC/LC滤波器设计，共模抑制比CMRR物理本质与量化选型，各拓扑对共模干扰的响应差异，引出仪表放大器INA方案。',
+          file: 'articles/encrypted/opamp-interference-cmrr.html'
+        },
+        {
           id: 'precision-halfwave-rectifier',
           title: '精密半波整流器 - 运放电路技术笔记',
           date: '2026-05-31',
@@ -200,6 +207,18 @@ var siteData = {
           date: '2026-05-22',
           summary: '分享技术写作的经验与技巧。',
           file: 'articles/encrypted/writing-tips.html'
+        }
+      ]
+    },
+    {
+      name: '未分类',
+      articles: [
+        {
+          id: '运放干扰源与共模抑制完整篇',
+          title: '运算放大器干扰源与共模抑制 · 完整篇',
+          date: '2026-06-27',
+          summary: '',
+          file: 'articles/运放干扰源与共模抑制完整篇.html'
         }
       ]
     }
