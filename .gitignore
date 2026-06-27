@@ -24,6 +24,11 @@ upload-tools/*.local.*
 *.bak
 *~
 
+# 明文文章（本地编辑，部署用加密版）
+articles/*.html
+!articles/模板.html
+!articles/template.html
+
 # Node（预留）
 node_modules/
 
