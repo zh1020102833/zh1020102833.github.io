@@ -209,18 +209,6 @@ var siteData = {
           file: 'articles/encrypted/writing-tips.html'
         }
       ]
-    },
-    {
-      name: '未分类',
-      articles: [
-        {
-          id: '运放干扰源与共模抑制完整篇',
-          title: '运算放大器干扰源与共模抑制 · 完整篇',
-          date: '2026-06-27',
-          summary: '',
-          file: 'articles/运放干扰源与共模抑制完整篇.html'
-        }
-      ]
     }
   ]
 };
