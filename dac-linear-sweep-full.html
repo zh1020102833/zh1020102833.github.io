@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="encrypt" content="true">
+<meta name="category" content="硬件">
+<meta name="date" content="2026-07-01">
+<meta name="description" content="DAC线性电压扫描从需求到解决的完整记录：0.35/Tr公式推导、RC滤波矛盾、跟踪误差分析、频域重叠、四阶有源滤波设计。">
+<title>DAC 线性扫描的问题思考 · 从0.35/Tr到四阶滤波</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$']]}};</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#f5f4f1; --surface:#fff; --border:rgba(0,0,0,0.08); --border-med:rgba(0,0,0,0.15);
+  --canvas-bg:#ececec; --code-bg:#f0f0f0; --text:#1c1b19; --text-sec:#555350; --text-hint:#8c8883;
+  --accent:#16599e; --accent-light:#e3eef9; --teal:#0d6751; --teal-light:#dff3ec;
+  --coral:#913719; --coral-light:#f9e9e2; --amber:#7d4908; --amber-light:#f9ecd6;
+  --purple:#4e44b0; --purple-light:#eceafc; --green:#36650f; --green-light:#e9f2db;
+  --sidebar-w:260px; --sidebar-bg:#111827; --sidebar-text:#9ca3af;
+  --sidebar-active:#2dd4bf; --sidebar-hover:#1f2937; --sidebar-heading:#6b7280;
+  --radius:8px; --radius-lg:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:14px;}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100;padding:28px 0 40px;scrollbar-width:thin;scrollbar-color:#374151 transparent;}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-track{background:transparent;}
+.sidebar::-webkit-scrollbar-thumb{background:#374151;border-radius:2px;}
+.sidebar-title{padding:0 24px 16px;font-size:13px;font-weight:500;color:var(--sidebar-heading);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:12px;}
+.sidebar-nav{list-style:none;}
+.sidebar-nav a{display:block;padding:7px 24px;font-size:13px;color:var(--sidebar-text);text-decoration:none;transition:color .15s,background .15s;border-left:3px solid transparent;line-height:1.5;}
+.sidebar-nav a:hover{color:#e5e7eb;background:var(--sidebar-hover);}
+.sidebar-nav a.active{color:var(--sidebar-active);border-left-color:var(--sidebar-active);background:rgba(45,212,191,.06);}
+.sidebar-nav .sub a{padding-left:44px;font-size:12px;color:#6b7280;}
+.sidebar-home{display:block;padding:8px 24px;margin-top:24px;font-size:13px;color:var(--sidebar-text);text-decoration:none;transition:color .15s,background .15s;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-home:hover{color:var(--sidebar-active);background:var(--sidebar-hover);}
+.main-wrap{margin-left:var(--sidebar-w);flex:1;min-width:0;}
+.page-header{max-width:900px;margin:0 auto;padding:48px 28px 40px;text-align:center;}
+.page-header h1{font-size:24px;font-weight:500;margin-bottom:12px;}
+.page-header p{font-size:13px;color:var(--text-hint);}
+.content{max-width:900px;margin:0 auto;padding:0 28px 80px;}
+.chapter{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:36px 40px;margin-bottom:28px;scroll-margin-top:24px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.chapter-num{font-size:11px;font-weight:500;color:var(--text-hint);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.chapter-title{font-size:19px;font-weight:500;margin-bottom:14px;padding-bottom:14px;border-bottom:.5px solid var(--border);}
+h3{font-size:15px;font-weight:500;margin:24px 0 12px;}
+h4{font-size:14px;font-weight:500;color:var(--text-sec);margin:18px 0 10px;}
+p{margin-bottom:12px;}
+ul,ol{margin-bottom:14px;padding-left:28px;}
+li{margin:6px 0;}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:16px 0;font-size:13px;border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+thead th{background:#f0f0f0;font-weight:500;padding:10px 14px;text-align:left;font-size:12px;border-bottom:.5px solid var(--border);}
+tbody td{padding:9px 14px;border-bottom:.5px solid var(--border);vertical-align:top;}
+tbody tr:nth-child(even){background:#fafafa;}
+tbody tr:last-child td{border-bottom:none;}
+.info-box{border-radius:0 6px 6px 0;padding:12px 16px;margin:14px 0;font-size:13px;}
+.info-box{background:var(--accent-light);border-left:3px solid var(--accent);color:var(--accent);}
+.info-box.teal{background:var(--teal-light);border-left:3px solid var(--teal);color:var(--teal);}
+.info-box.coral{background:var(--coral-light);border-left:3px solid var(--coral);color:var(--coral);}
+.info-box.warn{background:#fff5eb;border-left:3px solid #e07b30;color:#8b4a0e;}
+.info-box.purple{background:var(--purple-light);border-left:3px solid var(--purple);color:var(--purple);}
+.info-box.green{background:var(--green-light);border-left:3px solid var(--green);color:var(--green);}
+code{background:#f0f0f0;padding:2px 6px;border-radius:3px;font-family:"SF Mono","Fira Code","Consolas",monospace;font-size:12px;}
+pre{background:#f0f0f0;border-radius:var(--radius);padding:14px 18px;overflow-x:auto;margin:14px 0;font-size:12px;line-height:1.6;}
+pre code{background:none;padding:0;}
+.flow-box{background:#f8f7f5;border:.5px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:16px 0;font-family:"SF Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.8;white-space:pre-line;}
+.flow-box .arrow{color:var(--teal);font-weight:500;}
+.cvs-wrap{background:#f0f0f0;border-radius:var(--radius);padding:12px;margin:16px 0;text-align:center;}
+.cvs-wrap canvas{display:block;margin:0 auto;max-width:100%;}
+.tag{display:inline-block;border-radius:4px;font-size:11px;font-weight:500;padding:2px 8px;margin-right:4px;}
+.tag{background:var(--accent-light);color:var(--accent);}
+.tag.teal{background:var(--teal-light);color:var(--teal);}
+.tag.coral{background:var(--coral-light);color:var(--coral);}
+.tag.amber{background:var(--amber-light);color:var(--amber);}
+.tag.purple{background:var(--purple-light);color:var(--purple);}
+.tag.green{background:var(--green-light);color:var(--green);}
+blockquote{border-left:3px solid var(--border-med);padding:8px 16px;margin:14px 0;color:var(--text-sec);font-size:13px;background:#fafaf8;border-radius:0 6px 6px 0;}
+@media(max-width:768px){.sidebar{display:none;}.main-wrap{margin-left:0;}.content{padding:20px 16px 60px;}.chapter{padding:24px 20px;}}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#ch1">第一章 问题背景</a></li>
+    <li class="sub"><a href="#ch1-s1">1.1 速率提升需求</a></li>
+    <li class="sub"><a href="#ch1-s2">1.2 面临的约束</a></li>
+    <li><a href="#ch2">第二章 0.35/Tr 的理论基础</a></li>
+    <li class="sub"><a href="#ch2-s1">2.1 公式推导</a></li>
+    <li class="sub"><a href="#ch2-s2">2.2 适用范围</a></li>
+    <li><a href="#ch3">第三章 第一次尝试：用 0.35/Tr 设计</a></li>
+    <li class="sub"><a href="#ch3-s1">3.1 提高刷新率</a></li>
+    <li class="sub"><a href="#ch3-s2">3.2 按带宽算 RC</a></li>
+    <li class="sub"><a href="#ch3-s3">3.3 放电残矛盾暴露</a></li>
+    <li><a href="#ch4">第四章 反思：0.35/Tr 用错了</a></li>
+    <li class="sub"><a href="#ch4-s1">4.1 阶跃 vs 斜坡的本质差异</a></li>
+    <li class="sub"><a href="#ch4-s2">4.2 跟踪误差才是关键</a></li>
+    <li class="sub"><a href="#ch4-s3">4.3 两种带宽对比</a></li>
+    <li><a href="#ch5">第五章 第二次尝试：增加台阶</a></li>
+    <li class="sub"><a href="#ch5-s1">5.1 调整方案</a></li>
+    <li class="sub"><a href="#ch5-s2">5.2 实测噪声</a></li>
+    <li><a href="#ch6">第六章 频域矛盾分析</a></li>
+    <li class="sub"><a href="#ch6-s1">6.1 台阶谐波与信号带宽</a></li>
+    <li class="sub"><a href="#ch6-s2">6.2 一阶滤波的极限</a></li>
+    <li><a href="#ch7">第七章 方案选择</a></li>
+    <li class="sub"><a href="#ch7-s1">7.1 四阶有源滤波</a></li>
+    <li class="sub"><a href="#ch7-s2">7.2 调制方案探讨</a></li>
+    <li class="sub"><a href="#ch7-s3">7.3 方案决策</a></li>
+    <li><a href="#ch8">第八章 知识脉络速记</a></li>
+  </ul>
+  <a class="sidebar-home" href="/index.html">← 返回首页</a>
+</nav>
+
+<div class="main-wrap">
+<header class="page-header">
+  <h1>DAC 线性扫描的问题思考</h1>
+  <p>从 0.35/Tr 到四阶滤波 · 2026-07-01</p>
+</header>
+
+<div class="content">
+
+<!-- 第一章 -->
+<section class="chapter" id="ch1">
+<div class="chapter-num">第一章</div>
+<h2 class="chapter-title">问题背景</h2>
+
+<h3 id="ch1-s1">1.1 速率提升需求</h3>
+<p>需将 DAC 电压扫描速率从 <strong>1 V/12 ms</strong> 提升到 <strong>1 V/ms</strong>（即 12 倍）。<strong>但事情远不止"提高定时器频率"这么简单。</strong></p>
+
+<h3 id="ch1-s2">1.2 面临的约束</h3>
+<ul>
+  <li><strong>DAC 更新是离散的</strong>：TIM4 定时器控制 DAC 更新，原程序 1 ms 更新一次。要实现在 1 ms 内输出 0→1 V 的线性扫描，仅更新两次（0 和 1 V）显然是方波</li>
+  <li><strong>需要 RC 平滑滤波</strong>：离散台阶经 RC 滤波后才能近似为线性斜坡</li>
+  <li><strong>系统是微弱信号检测</strong>：pA 级电流检测，对底噪极其敏感</li>
+  <li><strong>电压回卷需要放电</strong>：扫描从 1 V 回到 0 V 时，RC 电容必须充分放电</li>
+</ul>
+
+<div class="info-box coral">
+  <strong>核心矛盾</strong>：需要"离散台阶 + RC 滤波"来实现连续线性扫描，但滤波要求 RC 大，放电要求 RC 小——两者互相矛盾。随着扫描速率提升，这个矛盾被急剧放大。
+</div>
+</section>
+
+<!-- 第二章 -->
+<section class="chapter" id="ch2">
+<div class="chapter-num">第二章</div>
+<h2 class="chapter-title">0.35/Tr 的理论基础</h2>
+
+<p>在动手改代码之前，先搞清楚一个基础问题：1 V/ms 的线性扫描，对应多大的模拟带宽？</p>
+
+<h3 id="ch2-s1">2.1 公式推导</h3>
+<p>首先要理解 <span class="tag teal">BW ≈ 0.35 / Tr</span> 这个经典公式的来历。</p>
+
+<p>一阶 RC 低通滤波器的传递函数：</p>
+$$H(s) = \frac{1}{1 + s\tau}, \quad \tau = RC$$
+
+<p>输入单位阶跃信号 $u(t)$（$V_{in}(s) = 1/s$），输出响应的拉氏反变换：</p>
+$$V_{out}(t) = 1 - e^{-t/\tau}$$
+
+<p>上升时间 $T_r$ 定义为信号从 10% 到 90% 的时间：</p>
+$$\begin{aligned}
+v(0.1) = 1 - e^{-t_{10}/\tau} = 0.1 &\Rightarrow t_{10} = -\tau\ln(0.9) \\
+v(0.9) = 1 - e^{-t_{90}/\tau} = 0.9 &\Rightarrow t_{90} = -\tau\ln(0.1)
+\end{aligned}$$
+
+$$\begin{aligned}
+T_r &= t_{90} - t_{10} = \tau\bigl(-\ln0.1 + \ln0.9\bigr) = \tau\ln 9 \approx 2.197\tau
+\end{aligned}$$
+
+<p>代入 $f_c = 1/(2\pi\tau)$：</p>
+$$f_c = \frac{1}{2\pi\tau} = \frac{\ln 9}{2\pi} \cdot \frac{1}{T_r} \approx 0.35 \cdot \frac{1}{T_r}$$
+
+<div class="info-box teal">
+  <strong>关键认知</strong>：常数 0.35 = ln9/(2π) ≈ 0.349。ln9 来自指数响应的逆运算（ln 是因），2π 来自频率-时间换算（2π 是果）。两者缺一不可。
+</div>
+
+<div class="cvs-wrap">
+  <canvas id="cvs-step-response" width="700" height="300"></canvas>
+  <div style="font-size:12px;color:var(--text-hint);margin-top:8px;">图 2-1 一阶 RC 低通的阶跃响应，标注 10%/90% 上升时间</div>
+</div>
+
+<h3 id="ch2-s2">2.2 适用范围</h3>
+<p>这个公式回答的问题是："一阶 RC 低通滤波器，<strong>阶跃输入</strong>的上升时间是多少？"</p>
+
+<p>它关心的是 <strong>瞬态</strong>——信号跳变后，系统多快能跟上。</p>
+
+<div class="info-box warn">
+  <strong>注意</strong>：0.35/Tr 的推导全程依赖于<strong>阶跃输入</strong>。如果输入信号不是阶跃，这个公式的物理前提就已经改变了。
+</div>
+</section>
+
+<!-- 第三章 -->
+<section class="chapter" id="ch3">
+<div class="chapter-num">第三章</div>
+<h2 class="chapter-title">第一次尝试：用 0.35/Tr 设计</h2>
+
+<h3 id="ch3-s1">3.1 提高刷新率</h3>
+<p>将 TIM4 更新周期从 1 ms 调整为 <strong>100 µs</strong>（10 kHz），1 ms 内输出 <strong>10 个台阶</strong>（每步 100 mV）。</p>
+
+<h3 id="ch3-s2">3.2 按带宽算 RC</h3>
+<p>1 V/ms 扫描的上升时间 $T_r = 0.8\,\text{ms}$（10%→90%），按 0.35/Tr 估算：</p>
+$$\text{BW} = \frac{0.35}{0.8\,\text{ms}} = 437.5\,\text{Hz}$$
+
+<p>取 $R = 1\,\text{k}\Omega$，$C = 1/(2\pi R f_c) \approx 364\,\text{nF}$，选标准值 <strong>330 nF</strong>，实际 $f_c = 482\,\text{Hz}$，$\tau = 330\,\mu\text{s}$。</p>
+
+<p>阶梯波滤波要求 $\tau \ge 3 \times T_{step}$（每步来不及充满就进入下一步）：</p>
+$$T_{step} \times 3 = 300\,\mu\text{s},\quad \tau = 330\,\mu\text{s} \ge 300\,\mu\text{s} \quad \checkmark$$
+
+<p>从带宽和滤波角度看，RC 参数都没问题。</p>
+
+<h3 id="ch3-s3">3.3 放电残余矛盾暴露</h3>
+<p>但灾难在回卷时出现。电压从 1 V 回卷到 0 V，RC 电容放电遵循 $V(t) = V_0 \cdot e^{-t/\tau}$。放电时间只有 <strong>100 µs</strong>：</p>
+$$V_{残余} = 1000\,\text{mV} \times e^{-100/330} \approx 738\,\text{mV}$$
+
+<table>
+<thead><tr><th>时间</th><th>放电比例</th><th>残余电压</th><th>工程判断</th></tr></thead>
+<tbody>
+<tr><td>$1\tau$（330 µs）</td><td>63%</td><td>370 mV</td><td>还有 37%</td></tr>
+<tr><td>$3\tau$（990 µs）</td><td>95%</td><td>50 mV</td><td>基本干净</td></tr>
+<tr style="color:#913719"><td><strong>100 µs（实际）</strong></td><td><strong>26%</strong></td><td><strong>738 mV</strong></td><td><strong>不可接受 ❌</strong></td></tr>
+</tbody>
+</table>
+
+<div class="info-box coral">
+  <strong>结论</strong>：一阶 RC 无源滤波在 100 µs / 10 步条件下，<strong>无法同时满足滤波平滑和放电速度的要求</strong>。从带宽角度看是合理的（fc=482 Hz &gt; 437 Hz），但从放电残余角度看完全不可行。
+</div>
+</section>
+
+<!-- 第四章 -->
+<section class="chapter" id="ch4">
+<div class="chapter-num">第四章</div>
+<h2 class="chapter-title">反思：0.35/Tr 用错了</h2>
+
+<p>第三章的失败促使我重新审视一个根本问题：<strong>0.35/Tr 这个公式，用在斜坡扫描场景中，到底对不对？</strong></p>
+
+<h3 id="ch4-s1">4.1 阶跃 vs 斜坡的本质差异</h3>
+<p>0.35/Tr 回答的是"阶跃响应多快"（瞬态问题）。但线性扫描是斜坡信号——它关心的是"输出跟不跟得上"（稳态问题），这是两类完全不同的物理问题。</p>
+
+<table>
+<thead><tr><th>对比维度</th><th>阶跃信号</th><th>斜坡信号</th></tr></thead>
+<tbody>
+<tr><td>表达式</td><td>$u(t)$</td><td>$S \cdot t$</td></tr>
+<tr><td>拉氏变换</td><td>$1/s$</td><td>$S/s^2$</td></tr>
+<tr><td>关心什么</td><td>过渡过程（瞬态）</td><td>稳态滞后（稳态）</td></tr>
+<tr><td>数学工具</td><td>指数与 $\ln$</td><td>代数运算</td></tr>
+<tr><td>典型公式</td><td>$f_c \approx 0.35/T_r$</td><td>$\Delta V = S\tau = S/(2\pi f_c)$</td></tr>
+</tbody>
+</table>
+
+<div class="cvs-wrap">
+  <canvas id="cvs-step-vs-ramp" width="700" height="300"></canvas>
+  <div style="font-size:12px;color:var(--text-hint);margin-top:8px;">图 4-1 阶跃响应 vs 斜坡响应 —— 阶跃看过渡过程，斜坡看稳态滞后</div>
+</div>
+
+<h3 id="ch4-s2">4.2 跟踪误差才是关键</h3>
+<p>斜坡信号通过一阶 RC 低通的稳态响应为：</p>
+$$v_{out}(t) \approx S(t - \tau) = S t - S\tau \quad(\text{暂态项衰减后})$$
+
+<p>输出是一条与输入平行的斜线，滞后了 $\tau$ 秒。稳态滞后电压：</p>
+$$\boxed{\Delta V_{lag} = S\tau = \frac{S}{2\pi f_c}}$$
+
+<p>重排公式，得到斜坡场景下正确的带宽计算公式：</p>
+$$\boxed{f_c = \frac{S}{2\pi \cdot \Delta V_{lag}}}$$
+
+<div class="info-box teal">
+  <strong>关键认知</strong>：在斜坡场景下，正确的带宽选择依据是<strong>跟踪误差</strong>，不是 0.35/Tr。$f_c$ 由"允许的电压滞后量"决定，与扫描速率成正比。
+</div>
+
+<h3 id="ch4-s3">4.3 两种带宽对比</h3>
+<p>以 1 V/ms 扫描为例，比较两种方法算出的带宽：</p>
+
+<table>
+<thead><tr><th>方法</th><th>公式</th><th>计算结果</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td>0.35/Tr</td><td>$0.35 / 0.8\text{ms}$</td><td><strong>437 Hz</strong></td><td>阶跃输入</td></tr>
+<tr><td>跟踪误差（100mV可接受滞后）</td><td>$S/(2\pi\Delta V)$</td><td><strong>1592 Hz</strong></td><td>斜坡输入</td></tr>
+<tr><td>跟踪误差（50mV可接受滞后）</td><td>$S/(2\pi\Delta V)$</td><td><strong>3183 Hz</strong></td><td>斜坡输入</td></tr>
+<tr><td>跟踪误差（10mV可接受滞后）</td><td>$S/(2\pi\Delta V)$</td><td><strong>15915 Hz</strong></td><td>斜坡输入</td></tr>
+</tbody>
+</table>
+
+<div class="info-box coral">
+  <strong>反思</strong>：我用 0.35/Tr 算出 437 Hz，然后基于此选了 330 nF 的大电容——这个电容直接导致了放电残余问题。如果用跟踪误差法，50 mV 滞后对应 $f_c$ ≈ 3.2 kHz，对应的 C 只有 50 nF，放电矛盾会小得多。<strong>公式选错，参数全偏。</strong>
+</div>
+</section>
+
+<!-- 第五章 -->
+<section class="chapter" id="ch5">
+<div class="chapter-num">第五章</div>
+<h2 class="chapter-title">第二次尝试：增加台阶数</h2>
+
+<h3 id="ch5-s1">5.1 调整方案</h3>
+<p>基于上一篇的教训，这次把定时器更新周期进一步缩短到 <strong>50 µs</strong>（20 kHz），1 ms 内输出 20 个台阶（每步 50 mV），放电时间延长到 100 µs（两个更新周期）。</p>
+
+<p>滤波和放电的矛盾得到了缓解，波形肉眼看上去平滑了。但 FFT 频谱分析发现新问题。</p>
+
+<h3 id="ch5-s2">5.2 实测噪声</h3>
+
+<table>
+<thead><tr><th>测试条件</th><th>数值</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>DAC 输出 0 mV 时底噪</td><td>0.8 pA RMS</td><td>系统本底噪声</td></tr>
+<tr><td>1 V/ms 扫描时底噪</td><td>1.4 pA RMS</td><td>台阶谐波贡献</td></tr>
+<tr><td>测量带宽</td><td>15 kHz</td><td>—</td></tr>
+<tr><td>FFT 峰值噪声频率</td><td>~5 kHz</td><td>台阶谐波主频率</td></tr>
+<tr><td>FFT 峰值量级</td><td>$\approx 10^6$</td><td>需要衰减到 $10^2$ 水平</td></tr>
+</tbody>
+</table>
+
+<p>20 个台阶的谐波分量仍然很大，FFT 峰值接近 $10^6$，需要衰减 <strong>10000 倍（80 dB）</strong>。</p>
+</section>
+
+<!-- 第六章 -->
+<section class="chapter" id="ch6">
+<div class="chapter-num">第六章</div>
+<h2 class="chapter-title">频域矛盾分析</h2>
+
+<h3 id="ch6-s1">6.1 台阶谐波与信号带宽</h3>
+<p>此时应该回头看看带宽问题。用正确的跟踪误差法（假设 50 mV 可接受滞后），需要的 $f_c \approx 3.2\,\text{kHz}$。而台阶基频是 20 kHz（50 µs 周期），谐波从 20 kHz 开始分布。</p>
+
+<p>信号需要带宽（3.2 kHz）与台阶谐波（20 kHz），频率比约 <strong>6.3 倍</strong>。这个距离够用吗？</p>
+
+<h3 id="ch6-s2">6.2 一阶滤波的极限</h3>
+<p>一阶滤波器的衰减斜率为 <strong>-20 dB/dec</strong>。在 6.3 倍频率差下：</p>
+$$\text{衰减} = 20 \times \log_{10}(6.3) \approx 16\,\text{dB（约 6 倍）}$$
+
+<p>20 kHz 处只衰减了 6 倍。20 kHz 的基频分量被削弱了一些，但 5 kHz 处的三次谐波几乎不衰减（5k/3.2k=1.56 倍，仅衰减约 4 dB）。</p>
+
+<div class="cvs-wrap">
+  <canvas id="cvs-order-compare" width="700" height="320"></canvas>
+  <div style="font-size:12px;color:var(--text-hint);margin-top:8px;">图 6-1 一阶 vs 四阶滤波器频率响应对比（对数坐标）</div>
+</div>
+
+<div class="info-box coral">
+  <strong>根本矛盾</strong>：信号的带宽需求和台阶的噪声频率靠得太近，而一阶滤波器的滚降太慢。阶数才是关键——提高阶数不会改变截止频率（跟踪精度不变），但能大幅增加高频衰减量。
+</div>
+</section>
+
+<!-- 第七章 -->
+<section class="chapter" id="ch7">
+<div class="chapter-num">第七章</div>
+<h2 class="chapter-title">方案选择</h2>
+
+<h3 id="ch7-s1">7.1 四阶有源滤波</h3>
+
+<h4>截止频率选择</h4>
+<p>根据跟踪误差公式，设可接受滞后 100 mV：</p>
+$$f_c = \frac{S}{2\pi \cdot \Delta V_{lag}} = \frac{1000}{2\pi \times 100} \approx 1592\,\text{Hz}$$
+
+<p>折衷取 <strong>3 kHz~5 kHz</strong> 作为截止频率——4 阶滤波在通带边沿有 peaking（Butterworth），需留余量。</p>
+
+<h4>阶数确定</h4>
+<table>
+<thead><tr><th>阶数</th><th>衰减斜率</th><th>20 kHz 处衰减</th><th>相对 1 阶增益</th></tr></thead>
+<tbody>
+<tr><td>1 阶</td><td>-20 dB/dec</td><td>-16 dB（6 倍）</td><td>基准</td></tr>
+<tr><td>2 阶</td><td>-40 dB/dec</td><td>-32 dB（40 倍）</td><td>好 6.7 倍</td></tr>
+<tr><td>4 阶</td><td>-80 dB/dec</td><td>-64 dB（1585 倍）</td><td>好 264 倍</td></tr>
+</tbody>
+</table>
+
+<div class="info-box green">
+  <strong>最终方案</strong>：4 阶有源低通滤波器（Butterworth），截止频率 3~5 kHz，对 20 kHz 台阶基频衰减超过 60 dB。
+</div>
+
+<h3 id="ch7-s2">7.2 调制方案探讨</h3>
+<p>除了"提高滤波器阶数"，还有另一条技术路线——换信号生成方式：</p>
+
+<table>
+<thead><tr><th>方案</th><th>原理</th><th>优势</th><th>劣势</th></tr></thead>
+<tbody>
+<tr><td><strong>DAC + 4 阶滤波</strong></td><td>离散台阶 + 高阶有源低通</td><td>实现直接，与现有架构兼容</td><td>增加运放成本</td></tr>
+<tr><td><strong>PWM 调制 + 低通</strong></td><td>占空比编码电压，载波 MHz 级</td><td>噪声远在信号带宽之外</td><td>需要高频 PWM 外设</td></tr>
+<tr><td><strong>恒流源 + 电容积分</strong></td><td>$V_C = (I/C) \cdot t$，天然线性</td><td>零量化噪声，完美线性</td><td>参数固定后不易改</td></tr>
+<tr><td><strong>增加 DAC 刷新率</strong></td><td>50 µs → 10 µs</td><td>台阶频率提到 100 kHz</td><td>受限于 MCU 定时器</td></tr>
+</tbody>
+</table>
+
+<div class="info-box purple">
+  <strong>延伸</strong>：如果后续对线性度和噪声有更高要求，PWM 调制或恒流源积分是值得考虑的长期方案。DAC + 4 阶滤波是当下最务实的选择。
+</div>
+
+<h3 id="ch7-s3">7.3 方案决策</h3>
+<div class="flow-box">
+方案演进：
+1ms 更新（2点）→ 100µs/10台阶 → RC 放电矛盾
+                                       ↓ 发现 0.35/Tr 用错了
+                                       ↓ 跟踪误差法 → 50µs/20台阶 → 谐波大
+                                       ↓ 频域分析：信号带宽与台阶频率近
+                                       ↓ 4 阶有源滤波（首选）
+</div>
+</section>
+
+<!-- 第八章 -->
+<section class="chapter" id="ch8">
+<div class="chapter-num">第八章</div>
+<h2 class="chapter-title">知识脉络速记</h2>
+
+<table>
+<thead><tr><th>知识点</th><th>公式</th><th>关键信息</th></tr></thead>
+<tbody>
+<tr><td>阶跃带宽</td><td>$\text{BW} = 0.35 / T_r$</td><td>仅适用于阶跃输入，常数 = ln9/(2π)</td></tr>
+<tr><td>跟踪误差</td><td>$\Delta V = S/(2\pi f_c)$</td><td>斜坡场景的正确带宽依据</td></tr>
+<tr><td>RC 放电</td><td>$V(t) = V_0 e^{-t/\tau}$</td><td>5τ 后残余 &lt;1%</td></tr>
+<tr><td>阶梯平滑准则</td><td>$\tau \ge 3 \times T_{step}$</td><td>每步来不及充满就进入下一步</td></tr>
+<tr><td>滤波器衰减</td><td>$n$ 阶 → $20n$ dB/dec</td><td>阶数决定高频抑制能力</td></tr>
+</tbody>
+</table>
+
+<div class="info-box teal">
+  <strong>核心认知</strong>：DAC 线性扫描问题的本质是<strong>信号带宽与噪声频率太近，而一阶滤波器滚降太慢</strong>。解决路径有三条：提高滤波器阶数（首选）、提高 DAC 刷新率（辅助）、换信号生成方式（长期）。
+</div>
+</section>
+
+</div>
+</div>
+
+<script>
+// Canvas: 阶跃响应
+(function(){
+  var c=document.getElementById('cvs-step-response');
+  if(!c)return;
+  var dpr=2,W=700,H=300;
+  c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';
+  var ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.fillStyle='#ececec';ctx.fillRect(0,0,W,H);
+  var ox=100,oy=250,w=550,h=200;
+  // grid
+  ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
+  for(var i=0;i<=10;i++){var x=ox+i*w/10;ctx.beginPath();ctx.moveTo(x,oy-h);ctx.lineTo(x,oy);ctx.stroke();}
+  for(var i=0;i<=5;i++){var y=oy-i*h/5;ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+w,y);ctx.stroke();}
+  // axes
+  ctx.strokeStyle='rgba(0,0,0,0.7)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(ox,oy-h);ctx.lineTo(ox,oy);ctx.lineTo(ox+w,oy);ctx.stroke();
+  // 10% line
+  ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(ox,oy-h*0.1);ctx.lineTo(ox+w,oy-h*0.1);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ox,oy-h*0.9);ctx.lineTo(ox+w,oy-h*0.9);ctx.stroke();
+  ctx.setLineDash([]);
+  // step curve
+  ctx.strokeStyle='#16599e';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(ox,oy);
+  for(var t=0;t<=w;t+=1){var tau=w/4;var v=1-Math.exp(-t/tau);ctx.lineTo(ox+t,oy-v*h);}
+  ctx.stroke();
+  // t10/t90 markers
+  var tau=w/4;
+  var t10=-tau*Math.log(0.9),t90=-tau*Math.log(0.1);
+  ctx.fillStyle='#913719';ctx.font='bold 11px -apple-system,sans-serif';
+  ctx.fillText('t₁₀',ox+t10-8,oy+18);
+  ctx.fillText('t₉₀',ox+t90-8,oy+18);
+  ctx.strokeStyle='#913719';ctx.lineWidth=1.2;
+  [t10,t90].forEach(function(tx){ctx.beginPath();ctx.moveTo(ox+tx,oy+2);ctx.lineTo(ox+tx,oy+10);ctx.stroke();});
+  ctx.fillText('10%',ox-40,oy-h*0.1+4);
+  ctx.fillText('90%',ox-40,oy-h*0.9+4);
+  ctx.fillStyle='rgba(0,0,0,0.85)';ctx.font='12px -apple-system,sans-serif';
+  ctx.fillText('vₒ\u1D1Cₜ(t)=1-e^{-t/τ}',ox+120,oy-h*0.13);
+  ctx.fillText('t',ox+w+5,oy+4);
+  ctx.fillText('vₒ\u1D1Cₜ',ox-30,oy-h-5);
+})();
+
+// Canvas: step vs ramp
+(function(){
+  var c=document.getElementById('cvs-step-vs-ramp');
+  if(!c)return;
+  var dpr=2,W=700,H=300;
+  c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';
+  var ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.fillStyle='#ececec';ctx.fillRect(0,0,W,H);
+  var ox=100,oy=250,w=550,h=200;
+  ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
+  for(var i=0;i<=10;i++){var x=ox+i*w/10;ctx.beginPath();ctx.moveTo(x,oy-h);ctx.lineTo(x,oy);ctx.stroke();}
+  for(var i=0;i<=5;i++){var y=oy-i*h/5;ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+w,y);ctx.stroke();}
+  ctx.strokeStyle='rgba(0,0,0,0.7)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(ox,oy-h);ctx.lineTo(ox,oy);ctx.lineTo(ox+w,oy);ctx.stroke();
+  // === 阶跃部分 (左侧 1/2) ===
+  var sx=ox, sw=w/2;
+  // 阶跃输入（理想信号源，黑色粗虚线 + 标签）
+  ctx.strokeStyle='rgba(0,0,0,0.55)';ctx.setLineDash([5,4]);ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(sx,oy);ctx.lineTo(sx+sw*0.3,oy);ctx.lineTo(sx+sw*0.3,oy-h*0.95);ctx.lineTo(sx+sw*0.95,oy-h*0.95);ctx.stroke();
+  ctx.setLineDash([]);
+  // 阶跃输入标签
+  ctx.fillStyle='rgba(0,0,0,0.55)';ctx.font='italic 11px -apple-system,sans-serif';
+  ctx.fillText('理想输入 u(t)',sx+sw*0.32,oy-h*0.95+12);
+  // 阶跃响应（蓝色实线，指数趋近 1 但不到顶）
+  ctx.strokeStyle='#16599e';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  for(var t=0;t<=sw*0.65;t+=1){
+    var tau=sw*0.16;
+    var v=1-Math.exp(-t/tau);
+    ctx.lineTo(sx+sw*0.3+t, oy-v*h*0.95);
+  }
+  ctx.stroke();
+  // 阶跃响应标签
+  ctx.fillStyle='#16599e';ctx.font='bold 12px -apple-system,sans-serif';
+  ctx.fillText('vₒᵤₜ',sx+sw*0.7,oy-h*0.5);
+  // 标题
+  ctx.fillStyle='#16599e';ctx.font='bold 13px -apple-system,sans-serif';
+  ctx.fillText('阶跃响应',sx+10,oy-h-10);
+  ctx.fillStyle='rgba(0,0,0,0.65)';ctx.font='11px -apple-system,sans-serif';
+  ctx.fillText('(看过渡过程)',sx+85,oy-h-10);
+
+  // === 斜坡部分 (右侧 1/2) ===
+  var rx0=ox+sw, sw2=w/2;
+  // 先声明变量，再画线
+  var lag = 32;
+  var inputLen = sw2 - 20;
+  // 如果响应终点超出画布，缩短输入长度
+  if(rx0+inputLen+lag > ox+w-5){
+    inputLen = (ox+w-5) - rx0 - lag;
+  }
+  // 斜坡输入（虚线，长度由 inputLen 决定）
+  ctx.strokeStyle='rgba(0,0,0,0.55)';ctx.setLineDash([5,4]);ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(rx0,oy);ctx.lineTo(rx0+inputLen,oy-h*0.85);ctx.stroke();
+  ctx.setLineDash([]);
+  // 斜坡输入标签
+  ctx.fillStyle='rgba(0,0,0,0.6)';ctx.font='italic 11px -apple-system,sans-serif';
+  ctx.fillText('理想输入 S·t',rx0+5,oy-h*0.95);
+  // 像素斜率
+  var slope = h*0.85/inputLen;
+  // 斜坡响应（绿色实线，斜率不变，平行滞后）
+  ctx.strokeStyle='#36650f';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(rx0+lag, oy);
+  ctx.lineTo(rx0+inputLen+lag, oy - h*0.85);
+  ctx.stroke();
+  // 响应标签（放在线终点上方）
+  ctx.fillStyle='#36650f';ctx.font='bold 12px -apple-system,sans-serif';
+  ctx.fillText('vₒᵤₜ',rx0+inputLen+lag-30,oy-h*0.85-6);
+
+  // 滞后箭头：在中间位置画垂直双箭头（同一时刻的电压差 = ΔV）
+  // 关键修正：选 arrowX 时，保证 inputY 不会太高（避免超出画布顶部）
+  // 取 arrowX 位于斜坡区域中部偏下
+  var arrowX = rx0 + inputLen*0.55;
+  // 该时刻输入的 y
+  var inputY = oy - (arrowX - rx0) * slope;
+  // 该时刻响应的 y：响应参数化 y = oy - (outputX - (rx0+lag)) * slope，其中 outputX = arrowX
+  var outputY = oy - (arrowX - rx0 - lag) * slope;
+  // 画垂直双箭头
+  ctx.strokeStyle='#913719';ctx.lineWidth=1.8;
+  ctx.beginPath();
+  // 主箭头线（从上 inputY 到下 outputY）
+  ctx.moveTo(arrowX, inputY+2);
+  ctx.lineTo(arrowX, outputY-2);
+  // 上箭头（朝下）
+  ctx.moveTo(arrowX-4, inputY+7);
+  ctx.lineTo(arrowX, inputY+2);
+  ctx.lineTo(arrowX+4, inputY+7);
+  // 下箭头（朝上）
+  ctx.moveTo(arrowX-4, outputY-7);
+  ctx.lineTo(arrowX, outputY-2);
+  ctx.lineTo(arrowX+4, outputY-7);
+  ctx.stroke();
+  // 标签放右侧
+  ctx.fillStyle='#913719';ctx.font='bold 12px -apple-system,sans-serif';
+  var midY = (inputY + outputY) / 2;
+  ctx.fillText('ΔV=Sτ',arrowX+8,midY+4);
+  // 辅助短横：连接到两条线
+  ctx.strokeStyle='rgba(146,55,25,0.3)';ctx.lineWidth=0.8;ctx.setLineDash([2,3]);
+  ctx.beginPath();
+  ctx.moveTo(arrowX-3, inputY);ctx.lineTo(arrowX-12, inputY);
+  ctx.moveTo(arrowX-3, outputY);ctx.lineTo(arrowX-12, outputY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // 标题
+  ctx.fillStyle='#36650f';ctx.font='bold 13px -apple-system,sans-serif';
+  ctx.fillText('斜坡响应',rx0+10,oy-h-10);
+  ctx.fillStyle='rgba(0,0,0,0.65)';ctx.font='11px -apple-system,sans-serif';
+  ctx.fillText('(看稳态滞后)',rx0+85,oy-h-10);
+
+  // 坐标轴标签
+  ctx.fillStyle='rgba(0,0,0,0.85)';ctx.font='12px -apple-system,sans-serif';
+  ctx.fillText('t',ox+w+5,oy+4);
+  ctx.fillText('v',ox-15,oy-h-5);
+  // 分隔线
+  ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=1;ctx.setLineDash([2,4]);
+  ctx.beginPath();ctx.moveTo(ox+sw,oy-h);ctx.lineTo(ox+sw,oy);ctx.stroke();
+  ctx.setLineDash([]);
+  // 图例
+  ctx.fillStyle='rgba(0,0,0,0.7)';ctx.font='italic 11px -apple-system,sans-serif';
+  ctx.fillText('虚线 = 理想信号源',ox+10,oy+18);
+})();
+
+// Canvas: order compare
+(function(){
+  var c=document.getElementById('cvs-order-compare');
+  if(!c)return;
+  var dpr=2,W=700,H=320;
+  c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';
+  var ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.fillStyle='#ececec';ctx.fillRect(0,0,W,H);
+  var ox=100,oy=270,w=550,h=240;
+  // grid
+  ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
+  var freqs=[100,300,500,1000,3000,5000,10000,30000,100000];
+  freqs.forEach(function(f){
+    var x=ox+Math.log10(f/100)/Math.log10(100000/100)*w;
+    ctx.beginPath();ctx.moveTo(x,oy-h);ctx.lineTo(x,oy);ctx.stroke();
+  });
+  for(var i=0;i<=6;i++){var y=oy-i*h/6;ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+w,y);ctx.stroke();}
+  ctx.strokeStyle='rgba(0,0,0,0.7)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(ox,oy-h);ctx.lineTo(ox,oy);ctx.lineTo(ox+w,oy);ctx.stroke();
+  // fc marker
+  var fcx=ox+Math.log10(3000/100)/Math.log10(100000/100)*w;
+  ctx.strokeStyle='rgba(0,0,0,0.4)';ctx.setLineDash([3,5]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(fcx,oy-h);ctx.lineTo(fcx,oy);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(0,0,0,0.85)';ctx.font='11px -apple-system,sans-serif';
+  ctx.fillText('fc=3kHz',fcx-15,oy-h-5);
+  // 1st order
+  ctx.strokeStyle='#16599e';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  var y1=function(f){if(f<=3000)return 0;return -40*Math.log10(f/3000);};
+  var f_step=50;
+  for(var f=100;f<=100000;f+=f_step){f_step=f<1000?50:f<10000?200:1000;var yv=oy-y1(f)/80*h;ctx.lineTo(ox+Math.log10(f/100)/Math.log10(100000/100)*w,Math.max(oy-h,Math.min(oy,yv)));}
+  ctx.stroke();
+  ctx.fillStyle='#16599e';ctx.font='12px -apple-system,sans-serif';
+  ctx.fillText('一阶 -20dB/dec',ox+350,oy-h*0.55);
+  // 4th order
+  ctx.strokeStyle='#36650f';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  var y4=function(f){if(f<=3000)return 0;return -80*Math.log10(f/3000);};
+  f_step=50;
+  for(var f=100;f<=100000;f+=f_step){f_step=f<1000?50:f<10000?200:1000;var yv=oy-y4(f)/80*h;ctx.lineTo(ox+Math.log10(f/100)/Math.log10(100000/100)*w,Math.max(oy-h,Math.min(oy,yv)));}
+  ctx.stroke();
+  ctx.fillStyle='#36650f';ctx.font='12px -apple-system,sans-serif';
+  ctx.fillText('四阶 -80dB/dec',ox+350,oy-h*0.9);
+  // 20kHz marker
+  var f20x=ox+Math.log10(20000/100)/Math.log10(100000/100)*w;
+  ctx.strokeStyle='#913719';ctx.setLineDash([3,5]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(f20x,oy);ctx.lineTo(f20x,oy-y1(20000)/80*h);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#913719';ctx.font='11px -apple-system,sans-serif';
+  ctx.fillText('20kHz',f20x-12,oy+14);
+  ctx.fillStyle='#913719';ctx.font='bold 11px -apple-system,sans-serif';
+  ctx.fillText('台阶基频',f20x+3,oy-y1(20000)/80*h+20);
+  // labels
+  ctx.fillStyle='rgba(0,0,0,0.85)';ctx.font='12px -apple-system,sans-serif';
+  ctx.fillText('f [Hz]',ox+w+5,oy+4);
+  ctx.fillText('衰减',ox-35,oy-h-5);
+  freqs.forEach(function(f){ctx.fillText(f<1000?f+'Hz':f/1000+'kHz',ox+Math.log10(f/100)/Math.log10(100000/100)*w-14,oy+16);});
+})();
+
+// sidebar highlight
+(function(){
+  var chapters=document.querySelectorAll('.chapter');
+  var navLinks=document.querySelectorAll('.sidebar-nav a');
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        navLinks.forEach(function(l){l.classList.remove('active');});
+        var al=document.querySelector('.sidebar-nav a[href="#'+entry.target.id+'"]');
+        if(al)al.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  chapters.forEach(function(ch){observer.observe(ch);});
+})();
+</script>
+</body>
+</html>
