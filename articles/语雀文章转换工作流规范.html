@@ -1,75 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="category" content="随笔">
-<meta name="encrypt" content="false">
-<meta name="date" content="2026-07-27">
-<meta name="description" content="定义 MD 转 HTML 的目录约定、YAML 头部格式、转换规则与自动化流程">
-<title>语雀文章转换工作流规范</title>
-<script>
-window.MathJax = {
-  tex: {
-    inlineMath: [['$', '$'], ['\\(', '\\)']],
-    displayMath: [['$$', '$$']]
-  }
-};
-</script>
-<script id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-</script>
-<style>
-/* ── CSS Variables ── */
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="encrypt" content="false">
+  <title>语雀文章转换工作流规范</title>
+  <style>
 :root {
-  --bg:           #f5f4f1;
-  --surface:      #ffffff;
-  --border:       rgba(0,0,0,0.08);
-  --border-med:   rgba(0,0,0,0.15);
-  --canvas-bg:    #ececec;
-  --code-bg:      #f0f0f0;
-  --text:         #1c1b19;
-  --text-sec:     #555350;
-  --text-hint:    #8c8883;
-  --accent:       #16599e;
+  --bg: #f5f4f1;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --border-med: rgba(0,0,0,0.15);
+  --canvas-bg: #ececec;
+  --code-bg: #f0f0f0;
+  --text: #1c1b19;
+  --text-sec: #555350;
+  --text-hint: #8c8883;
+  --accent: #16599e;
   --accent-light: #e3eef9;
-  --teal:         #0d6751;
-  --teal-light:   #dff3ec;
-  --coral:        #913719;
-  --coral-light:  #f9e9e2;
-  --amber:        #7d4908;
-  --amber-light:  #f9ecd6;
-  --purple:       #4e44b0;
+  --teal: #0d6751;
+  --teal-light: #dff3ec;
+  --coral: #913719;
+  --coral-light: #f9e9e2;
+  --amber: #7d4908;
+  --amber-light: #f9ecd6;
+  --purple: #4e44b0;
   --purple-light: #eceafc;
-  --green:        #36650f;
-  --green-light:  #e9f2db;
-  --sidebar-w:       260px;
-  --sidebar-bg:      #111827;
-  --sidebar-text:    #9ca3af;
-  --sidebar-active:  #2dd4bf;
-  --sidebar-hover:   #1f2937;
+  --green: #36650f;
+  --green-light: #e9f2db;
+  --sidebar-w: 260px;
+  --sidebar-bg: #111827;
+  --sidebar-text: #9ca3af;
+  --sidebar-active: #2dd4bf;
+  --sidebar-hover: #1f2937;
   --sidebar-heading: #6b7280;
-  --radius:    8px;
+  --radius: 8px;
   --radius-lg: 12px;
 }
 
-/* ── Reset & Base ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--text);
   background: var(--bg);
+  color: var(--text);
   display: flex;
   min-height: 100vh;
 }
 
-/* ── Sidebar ── */
 .sidebar {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: var(--sidebar-w);
   height: 100vh;
   background: var(--sidebar-bg);
@@ -82,14 +64,16 @@ body {
 .sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
 .sidebar::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+
 .sidebar-title {
-  color: var(--sidebar-heading);
+  padding: 0 24px 12px;
   font-size: 13px;
   font-weight: 500;
+  color: var(--sidebar-heading);
   letter-spacing: 0.06em;
-  padding: 0 24px 16px;
   text-transform: uppercase;
 }
+
 .sidebar-nav { list-style: none; }
 .sidebar-nav a {
   display: block;
@@ -101,13 +85,21 @@ body {
   border-left: 3px solid transparent;
   line-height: 1.5;
 }
-.sidebar-nav a:hover { color: #e5e7eb; background: var(--sidebar-hover); }
+.sidebar-nav a:hover {
+  color: #e5e7eb;
+  background: var(--sidebar-hover);
+}
 .sidebar-nav a.active {
   color: var(--sidebar-active);
   border-left-color: var(--sidebar-active);
   background: rgba(45,212,191,0.06);
 }
-.sidebar-nav .sub a { padding-left: 44px; font-size: 12px; color: #6b7280; }
+.sidebar-nav .sub a {
+  padding-left: 44px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
 .sidebar-home {
   display: block;
   padding: 8px 24px;
@@ -119,24 +111,38 @@ body {
   transition: color 0.15s, background 0.15s;
   border-top: 1px solid rgba(255,255,255,0.08);
 }
-.sidebar-home:hover { color: var(--sidebar-active); background: var(--sidebar-hover); }
+.sidebar-home:hover {
+  color: var(--sidebar-active);
+  background: var(--sidebar-hover);
+}
 
-/* ── Main Wrap ── */
-.main-wrap { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+.main-wrap {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+}
 
-/* ── Page Header ── */
 .page-header {
-  padding: 48px 40px 32px;
-  border-bottom: 0.5px solid var(--border);
+  padding: 48px 28px 32px;
   text-align: center;
 }
-.page-header h1 { font-size: 24px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
-.page-header p { font-size: 14px; color: var(--text-sec); }
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text);
+}
+.page-header p {
+  margin-top: 8px;
+  color: var(--text-hint);
+  font-size: 14px;
+}
 
-/* ── Content ── */
-.content { max-width: 900px; margin: 0 auto; padding: 32px 28px 80px; }
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+}
 
-/* ── Chapter Card ── */
 .chapter {
   background: var(--surface);
   border: 0.5px solid var(--border);
@@ -146,6 +152,7 @@ body {
   scroll-margin-top: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
+
 .chapter-num {
   font-size: 11px;
   font-weight: 500;
@@ -153,24 +160,50 @@ body {
   color: var(--text-hint);
   margin-bottom: 6px;
 }
+
 .chapter-title {
   font-size: 19px;
   font-weight: 500;
-  margin-bottom: 22px;
+  color: var(--text);
   padding-bottom: 14px;
+  margin-bottom: 22px;
   border-bottom: 0.5px solid var(--border);
 }
 
-/* ── Headings ── */
-h3 { font-size: 15px; font-weight: 500; margin-top: 24px; margin-bottom: 8px; }
-h4 { font-size: 14px; font-weight: 500; color: var(--text-sec); margin-top: 18px; margin-bottom: 6px; }
+h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
 
-/* ── Paragraph & List ── */
-p { margin-bottom: 12px; }
-ul, ol { margin-bottom: 14px; padding-left: 24px; }
-li { margin: 6px 0; }
+h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sec);
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
 
-/* ── Table ── */
+p {
+  font-size: 14px;
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+
+strong { font-weight: 600; }
+
+ul, ol {
+  margin: 0 0 14px 0;
+  padding-left: 24px;
+}
+li {
+  font-size: 14px;
+  line-height: 1.75;
+  margin: 6px 0;
+}
+
 table {
   width: 100%;
   border-collapse: separate;
@@ -197,53 +230,28 @@ tbody td {
 tbody tr:nth-child(even) { background: #fafafa; }
 tbody tr:last-child td { border-bottom: none; }
 
-/* ── Info Box ── */
-.info-box {
-  border-radius: 0 6px 6px 0;
-  padding: 12px 16px;
-  margin: 14px 0;
-  font-size: 13px;
-  background: var(--accent-light);
-  border-left: 3px solid var(--accent);
-  color: var(--accent);
-}
-.info-box.teal   { background: var(--teal-light);   border-left-color: var(--teal);   color: var(--teal); }
-.info-box.coral  { background: var(--coral-light);  border-left-color: var(--coral);  color: var(--coral); }
-.info-box.warn   { background: #fff5eb;             border-left-color: #e07b30;       color: #8b4a0e; }
-.info-box.purple { background: var(--purple-light); border-left-color: var(--purple); color: var(--purple); }
-.info-box.green  { background: var(--green-light);  border-left-color: var(--green);  color: var(--green); }
-
-/* ── Tag ── */
-.tag {
-  display: inline-block;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 2px 8px;
-  margin-right: 4px;
-}
-.tag         { background: var(--accent-light); color: var(--accent); }
-.tag.teal    { background: var(--teal-light);   color: var(--teal); }
-.tag.coral   { background: var(--coral-light);  color: var(--coral); }
-.tag.amber   { background: var(--amber-light);  color: var(--amber); }
-.tag.purple  { background: var(--purple-light); color: var(--purple); }
-.tag.green   { background: var(--green-light);  color: var(--green); }
-
-/* ── Flow Box ── */
-.flow-box {
-  background: #f8f7f5;
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  margin: 16px 0;
+code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 3px;
   font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 13px;
-  line-height: 1.8;
-  white-space: pre-line;
+  font-size: 12px;
 }
-.flow-box .arrow { color: var(--teal); font-weight: 500; }
 
-/* ── Blockquote ── */
+pre {
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 14px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+pre code {
+  background: none;
+  padding: 0;
+}
+
 blockquote {
   border-left: 3px solid var(--border-med);
   padding: 8px 16px;
@@ -254,214 +262,103 @@ blockquote {
   border-radius: 0 6px 6px 0;
 }
 
-/* ── Code ── */
-code.inline-code {
-  background: #f0f0f0;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 12px;
-}
-pre.code-block {
-  position: relative;
-  background: #f0f0f0;
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  overflow-x: auto;
-  margin: 14px 0;
-  font-size: 12px;
-  line-height: 1.6;
-}
-pre.code-block code {
-  background: none;
-  padding: 0;
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 12px;
-}
-.copy-btn {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 10px;
-  font-size: 11px;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-pre.code-block:hover .copy-btn { opacity: 1; }
-
-/* ── Responsive ── */
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .main-wrap { margin-left: 0; }
   .content { padding: 20px 16px 60px; }
   .chapter { padding: 24px 20px; }
 }
-
-/* ── Encrypt Prompt ── */
-.encrypt-prompt {
-  margin-top: 3rem;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #f0fdf4, #ecfeff);
-  border-radius: 12px;
-  border: 1px solid #a7f3d0;
-  text-align: center;
-  font-size: 15px;
-  color: #333;
-  line-height: 2;
-}</style>
+  </style>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\(', '\)']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
 </head>
 <body>
   <nav class="sidebar">
     <div class="sidebar-title">目录</div>
     <ul class="sidebar-nav">
-      <li><a href="#ch1-s1">目录约定</a></li>
-      <li><a href="#ch1-s2">MD 文件头部格式</a></li>
-      <li><a href="#ch1-s3">转换规则</a></li>
-      <li><a href="#ch1-s4">自动化流程</a></li>
+      <li><a href="#ch1">第一章 目录约定</a></li>
+      <li><a href="#ch2">第二章 MD 文件头部格式</a></li>
+      <li><a href="#ch3">第三章 转换规则</a></li>
+      <li><a href="#ch4">第四章 自动化流程</a></li>
     </ul>
-    <a class="sidebar-home" href="../index.html">← 返回首页</a>
+    <a class="sidebar-home" href="../index.html" title="返回首页">← 返回首页</a>
   </nav>
 
   <div class="main-wrap">
     <header class="page-header">
       <h1>语雀文章转换工作流规范</h1>
-      <p>MD 转 HTML · 目录约定 · 自动化流程 · 2026-07-27</p>
+      <p>随笔 · 2026-07-27</p>
     </header>
 
     <div class="content">
-      <section class="chapter" id="ch1">
-        <div class="chapter-num">第一章</div>
-        <h2 class="chapter-title">语雀文章转换工作流规范</h2>
+    <section class="chapter" id="ch1">
+      <div class="chapter-num">第一章</div>
+      <h2 class="chapter-title">目录约定</h2>
+      <pre><code>drafts路径：C:\Users\ahs\.qclaw\workspace\yuque_export  
+       转换后的 ：HTML 生成到这里 C:\Users\ahs\Desktop\Project\article-site\articles
+       图片放这里：C:\Users\ahs\Desktop\Project\article-site\image
+      风格模板：C:\Users\ahs\Desktop\Project\arti\技术文档风格规范.md</code></pre>
+    </section>
+    <section class="chapter" id="ch2">
+      <div class="chapter-num">第二章</div>
+      <h2 class="chapter-title">MD 文件头部格式</h2>
+      <p>每篇 MD 文件必须以 YAML 头部开头，提供三要素：</p>
+      <pre><code>---
+      title: 差分放大电路的构建
+      category: 硬件
+      date: 2026-05-23
+      description: 详细推导共射极差分放大电路的增益、CMRR及偏置设计要点
+      ---
+      
+      正文内容...</code></pre>
+      <table><thead><tr><th>字段</th><th>说明</th></tr></thead><tbody><tr><td><code>title</code></td><td>文章标题，会写入 <code><title></code> 和 <code><h1></code></td></tr><tr><td><code>category</code></td><td>9 选 1：硬件 / 嵌入式 / FPGA / 高速信号 / EMC / 控制理论 / 电机 / EDA / 随笔</td></tr><tr><td><code>date</code></td><td>日期，格式 <code>YYYY-MM-DD</code></td></tr><tr><td><code>description</code></td><td>一句话简介，显示在首页卡片</td></tr></tbody></table>
+    </section>
+    <section class="chapter" id="ch3">
+      <div class="chapter-num">第三章</div>
+      <h2 class="chapter-title">转换规则</h2>
+      <table><thead><tr><th>MD 语法</th><th>HTML 输出</th></tr></thead><tbody><tr><td><code># 标题</code></td><td><code><h1></code></td></tr><tr><td><code>## 标题</code></td><td><code><h2></code></td></tr><tr><td><code>### 标题</code></td><td><code><h3></code></td></tr><tr><td><code><img src="路径" alt=""></code></td><td><code><img src="../image/..."></code> 本地路径</td></tr><tr><td><code><img src="https://cdn..." alt=""></code></td><td>下载到 <code>image/文章名-N.jpg</code>，替换为本地路径</td></tr><tr><td><code>$E=mc^2$</code></td><td>保留，MathJax 渲染</td></tr><tr><td>`<code> </code>代码<code> </code>`</td><td><code><code></code></td></tr><tr><td>`<code> </code>`<code> </code>` 代码块</td><td><code><pre><code></code></td></tr><tr><td><code><strong>粗体</strong></code></td><td><code><strong></code></td></tr></tbody></table>
+    </section>
+    <section class="chapter" id="ch4">
+      <div class="chapter-num">第四章</div>
+      <h2 class="chapter-title">自动化流程</h2>
+      <pre><code>询问用户需要路径下的哪个根目录→ 用户确认-&gt;自动触发转换 → 调用风格模板-&gt;HTML 写入 articles/ 
+      → 自动运行 scripts/scan-articles.py → 自动 git push</code></pre>
+      <p>Markdown 中的图片路径：<code>../image/文章名-N.jpg</code> 转换为 HTML 时保持不变。</p>
+    </section>
+    </div>
 
-        <h3 id="ch1-s1">目录约定</h3>
-
-        <pre class="code-block"><button class="copy-btn">复制代码</button><code>drafts路径：C:\Users\ahs\.qclaw\workspace\yuque_export
-转换后的 ：HTML 生成到这里 C:\Users\ahs\Desktop\Project\article-site\articles
-图片放这里：C:\Users\ahs\Desktop\Project\article-site\image
-风格模板：C:\Users\ahs\Desktop\Project\arti\技术文档风格规范.md</code></pre>
-
-        <p>上述四个路径分别对应：</p>
-        <ul>
-          <li><strong>drafts</strong> — 从语雀导出的原始 Markdown 文件存放处</li>
-          <li><strong>articles</strong> — 转换后的 HTML 输出目标目录</li>
-          <li><strong>image</strong> — 文章引用的图片统一存放目录</li>
-          <li><strong>风格模板</strong> — 定义 HTML 结构、CSS 变量体系、布局命名约定的参考规范</li>
-        </ul>
-
-        <h3 id="ch1-s2">MD 文件头部格式</h3>
-
-        <p>每篇 MD 文件必须以 YAML 头部开头，提供三要素：</p>
-
-        <pre class="code-block"><button class="copy-btn">复制代码</button><code>---
-title: 差分放大电路的构建
-category: 硬件
-date: 2026-05-23
-description: 详细推导共射极差分放大电路的增益、CMRR及偏置设计要点
----
-
-正文内容...</code></pre>
-
-        <table>
-          <thead>
-            <tr>
-              <th>字段</th>
-              <th>说明</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code class="inline-code">title</code></td>
-              <td>文章标题，会写入 <code class="inline-code">&lt;title&gt;</code> 和 <code class="inline-code">&lt;h1&gt;</code></td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">category</code></td>
-              <td>9 选 1：硬件 / 嵌入式 / FPGA / 高速信号 / EMC / 控制理论 / 电机 / EDA / 随笔</td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">date</code></td>
-              <td>日期，格式 <code class="inline-code">YYYY-MM-DD</code></td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">description</code></td>
-              <td>一句话简介，显示在首页卡片</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3 id="ch1-s3">转换规则</h3>
-
-        <table>
-          <thead>
-            <tr>
-              <th>MD 语法</th>
-              <th>HTML 输出</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code class="inline-code"># 标题</code></td>
-              <td><code class="inline-code">&lt;h1&gt;</code></td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">## 标题</code></td>
-              <td><code class="inline-code">&lt;h2&gt;</code></td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">### 标题</code></td>
-              <td><code class="inline-code">&lt;h3&gt;</code></td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">![](路径)</code></td>
-              <td><code class="inline-code">&lt;img src="../image/..."&gt;</code> 本地路径</td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">![](https://cdn...)</code></td>
-              <td>下载到 <code class="inline-code">image/文章名-N.jpg</code>，替换为本地路径</td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">$E=mc^2$</code></td>
-              <td>保留，MathJax 渲染</td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">`代码`</code></td>
-              <td><code class="inline-code">&lt;code&gt;</code></td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">``` 代码块</code></td>
-              <td><code class="inline-code">&lt;pre&gt;&lt;code&gt;</code></td>
-            </tr>
-            <tr>
-              <td><code class="inline-code">**粗体**</code></td>
-              <td><code class="inline-code">&lt;strong&gt;</code></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3 id="ch1-s4">自动化流程</h3>
-
-        <pre class="code-block"><button class="copy-btn">复制代码</button><code>询问用户需要路径下的哪个根目录
-→ 用户确认
-→ 自动触发转换
-→ 调用风格模板
-→ HTML 写入 articles/
-→ 自动运行 scripts/scan-articles.py
-→ 自动 git push</code></pre>
-
-        <p>Markdown 中的图片路径：<code class="inline-code">../image/文章名-N.jpg</code> 转换为 HTML 时保持不变。</p>
-
-      </section>
-
-      <!-- 加密提示框 -->
-      <div class="encrypt-prompt">
-        <p style="margin:0;font-weight:600;font-size:16px;">更多深度技术笔记已加密保护</p>
-        <p style="margin:.5rem 0 0;color:#666;">多数文章已加密保护，两篇代表作开放展示。加好友获取访问密码，欢迎技术交流。</p>
-      </div>
+    <div style="margin-top:3rem;padding:1.5rem 2rem;background:linear-gradient(135deg,#f0fdf4,#ecfeff);border-radius:12px;border:1px solid #a7f3d0;text-align:center;font-size:15px;color:#333;line-height:2;max-width:900px;margin-left:auto;margin-right:auto;margin-bottom:60px;">
+      <p style="margin:0;font-weight:600;font-size:16px;">更多深度技术笔记已加密保护</p>
+      <p style="margin:.5rem 0 0;color:#666;">多数文章已加密保护，两篇代表作开放展示。加好友获取访问密码，欢迎技术交流。</p>
     </div>
   </div>
+
+  <script>
+    (function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          const link = document.querySelector('.sidebar-nav a[href="#' + e.target.id + '"]');
+          if (link) {
+            if (e.isIntersecting) {
+              document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+              link.classList.add('active');
+            }
+          }
+        });
+      }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
+
+      document.querySelectorAll('.chapter').forEach(c => observer.observe(c));
+      document.querySelectorAll('h3[id]').forEach(h => observer.observe(h));
+    })();
+  </script>
 </body>
 </html>
