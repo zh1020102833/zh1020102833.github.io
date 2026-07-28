@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文章标题</title>
+<!-- 必填：分类名（9选1） -->
+<meta name="category" content="硬件">
+<!-- 必填：日期（YYYY-MM-DD） -->
+<meta name="date" content="2026-05-23">
+<!-- 必填：一句话简介 -->
+<meta name="description" content="文章的一句话描述，会显示在卡片上">
+<!-- 必填：是否需要加密发布（true/false），不写默认 true -->
+<meta name="encrypt" content="true">
+<!-- 可选：数学公式支持 -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+  }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+/* 你的文章样式 */
+body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+h1, h2, h3 { color: #333; }
+img { max-width: 100%; }
+</style>
+</head>
+<body>
+
+<h1>文章标题</h1>
+
+<p>正文内容...</p>
+
+<!-- 图片示例 -->
+<p><img src="../image/文章名-01.jpg" alt="图片说明"></p>
+
+<!-- 公式示例 -->
+<p>公式：$E = mc^2$</p>
+
+<!--
+══════════════════════════════════════════════════════════
+加密发布流程（Staticrypt AES-256）
+══════════════════════════════════════════════════════════
+
+1. 安装（仅首次）：
+   npm install -g staticrypt
+
+2. 写完文章后，在 articles/ 目录下执行：
+   staticrypt 文章文件名.html -p "你的密码" --short -d "encrypted/"
+
+   中文界面推荐：
+   staticrypt 文章文件名.html -p "你的密码" --short --template-title "加密文章" --template-instructions "请输入密码查看" --template-placeholder "输入密码" --template-error "密码错误" --template-button "解锁" -d "encrypted/"
+
+3. 加密后的文件在 articles/encrypted/ 目录下，将该文件部署到 GitHub Pages 即完成。
+
+4. 如果文章不需要加密，把 <meta name="encrypt" content="false"> 并在部署时跳过加密步骤。
+
+注意：
+- 密码不要写进 Git 仓库（用环境变量 STATICRYPT_PASSWORD）
+- 加密后原文保持明文在仓库中（便于编辑），部署的是 encrypted/ 下的密文版
+- Google/百度无法索引加密页面（SEO 废了），自行权衡
+══════════════════════════════════════════════════════════
+-->
+
+</body>
+</html>
