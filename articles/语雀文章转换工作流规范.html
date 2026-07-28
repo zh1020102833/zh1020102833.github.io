@@ -1,79 +1,86 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="encrypt" content="false">
-  <title>语雀文章转换工作流规范</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="encrypt" content="true">
+<meta name="category" content="随笔">
+<meta name="date" content="2026-07-27">
+<meta name="description" content="定义 MD 转 HTML 的目录约定、YAML 头部格式、转换规则与自动化流程">
+<title>语雀文章转换工作流规范</title>
+<style>
+/* ===== Reset ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== CSS 变量 ===== */
 :root {
-  --bg: #f5f4f1;
-  --surface: #ffffff;
-  --border: rgba(0,0,0,0.08);
-  --border-med: rgba(0,0,0,0.15);
-  --canvas-bg: #ececec;
-  --code-bg: #f0f0f0;
-  --text: #1c1b19;
-  --text-sec: #555350;
-  --text-hint: #8c8883;
-  --accent: #16599e;
+  --bg:           #f5f4f1;
+  --surface:      #ffffff;
+  --border:       rgba(0,0,0,0.08);
+  --border-med:   rgba(0,0,0,0.15);
+  --canvas-bg:    #ececec;
+  --code-bg:      #f0f0f0;
+  --text:         #1c1b19;
+  --text-sec:     #555350;
+  --text-hint:    #8c8883;
+  --accent:       #16599e;
   --accent-light: #e3eef9;
-  --teal: #0d6751;
-  --teal-light: #dff3ec;
-  --coral: #913719;
-  --coral-light: #f9e9e2;
-  --amber: #7d4908;
-  --amber-light: #f9ecd6;
-  --purple: #4e44b0;
+  --teal:         #0d6751;
+  --teal-light:   #dff3ec;
+  --coral:        #913719;
+  --coral-light:  #f9e9e2;
+  --amber:        #7d4908;
+  --amber-light:  #f9ecd6;
+  --purple:       #4e44b0;
   --purple-light: #eceafc;
-  --green: #36650f;
-  --green-light: #e9f2db;
-  --sidebar-w: 260px;
-  --sidebar-bg: #111827;
-  --sidebar-text: #9ca3af;
-  --sidebar-active: #2dd4bf;
-  --sidebar-hover: #1f2937;
+  --green:        #36650f;
+  --green-light:  #e9f2db;
+  --sidebar-w:       260px;
+  --sidebar-bg:      #111827;
+  --sidebar-text:    #9ca3af;
+  --sidebar-active:  #2dd4bf;
+  --sidebar-hover:   #1f2937;
   --sidebar-heading: #6b7280;
-  --radius: 8px;
+  --radius:    8px;
   --radius-lg: 12px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
+html { scroll-behavior: smooth; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-  background: var(--bg);
   color: var(--text);
+  background: var(--bg);
+  line-height: 1.75;
+  font-size: 14px;
   display: flex;
   min-height: 100vh;
 }
 
+/* ===== 侧边栏 ===== */
 .sidebar {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   width: var(--sidebar-w);
   height: 100vh;
   background: var(--sidebar-bg);
+  padding: 28px 0 40px;
   overflow-y: auto;
   z-index: 100;
-  padding: 28px 0 40px;
   scrollbar-width: thin;
   scrollbar-color: #374151 transparent;
 }
 .sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
 .sidebar::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
-
 .sidebar-title {
-  padding: 0 24px 12px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--sidebar-heading);
   letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--sidebar-heading);
+  padding: 0 24px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 8px;
 }
-
 .sidebar-nav { list-style: none; }
 .sidebar-nav a {
   display: block;
@@ -99,7 +106,6 @@ body {
   font-size: 12px;
   color: #6b7280;
 }
-
 .sidebar-home {
   display: block;
   padding: 8px 24px;
@@ -116,33 +122,33 @@ body {
   background: var(--sidebar-hover);
 }
 
+/* ===== 主区域 ===== */
 .main-wrap {
   margin-left: var(--sidebar-w);
   flex: 1;
   min-width: 0;
 }
-
 .page-header {
-  padding: 48px 28px 32px;
   text-align: center;
+  padding: 48px 28px 32px;
 }
 .page-header h1 {
   font-size: 24px;
   font-weight: 500;
   color: var(--text);
+  margin-bottom: 8px;
 }
 .page-header p {
-  margin-top: 8px;
+  font-size: 13px;
   color: var(--text-hint);
-  font-size: 14px;
 }
-
 .content {
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 28px 80px;
+  padding: 32px 28px 80px;
 }
 
+/* ===== 章节卡片 ===== */
 .chapter {
   background: var(--surface);
   border: 0.5px solid var(--border);
@@ -152,7 +158,6 @@ body {
   scroll-margin-top: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-
 .chapter-num {
   font-size: 11px;
   font-weight: 500;
@@ -160,24 +165,19 @@ body {
   color: var(--text-hint);
   margin-bottom: 6px;
 }
-
-.chapter-title {
+h2.chapter-title {
   font-size: 19px;
   font-weight: 500;
-  color: var(--text);
-  padding-bottom: 14px;
   margin-bottom: 22px;
+  padding-bottom: 14px;
   border-bottom: 0.5px solid var(--border);
 }
-
 h3 {
   font-size: 15px;
   font-weight: 500;
-  color: var(--text);
   margin-top: 24px;
   margin-bottom: 8px;
 }
-
 h4 {
   font-size: 14px;
   font-weight: 500;
@@ -185,25 +185,14 @@ h4 {
   margin-top: 18px;
   margin-bottom: 6px;
 }
+p { margin-bottom: 12px; }
 
-p {
-  font-size: 14px;
-  line-height: 1.75;
-  margin-bottom: 12px;
-}
+/* ===== 列表 ===== */
+ul, ol { margin-bottom: 14px; padding-left: 24px; }
+li { margin: 6px 0; font-size: 14px; }
+li code { font-size: 12px; }
 
-strong { font-weight: 600; }
-
-ul, ol {
-  margin: 0 0 14px 0;
-  padding-left: 24px;
-}
-li {
-  font-size: 14px;
-  line-height: 1.75;
-  margin: 6px 0;
-}
-
+/* ===== 表格 ===== */
 table {
   width: 100%;
   border-collapse: separate;
@@ -230,6 +219,7 @@ tbody td {
 tbody tr:nth-child(even) { background: #fafafa; }
 tbody tr:last-child td { border-bottom: none; }
 
+/* ===== 代码 ===== */
 code {
   background: var(--code-bg);
   padding: 2px 6px;
@@ -237,7 +227,6 @@ code {
   font-family: "SF Mono", "Fira Code", "Consolas", monospace;
   font-size: 12px;
 }
-
 pre {
   background: var(--code-bg);
   border-radius: var(--radius);
@@ -247,11 +236,25 @@ pre {
   font-size: 12px;
   line-height: 1.6;
 }
-pre code {
-  background: none;
-  padding: 0;
-}
+pre code { background: none; padding: 0; }
 
+/* ===== 信息框 ===== */
+.info-box {
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13px;
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+  color: var(--accent);
+}
+.info-box.teal   { background: var(--teal-light);   border-left-color: var(--teal);   color: var(--teal); }
+.info-box.coral  { background: var(--coral-light);  border-left-color: var(--coral);  color: var(--coral); }
+.info-box.warn   { background: #fff5eb;             border-left-color: #e07b30;       color: #8b4a0e; }
+.info-box.purple { background: var(--purple-light); border-left-color: var(--purple); color: var(--purple); }
+.info-box.green  { background: var(--green-light);  border-left-color: var(--green);  color: var(--green); }
+
+/* ===== 引用块 ===== */
 blockquote {
   border-left: 3px solid var(--border-med);
   padding: 8px 16px;
@@ -262,103 +265,298 @@ blockquote {
   border-radius: 0 6px 6px 0;
 }
 
+/* ===== 流程框 ===== */
+.flow-box {
+  background: #f8f7f5;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 16px 0;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+.flow-box .arrow { color: var(--teal); font-weight: 500; }
+
+/* ===== 标签 ===== */
+.tag {
+  display: inline-block;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  margin-right: 4px;
+}
+.tag         { background: var(--accent-light); color: var(--accent); }
+.tag.teal    { background: var(--teal-light);   color: var(--teal); }
+.tag.coral   { background: var(--coral-light);  color: var(--coral); }
+.tag.amber   { background: var(--amber-light);  color: var(--amber); }
+.tag.purple  { background: var(--purple-light); color: var(--purple); }
+.tag.green   { background: var(--green-light);  color: var(--green); }
+
+/* ===== Canvas 图形区 ===== */
+.cvs-wrap {
+  background: #f0f0f0;
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 16px 0;
+  text-align: center;
+}
+.cvs-wrap canvas { display: block; margin: 0 auto; max-width: 100%; }
+
+/* ===== 滑块 ===== */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  margin: 8px 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* ===== 响应式 ===== */
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .main-wrap { margin-left: 0; }
   .content { padding: 20px 16px 60px; }
   .chapter { padding: 24px 20px; }
 }
-  </style>
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\(', '\)']],
-        displayMath: [['$$', '$$']]
-      }
-    };
-  </script>
-  <script id="MathJax-script" async
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-  </script>
+</style>
 </head>
 <body>
-  <nav class="sidebar">
-    <div class="sidebar-title">目录</div>
-    <ul class="sidebar-nav">
-      <li><a href="#ch1">第一章 目录约定</a></li>
-      <li><a href="#ch2">第二章 MD 文件头部格式</a></li>
-      <li><a href="#ch3">第三章 转换规则</a></li>
-      <li><a href="#ch4">第四章 自动化流程</a></li>
-    </ul>
-    <a class="sidebar-home" href="../index.html" title="返回首页">← 返回首页</a>
-  </nav>
 
-  <div class="main-wrap">
-    <header class="page-header">
-      <h1>语雀文章转换工作流规范</h1>
-      <p>随笔 · 2026-07-27</p>
-    </header>
+<!-- ===== 侧边栏 ===== -->
+<nav class="sidebar">
+  <div class="sidebar-title">目录</div>
+  <ul class="sidebar-nav">
+    <li><a href="#ch1">第一章 目录约定</a></li>
+    <li><a href="#ch2">第二章 MD 文件头部格式</a></li>
+    <li><a href="#ch3">第三章 转换规则</a></li>
+    <li><a href="#ch4">第四章 自动化流程</a></li>
+    <li><a href="#ch5">第五章 知识脉络速记</a></li>
+  </ul>
+  <a class="sidebar-home" href="../index.html" title="返回首页">← 返回首页</a>
+</nav>
 
-    <div class="content">
+<!-- ===== 主内容区 ===== -->
+<div class="main-wrap">
+  <header class="page-header">
+    <h1>语雀文章转换工作流规范</h1>
+    <p>目录约定 · YAML规范 · 转换规则 · 自动化流程 · 2026-07-27</p>
+  </header>
+
+  <div class="content">
+
+    <!-- 第一章 -->
     <section class="chapter" id="ch1">
       <div class="chapter-num">第一章</div>
       <h2 class="chapter-title">目录约定</h2>
-      <pre><code>drafts路径：C:\Users\ahs\.qclaw\workspace\yuque_export  
-       转换后的 ：HTML 生成到这里 C:\Users\ahs\Desktop\Project\article-site\articles
-       图片放这里：C:\Users\ahs\Desktop\Project\article-site\image
-      风格模板：C:\Users\ahs\Desktop\Project\arti\技术文档风格规范.md</code></pre>
+      <pre><code>drafts路径：C:\Users\ahs\.qclaw\workspace\yuque_export
+ 转换后的 ：HTML 生成到这里 C:\Users\ahs\Desktop\Project\article-site\articles
+ 图片放这里：C:\Users\ahs\Desktop\Project\article-site\image
+风格模板：C:\Users\ahs\Desktop\Project\arti\技术文档风格规范.md</code></pre>
+      <div class="info-box teal">
+        <strong>关键认知</strong>：MD 源文件、HTML 输出、图片资源、风格模板分属四个独立目录，各司其职。转换脚本从 <code>yuque_export/</code> 读取 MD，按风格模板渲染后写入 <code>articles/</code>。
+      </div>
     </section>
+
+    <!-- 第二章 -->
     <section class="chapter" id="ch2">
       <div class="chapter-num">第二章</div>
       <h2 class="chapter-title">MD 文件头部格式</h2>
       <p>每篇 MD 文件必须以 YAML 头部开头，提供三要素：</p>
       <pre><code>---
-      title: 差分放大电路的构建
-      category: 硬件
-      date: 2026-05-23
-      description: 详细推导共射极差分放大电路的增益、CMRR及偏置设计要点
-      ---
-      
-      正文内容...</code></pre>
-      <table><thead><tr><th>字段</th><th>说明</th></tr></thead><tbody><tr><td><code>title</code></td><td>文章标题，会写入 <code><title></code> 和 <code><h1></code></td></tr><tr><td><code>category</code></td><td>9 选 1：硬件 / 嵌入式 / FPGA / 高速信号 / EMC / 控制理论 / 电机 / EDA / 随笔</td></tr><tr><td><code>date</code></td><td>日期，格式 <code>YYYY-MM-DD</code></td></tr><tr><td><code>description</code></td><td>一句话简介，显示在首页卡片</td></tr></tbody></table>
+title: 差分放大电路的构建
+category: 硬件
+date: 2026-05-23
+description: 详细推导共射极差分放大电路的增益、CMRR及偏置设计要点
+---
+
+正文内容...</code></pre>
+      <div class="info-box warn">
+        <strong>注意</strong>：YAML 头部必须以三个短横线 <code>---</code> 开头和结尾，字段间不可有空行，否则解析器无法识别。
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>字段</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>title</code></td>
+            <td>文章标题，会写入 <code>&lt;title&gt;</code> 和 <code>&lt;h1&gt;</code></td>
+          </tr>
+          <tr>
+            <td><code>category</code></td>
+            <td>9 选 1：<span class="tag">硬件</span> <span class="tag teal">嵌入式</span> <span class="tag coral">FPGA</span> <span class="tag amber">高速信号</span> <span class="tag purple">EMC</span> <span class="tag green">控制理论</span> 电机 / EDA / 随笔</td>
+          </tr>
+          <tr>
+            <td><code>date</code></td>
+            <td>日期，格式 <code>YYYY-MM-DD</code></td>
+          </tr>
+          <tr>
+            <td><code>description</code></td>
+            <td>一句话简介，显示在首页卡片</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
+
+    <!-- 第三章 -->
     <section class="chapter" id="ch3">
       <div class="chapter-num">第三章</div>
       <h2 class="chapter-title">转换规则</h2>
-      <table><thead><tr><th>MD 语法</th><th>HTML 输出</th></tr></thead><tbody><tr><td><code># 标题</code></td><td><code><h1></code></td></tr><tr><td><code>## 标题</code></td><td><code><h2></code></td></tr><tr><td><code>### 标题</code></td><td><code><h3></code></td></tr><tr><td><code><img src="路径" alt=""></code></td><td><code><img src="../image/..."></code> 本地路径</td></tr><tr><td><code><img src="https://cdn..." alt=""></code></td><td>下载到 <code>image/文章名-N.jpg</code>，替换为本地路径</td></tr><tr><td><code>$E=mc^2$</code></td><td>保留，MathJax 渲染</td></tr><tr><td>`<code> </code>代码<code> </code>`</td><td><code><code></code></td></tr><tr><td>`<code> </code>`<code> </code>` 代码块</td><td><code><pre><code></code></td></tr><tr><td><code><strong>粗体</strong></code></td><td><code><strong></code></td></tr></tbody></table>
+      <table>
+        <thead>
+          <tr>
+            <th>MD 语法</th>
+            <th>HTML 输出</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code># 标题</code></td>
+            <td><code>&lt;h1&gt;</code></td>
+          </tr>
+          <tr>
+            <td><code>## 标题</code></td>
+            <td><code>&lt;h2&gt;</code></td>
+          </tr>
+          <tr>
+            <td><code>### 标题</code></td>
+            <td><code>&lt;h3&gt;</code></td>
+          </tr>
+          <tr>
+            <td><code>![](路径)</code></td>
+            <td><code>&lt;img src="../image/..."&gt;</code> 本地路径</td>
+          </tr>
+          <tr>
+            <td><code>![](https://cdn...)</code></td>
+            <td>下载到 <code>image/文章名-N.jpg</code>，替换为本地路径</td>
+          </tr>
+          <tr>
+            <td><code>$E=mc^2$</code></td>
+            <td>保留，MathJax 渲染</td>
+          </tr>
+          <tr>
+            <td><code>`代码`</code></td>
+            <td><code>&lt;code&gt;</code></td>
+          </tr>
+          <tr>
+            <td><code>``` 代码块</code></td>
+            <td><code>&lt;pre&gt;&lt;code&gt;</code></td>
+          </tr>
+          <tr>
+            <td><code>**粗体**</code></td>
+            <td><code>&lt;strong&gt;</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="info-box green">
+        <strong>建议</strong>：转换时图片路径 <code>../image/文章名-N.jpg</code> 保持不变，无需额外处理。远程图片则先下载到本地 <code>image/</code> 目录，再替换引用路径。
+      </div>
     </section>
+
+    <!-- 第四章 -->
     <section class="chapter" id="ch4">
       <div class="chapter-num">第四章</div>
       <h2 class="chapter-title">自动化流程</h2>
-      <pre><code>询问用户需要路径下的哪个根目录→ 用户确认-&gt;自动触发转换 → 调用风格模板-&gt;HTML 写入 articles/ 
-      → 自动运行 scripts/scan-articles.py → 自动 git push</code></pre>
-      <p>Markdown 中的图片路径：<code>../image/文章名-N.jpg</code> 转换为 HTML 时保持不变。</p>
+      <div class="flow-box">
+        询问用户需要路径下的哪个根目录 → <span class="arrow">用户确认</span> → 自动触发转换 → <span class="arrow">调用风格模板</span> → HTML 写入 articles/ → <span class="arrow">自动运行 scripts/scan-articles.py</span> → <span class="arrow">自动 git push</span>
+      </div>
+      <div class="info-box warn">
+        <strong>注意</strong>：Markdown 中的图片路径 <code>../image/文章名-N.jpg</code> 转换为 HTML 时保持不变。
+      </div>
     </section>
-    </div>
 
-    <div style="margin-top:3rem;padding:1.5rem 2rem;background:linear-gradient(135deg,#f0fdf4,#ecfeff);border-radius:12px;border:1px solid #a7f3d0;text-align:center;font-size:15px;color:#333;line-height:2;max-width:900px;margin-left:auto;margin-right:auto;margin-bottom:60px;">
-      <p style="margin:0;font-weight:600;font-size:16px;">更多深度技术笔记已加密保护</p>
-      <p style="margin:.5rem 0 0;color:#666;">多数文章已加密保护，两篇代表作开放展示。加好友获取访问密码，欢迎技术交流。</p>
-    </div>
+    <!-- 第五章 知识脉络速记 -->
+    <section class="chapter" id="ch5">
+      <div class="chapter-num">第五章</div>
+      <h2 class="chapter-title">知识脉络速记</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>环节</th>
+            <th>核心要点</th>
+            <th>关键约束</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag">目录</span></td>
+            <td>四目录分工：MD 源 → articles/ → image/ → 风格模板</td>
+            <td>路径不可混用，各目录独立</td>
+          </tr>
+          <tr>
+            <td><span class="tag teal">YAML</span></td>
+            <td>三要素：title / category / date / description</td>
+            <td>category 9 选 1；date 格式 YYYY-MM-DD；<code>---</code> 包裹无空行</td>
+          </tr>
+          <tr>
+            <td><span class="tag coral">转换</span></td>
+            <td>10 条映射规则：标题 / 图片 / 公式 / 代码 / 粗体</td>
+            <td>远程图片先下载再替换；本地路径保持不变</td>
+          </tr>
+          <tr>
+            <td><span class="tag amber">流程</span></td>
+            <td>确认 → 转换 → 扫描 → 推送，全自动链</td>
+            <td>逐环节执行，不可跳过 scan-articles.py</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="info-box teal">
+        <strong>核心结论</strong>：本规范将语雀导出的 MD 文件按统一风格模板转换为技术文档 HTML，通过四目录隔离、YAML 元数据标准化、10 条映射规则和全自动流水线，实现从草稿到部署的一致性输出。
+      </div>
+    </section>
+
   </div>
+</div>
 
-  <script>
-    (function() {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          const link = document.querySelector('.sidebar-nav a[href="#' + e.target.id + '"]');
-          if (link) {
-            if (e.isIntersecting) {
-              document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-              link.classList.add('active');
-            }
-          }
-        });
-      }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
+<!-- ===== MathJax ===== -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$']]
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
 
-      document.querySelectorAll('.chapter').forEach(c => observer.observe(c));
-      document.querySelectorAll('h3[id]').forEach(h => observer.observe(h));
-    })();
-  </script>
+<!-- ===== 侧边栏滚动高亮 ===== -->
+<script>
+(function() {
+  var chapters = document.querySelectorAll('.chapter');
+  var links = document.querySelectorAll('.sidebar-nav a');
+  var observer = new IntersectionObserver(function(entries) {
+    var activeId = null;
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        activeId = entry.target.id;
+      }
+    });
+    if (activeId) {
+      links.forEach(function(a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + activeId);
+      });
+    }
+  }, { rootMargin: '-80px 0px -60% 0px' });
+  chapters.forEach(function(ch) { observer.observe(ch); });
+})();
+</script>
+
 </body>
 </html>
