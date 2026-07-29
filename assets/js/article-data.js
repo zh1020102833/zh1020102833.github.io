@@ -85,8 +85,8 @@ var siteData = {
       articles: [
         {
           id: '语雀文章转换工作流规范',
-          title: '和',
-          date: '2026-07-28',
+          title: '语雀文章转换工作流规范',
+          date: '2026-07-29',
           summary: '',
           file: 'articles/语雀文章转换工作流规范.html'
         }
