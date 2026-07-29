@@ -79,7 +79,7 @@ var siteData = {
       articles: [
         {
           id: '语雀文章转换工作流规范',
-          title: '和',
+          title: '语雀文章转换工作流规范',
           date: '2026-07-27',
           summary: '定义 MD 转 HTML 的目录约定、YAML 头部格式、转换规则与自动化流程',
           file: 'articles/语雀文章转换工作流规范.html'
