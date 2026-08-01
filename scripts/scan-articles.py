@@ -128,6 +128,57 @@ def scan_articles():
     return articles
 
 
+def load_existing_encrypted_articles():
+    """读取旧 article-data.js，提取 file 在 encrypted/ 下的文章条目（含所属分类）。
+
+    加密文章的元数据（标题/分类/日期）仅存于手工维护的 article-data.js 中，
+    加密后的 HTML 内 <title> 为模板默认的「加密文章」、不含真实分类与日期，
+    因此重扫描无法还原，必须从旧数据中保留，否则每次运行脚本都会把加密
+    文章从列表里清空（这正是之前首页文章反复"被删"的根因）。
+
+    采用逐行状态机解析（而非整块正则），避免个别条目格式微妙差异导致漏项。
+    """
+    result = {}
+    if not os.path.exists(DATA_FILE):
+        return result
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    current_cat = "未分类"
+    in_entry = False
+    buf = []
+    for line in lines:
+        m_cat = re.search(r"name:\s*'([^']*)'", line)
+        if m_cat:
+            current_cat = m_cat.group(1)
+            continue
+
+        if not in_entry and "id:" in line:
+            in_entry = True
+            buf = [line]
+        elif in_entry:
+            buf.append(line)
+            if "}" in line:
+                entry = "".join(buf)
+                m_file = re.search(r"file:\s*'([^']*)'", entry)
+                m_id = re.search(r"id:\s*'([^']*)'", entry)
+                m_title = re.search(r"title:\s*'([^']*)'", entry)
+                m_date = re.search(r"date:\s*'([^']*)'", entry)
+                m_summary = re.search(r"summary:\s*'([^']*)'", entry)
+                if m_file and "encrypted/" in m_file.group(1):
+                    result[m_file.group(1)] = {
+                        "id": m_id.group(1) if m_id else "",
+                        "title": m_title.group(1) if m_title else "",
+                        "category": current_cat,
+                        "date": m_date.group(1) if m_date else "",
+                        "summary": m_summary.group(1) if m_summary else "",
+                        "file": m_file.group(1),
+                    }
+                in_entry = False
+                buf = []
+    return result
+
+
 def generate_article_data_js(articles):
     """根据文章列表生成 article-data.js 的内容。"""
     # 按 category 分组
@@ -287,6 +338,18 @@ def main():
 
     # 1. 扫描文章
     articles = scan_articles()
+
+    # 合并已有的加密文章条目（其元数据仅在旧的 article-data.js 中，扫描无法还原）
+    existing = load_existing_encrypted_articles()
+    seen = {a["file"] for a in articles}
+    merged = 0
+    for f, art in existing.items():
+        if f not in seen:
+            articles.append(art)
+            merged += 1
+    if merged:
+        print(f"[!] 已保留 {merged} 篇加密文章（手工维护，未在 articles/ 顶层扫描到）")
+
     if not articles:
         print("未找到任何文章，退出。")
         return

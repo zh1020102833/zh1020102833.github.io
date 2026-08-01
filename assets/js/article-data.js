@@ -29,6 +29,83 @@ var siteData = {
           date: '2026-06-22',
           summary: '从负反馈数学模型出发，推导虚短虚断的成立条件与误差界限，分析开环增益、反馈深度对近似精度的影响，揭示应用局限性。',
           file: 'articles/virtual-short-virtual-open-limitations.html'
+        },
+        {
+          id: 'allpass-filter-phase-shifter',
+          title: '全通滤波器（移相器） - 运放电路技术笔记',
+          date: '2026-05-31',
+          summary: '全通滤波器（All-Pass Filter）作为移相器的原理、电路实现与仿真分析，覆盖一阶/二阶APF的传递函数、相位响应及运放选型要点。',
+          file: 'articles/encrypted/allpass-filter-phase-shifter.html'
+        },
+        {
+          id: 'bci-electrodes-and-amplifier',
+          title: '脑机原理篇 — 电极与放大器',
+          date: '2026-06-10',
+          summary: '基于脑机接口硬件专家课原理篇，梳理半电池电位、极化电位、接触阻抗、三电极系统、增益限制推导、1/f噪声计算，结合纳米孔测序工程经验进行类比理解。',
+          file: 'articles/encrypted/bci-electrodes-and-amplifier.html'
+        },
+        {
+          id: 'differential-amplifier-comprehensive-notes',
+          title: '差分放大器与共模/差模信号完整知识笔记',
+          date: '2026-06-07',
+          summary: '系统整合差分放大器、共模/差模信号、CMRR 频率特性、仿真验证等完整知识体系。',
+          file: 'articles/encrypted/differential-amplifier-comprehensive-notes.html'
+        },
+        {
+          id: 'eeg-signal-chain',
+          title: 'EEG 硬件信号链设计笔记',
+          date: '2026-05-22',
+          summary: '脑电图EEG硬件信号链的完整设计笔记，涵盖前端采集、滤波、ADC选型及噪声优化。',
+          file: 'articles/encrypted/eeg-signal-chain.html'
+        },
+        {
+          id: 'filter-circuits-and-dsp',
+          title: '滤波电路与数字信号处理',
+          date: '2026-05-23',
+          summary: '整合模拟滤波（无源/有源、响应类型、拓扑结构、设计方法）与数字滤波（IIR、FIR、卡尔曼、匹配、中值）核心知识，适用于电路设计与嵌入式开发参考。',
+          file: 'articles/encrypted/filter-circuits-and-dsp.html'
+        },
+        {
+          id: 'hardware-intro',
+          title: '硬件设计入门基础',
+          date: '2026-05-22',
+          summary: '介绍硬件设计的基本流程和常用工具。',
+          file: 'articles/encrypted/hardware-intro.html'
+        },
+        {
+          id: 'highpass-filter_20260524_151223_322',
+          title: '一阶高通滤波器与零点分析',
+          date: '2026-05-24',
+          summary: '一阶RC高通滤波器的电路结构、传递函数推导、零极点分析与波特图解读',
+          file: 'articles/encrypted/highpass-filter_20260524_151223_322.html'
+        },
+        {
+          id: 'op-amp-parameter-quick-reference',
+          title: '运放关键参数速查表',
+          date: '2025-02-24',
+          summary: '系统梳理运算放大器数据手册中的关键电气参数、功能特性、应用设计与布局生产要点，以速查表形式呈现，适合硬件工程师选型和设计参考。',
+          file: 'articles/encrypted/op-amp-parameter-quick-reference.html'
+        },
+        {
+          id: 'opamp-interference-cmrr',
+          title: '运算放大器干扰源与共模抑制 · 完整篇',
+          date: '2026-06-27',
+          summary: '系统梳理运算放大器干扰来源（空间辐射、电源、地线、器件噪声），RC/LC滤波器设计，共模抑制比CMRR物理本质与量化选型，各拓扑对共模干扰的响应差异，引出仪表放大器INA方案。',
+          file: 'articles/encrypted/opamp-interference-cmrr.html'
+        },
+        {
+          id: 'precision-halfwave-rectifier',
+          title: '精密半波整流器 - 运放电路技术笔记',
+          date: '2026-05-31',
+          summary: '从运放基本原理出发，系统阐述精密半波整流器的工作原理、设计演进过程及工程应用要点，涵盖虚短虚断法则、二极管压降补偿、双二极管钳位拓扑、频率响应限制等核心知识点。',
+          file: 'articles/encrypted/precision-halfwave-rectifier.html'
+        },
+        {
+          id: 'signal-conditioning',
+          title: '信号调理核心原理',
+          date: '2026-05-22',
+          summary: '深入讲解信号调理的核心原理，包括放大、滤波、隔离与线性化等关键技术。',
+          file: 'articles/encrypted/signal-conditioning.html'
         }
       ]
     },
@@ -47,7 +124,27 @@ var siteData = {
     {
       name: '高速信号',
       articles: [
-
+        {
+          id: 'high-speed-analog-debug',
+          title: '高速模拟电路调试案例',
+          date: '2026-05-22',
+          summary: '高速模拟电路调试的实战案例合集，涵盖振荡、串扰、电源噪声等常见问题的排查方法。',
+          file: 'articles/encrypted/high-speed-analog-debug.html'
+        },
+        {
+          id: 'high-speed-mixed-signal',
+          title: '高速模数混合电路应用笔记',
+          date: '2026-05-22',
+          summary: '高速模数混合电路设计的应用笔记，涉及PCB布局、接地策略和信号完整性。',
+          file: 'articles/encrypted/high-speed-mixed-signal.html'
+        },
+        {
+          id: 'transmission-line-and-return-current',
+          title: '传输线与返回电流',
+          date: '2026-05-23',
+          summary: '信号完整性入门系列第一讲：传输线定义、返回电流规律、特征阻抗与分布参数基础。',
+          file: 'articles/encrypted/transmission-line-and-return-current.html'
+        }
       ]
     },
     {
@@ -71,18 +168,45 @@ var siteData = {
     {
       name: 'EDA',
       articles: [
-
+        {
+          id: 'eda-tools',
+          title: '常用 EDA 工具介绍',
+          date: '2026-05-22',
+          summary: '整理主流 EDA 工具的功能特点与选型建议。',
+          file: 'articles/encrypted/eda-tools.html'
+        }
       ]
     },
     {
       name: '随笔',
       articles: [
         {
-          id: '语雀文章转换工作流规范',
-          title: '和',
-          date: '2026-07-27',
-          summary: '定义 MD 转 HTML 的目录约定、YAML 头部格式、转换规则与自动化流程',
-          file: 'articles/语雀文章转换工作流规范.html'
+          id: 'dac-linear-sweep-problem-log',
+          title: 'DAC 线性扫描速率提升实践',
+          date: '2026-06-24',
+          summary: 'DAC电压扫描从1V/12ms提速到1V/ms的工程实践：RC滤波参数计算、阶梯波平滑原理、放电残余分析，附带完整数值推导。',
+          file: 'articles/encrypted/dac-linear-sweep-problem-log.html'
+        },
+        {
+          id: 'hello-world',
+          title: 'Hello World - 我的第一篇博客',
+          date: '2026-05-22',
+          summary: '这是网站的第一篇文章，欢迎阅读。',
+          file: 'articles/encrypted/hello-world.html'
+        },
+        {
+          id: 'web-dev-basics',
+          title: '前端开发基础：HTML 核心标签',
+          date: '2026-05-22',
+          summary: '整理前端开发中最常用的 HTML 标签及其语义化用法。',
+          file: 'articles/encrypted/web-dev-basics.html'
+        },
+        {
+          id: 'writing-tips',
+          title: '如何写出清晰的技术文章',
+          date: '2026-05-22',
+          summary: '分享技术写作的经验与技巧。',
+          file: 'articles/encrypted/writing-tips.html'
         }
       ]
     }
